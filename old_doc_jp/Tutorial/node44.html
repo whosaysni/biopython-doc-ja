@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node45.html">
+<LINK rel="prev" href="node43.html">
+<LINK rel="parent" href="node39.html">
+<LINK rel="next" href="node45.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="情報量">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.5.5 情報量</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.5.4 位置特異的スコア行列" 
+  href="node43.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.5 アラインメント解析の扱い" 
+  href="node39.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.5.6 アラインメントの出力形式を変換する" 
+  href="node45.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node43.html">3.5.4 位置特異的スコア行列</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node39.html">3.5 アラインメント解析の扱い</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node45.html">3.5.6 アラインメントの出力形式を変換する</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2>
+<BR>
+3.5.5 情報量
+</H2>
+
+<P>
+進化の過程における配列の保存性を表す可能性を持つ測度に，
+配列内の情報量があります．
+
+<P>
+分子生物学者向けに書かれた有用な情報理論の説明としては，
+<a class="url" href="http://www.lecb.ncifcrf.gov/~toms/paper/primer/">http://www.lecb.ncifcrf.gov/~toms/paper/primer/</a> があります．
+アラインメント解析を目的とした場合，コンセンサス配列や，その部分配列の
+情報量を調べることになります．
+マルチプル配列アラインメント中の特定のカラムにおける情報量の計算は，
+以下の式で行います:
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+IC_{j} = \sum_{i=1}^{N_{a}} P_{ij} * log(\frac{P_{ij}}{Q_{i}})
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="227" HEIGHT="49" BORDER="0"
+ SRC="img1.png"
+ ALT="\begin{displaymath}
+IC_{j} = \sum_{i=1}^{N_{a}} P_{ij} * log(\frac{P_{ij}}{Q_{i}})
+\end{displaymath}">
+</DIV>
+<BR CLEAR="ALL">
+<P></P>
+
+<P>
+ここで，それぞれの変数の意味は以下のようになっています:
+
+<P>
+<DL>
+<DT><STRONG><SPAN CLASS="MATH"><IMG
+ WIDTH="32" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$IC_{j}$"></SPAN></STRONG></DT>
+<DD>- アラインメント中の <SPAN CLASS="MATH"><IMG
+ WIDTH="11" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$j$"></SPAN> 番目のカラムの情報量．
+  
+</DD>
+<DT><STRONG><SPAN CLASS="MATH"><IMG
+ WIDTH="26" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img4.png"
+ ALT="$N_{a}$"></SPAN></STRONG></DT>
+<DD>- アルファベットを構成する文字の数．
+  
+</DD>
+<DT><STRONG><SPAN CLASS="MATH"><IMG
+ WIDTH="28" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img5.png"
+ ALT="$P_{ij}$"></SPAN></STRONG></DT>
+<DD>- カラム中に特定の文字が出現する頻度 (例えば，
+あるアラインメントのあるカラム中で，G が 6 回中 3 回出現していれば，
+その値は 0.5 です)．
+  
+</DD>
+<DT><STRONG><SPAN CLASS="MATH"><IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img6.png"
+ ALT="$Q_{i}$"></SPAN></STRONG></DT>
+<DD>- 特定の文字の出現頻度の期待値．この項はオプションで
+あり，その使い方はユーザにゆだねられています．デフォルトでは，
+タンパク配列に対しては常に 0.05，核酸配列に対しては 0.25 を自動的に
+割り当てます．これは，事前確率分布に対する仮定を一切行わない場合の
+情報量の計算に相当します．何らかの事前確率分布を仮定したい場合や，
+非標準のアルファベットを使いたい場合には，ユーザが <SPAN CLASS="MATH"><IMG
+ WIDTH="23" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img6.png"
+ ALT="$Q_{i}$"></SPAN> の値を
+提供しなければなりません．
+</DD>
+</DL>
+
+<P>
+さて，Biopython でどのように情報量を計算しているかを理解したところで，
+アラインメントの特定の領域に対して情報量を計算する方法を見てゆきましょう．
+
+<P>
+まず，アラインメントオブジェクトを使ってサマリオブジェクトを取得します．
+この名前を <code>summary_align</code> とします (サマリの取得方法は
+<A HREF="node41.html#sec:summary-info">3.5.2</A> 節を参照してください) ．サマリオブジェクトが
+得られたら，情報量の計算は簡単です:
+
+<P>
+<div class="verbatim"><pre>
+info_content = summary_align.information_content(5, 30, 
+                                                 chars_to_ignore = ['N'])
+</pre></div>
+
+<P>
+おおっ，難しそうな式にしては，断然簡単に計算できますね! 
+<code>info_content</code> には，指定した領域 (アラインメント中の 5 から 30 までの
+間) における情報量を示す浮動小数点型の値が入っています．
+ここでは，情報量を計算するときにあいまいな残基 <code>'N'</code> を無視させて
+います．これは通常のアルファベットに <code>'N'</code> が入っていない
+からです．
+
+<P>
+上でも触れたように，出現頻度の期待値を与えれば相対情報量も計算
+できます:
+
+<P>
+<div class="verbatim"><pre>
+expect_freq = {
+    'A' : .3,
+    'G' : .2,
+    'T' : .3,
+    'C' : .2}
+</pre></div>
+
+<P>
+この期待値は素の辞書ではなく，<tt class="class">SubMat.FreqTable</tt> オブジェクト
+(<tt class="class">FreqTable</tt> の詳細は <A HREF="node114.html#sec:freq-table">4.4.3</A> 節を参照してください) に
+して渡します．FreqTable オブジェクトは，Biopython の <tt class="class">Seq</tt> クラス
+におけるからくりと同じように，辞書を<tt class="class">Alphabet</tt> オブジェクトに
+関連づけるための標準を提供しています．
+
+<P>
+<tt class="class">FreqTable</tt> オブジェクトの出現頻度辞書からの作成は，
+以下のようにするだけです:
+
+<P>
+<div class="verbatim"><pre>
+from Bio.Alphabet import IUPAC
+from Bio.SubsMat import FreqTable
+
+e_freq_table = FreqTable.FreqTable(expect_freq, FreqTable.FREQ,
+                                   IUPAC.unambigous_dna)
+</pre></div>
+
+<P>
+出現頻度テーブルが手に入れば，アラインメント上の領域に対する
+相対情報量の計算はいとも簡単です:
+
+<P>
+<div class="verbatim"><pre>
+info_content = summary_align.information_content(5, 30,
+                                                 e_freq_table = e_freq_table,
+                                                 chars_to_ignore = ['N'])
+</pre></div>
+
+<P>
+今度は，<code>info_content</code> には指定した出現頻度期待値に基づいた相対
+情報量が入ります．
+
+<P>
+戻り値は，先程の式での対数の基数を 2 とした計算の結果になります．
+この値は<var>log_base</var> パラメタに使いたい値を指定して変更できます:
+
+<P>
+<div class="verbatim"><pre>
+info_content = summary_align.information_content(5, 30, log_base = 10
+                                                 chars_to_ignore = ['N'])
+</pre></div>
+
+<P>
+さあ，これで情報量の計算もできるようになりました．実際の問題にこの情報量
+を応用してみようと考えているなら，まずは情報量に関する文献を掘り下げて
+みて，その使い方を考えてみるとよいでしょう．調べた結果，この関数のコードを
+書くときに何らかの間違いを犯していたことがわかった．．．ということは
+ないはずですけどね!
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.5.4 位置特異的スコア行列" 
+  rel="prev" title="3.5.4 位置特異的スコア行列" 
+  href="node43.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.5 アラインメント解析の扱い" 
+  rel="parent" title="3.5 アラインメント解析の扱い" 
+  href="node39.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.5.6 アラインメントの出力形式を変換する" 
+  rel="next" title="3.5.6 アラインメントの出力形式を変換する" 
+  href="node45.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node43.html">3.5.4 位置特異的スコア行列</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node39.html">3.5 アラインメント解析の扱い</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node45.html">3.5.6 アラインメントの出力形式を変換する</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node113.html">
+<LINK rel="prev" href="node111.html">
+<LINK rel="parent" href="node107.html">
+<LINK rel="next" href="node113.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="対数確率行列 (Log Odds Matrix:LOM) の生成">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>4.4.2.5 対数確率行列 (Log Odds Matrix:LOM) の生成</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.4.2.4 置換頻度行列 (Substitution Frequency" 
+  href="node111.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.4.2 使用法" 
+  href="node107.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.4.2.6 例題" 
+  href="node113.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node111.html">4.4.2.4 置換頻度行列 (Substitution Frequency</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node107.html">4.4.2 使用法</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node113.html">4.4.2.6 例題</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION005425000000000000000">
+4.4.2.5 対数確率行列 (Log Odds Matrix:LOM) の生成</A>
+</H3>
+
+<P>
+<dl><dt><table cellpadding="0" cellspacing="0"><tr valign="baseline">
+  <td><nobr><b><tt id='l2h-14' xml:id='l2h-14' class="function">_build_log_odds_mat</tt></b>(</nobr></td>
+  <td><var>SFM, logbase=10,factor=10.0,
+    round_digit=1</var>)</td></tr></table></dt>
+<dd>
+
+<P>
+<var>SFM</var> を引数に受け取ります <var>logbase</var> は対数確率行列を
+生成する際に使う対数の底です．<var>factor</var> は，対数確率行列の
+値全体に乗算される値です．行列の各値は，<code>log(LOM[key])*factor</code> 
+になります．小数第 <var>round_digit</var> 桁で必要に応じて値を丸めます．
+</dl>
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.4.2.4 置換頻度行列 (Substitution Frequency" 
+  rel="prev" title="4.4.2.4 置換頻度行列 (Substitution Frequency" 
+  href="node111.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.4.2 使用法" 
+  rel="parent" title="4.4.2 使用法" 
+  href="node107.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.4.2.6 例題" 
+  rel="next" title="4.4.2.6 例題" 
+  href="node113.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node111.html">4.4.2.4 置換頻度行列 (Substitution Frequency</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node107.html">4.4.2 使用法</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node113.html">4.4.2.6 例題</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="prev" href="node125.html">
+<LINK rel="parent" href="node125.html">
+<LINK rel="next" href="node127.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="A.1 ハンドル (handle) とは何か">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>A.1 ハンドル (handle) とは何か</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="A. Python の便利な機能" 
+  href="node125.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="A. Python の便利な機能" 
+  href="node125.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="A.1.1 文字列からハンドルを生成する" 
+  href="node127.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node125.html">A. Python の便利な機能</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node125.html">A. Python の便利な機能</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node127.html">A.1.1 文字列からハンドルを生成する</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H1>
+<BR>
+A.1 ハンドル (handle) とは何か
+</H1>
+
+<P>
+このドキュメントでは，全体を通してハンドルという言葉をよく使います．
+この言葉は (少なくとも私の考えでは) ややまぎらわしい言葉でも
+あります．基本的に，ハンドルはテキスト情報への ``ラッパ'' と
+考えてください．
+
+<P>
+ハンドルを使うと，素のテキスト情報に比べて，(少なくとも) 以下のような
+利点があります:
+
+<P>
+
+<OL>
+<LI>ハンドルを使うと，様々な方法で保存されている情報を標準的な
+ひとつのやり方で扱えるようになります．テキスト情報には，ファイルに
+入っているもの，メモリ上に記憶されているもの，どこか遠隔地のウェブ
+サイト上にあるもの，など様々ありますが，ハンドルを使えばこれら全ての
+情報を共通のひとつのやり方で扱えます．
+
+<P>
+</LI>
+<LI>ハンドルを使うと，テキスト形式の情報を一気に全て読むのではなく，
+逐次的に読み出せます．これは，巨大なテキストファイルを扱っていて，
+全てを読み込まなければならないのにメモリ上には乗り切らないといった
+場合にとても重要な機能です．
+</LI>
+</OL>
+
+<P>
+ハンドルを使うと，テキスト情報の読み込み (ファイルからの読み込み)，
+および書き出し(ファイルへの書き込み) を扱えます．
+読み込み用 (``read'') ハンドルの場合，よく使う関数は <tt class="function">read</tt>
+です．この関数はハンドルから全てのテキスト情報を読み出します．
+また，<tt class="function">readline</tt> を使うと，一度に一行づつ情報を読み出します．
+書き出し (``write'') ハンドルでは，<tt class="function">write</tt> をよく使います．
+
+<P>
+ハンドルのもっとも一般的な用途はファイルからの読み出しです．
+この場合，ハンドルを作成するには python の組み込み関数 <tt class="function">open</tt>
+を使います:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; handle = open("m_cold.fasta", "r")
+&gt;&gt;&gt; handle.readline()
+"&gt;gi|8332116|gb|BE037100.1|BE037100 MP14H09 MP Mesembryanthemum crystallinum cDNA 5' similar to cold acclimation protein, mRNA sequence\n"
+</pre></div>
+
+<P>
+ハンドルは， Biopython で様々なパーザに情報を渡すときに使われます．
+
+<P>
+
+<p><br /></p><hr class='online-navigation' />
+<div class='online-navigation'>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"></a>
+
+<UL CLASS="ChildLinks">
+<LI><A href="node127.html">A.1.1 文字列からハンドルを生成する</a>
+</ul>
+<!--End of Table of Child-Links-->
+</div>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="A. Python の便利な機能" 
+  rel="prev" title="A. Python の便利な機能" 
+  href="node125.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="A. Python の便利な機能" 
+  rel="parent" title="A. Python の便利な機能" 
+  href="node125.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="A.1.1 文字列からハンドルを生成する" 
+  rel="next" title="A.1.1 文字列からハンドルを生成する" 
+  href="node127.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node125.html">A. Python の便利な機能</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node125.html">A. Python の便利な機能</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node127.html">A.1.1 文字列からハンドルを生成する</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

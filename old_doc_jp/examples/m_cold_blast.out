@@ -1,0 +1,68 @@
+<HTML>
+<HEAD>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" LINK="#0000FF" VLINK="#660099" ALINK="#660099">
+<IMG SRC="images/head_results.gif" ALT="Header of the page" BORDER="0"NAME="BlastHeaderGif" WIDTH="600" HEIGHT="45" ALIGN="middle">
+<form action="Blast.cgi" enctype="application/x-www-form-urlencoded" method="POST"><input name="ALIGNMENTS" type="hidden" value="50"><input name="AUTO_FORMAT" type="hidden" value="on"><input name="CLIENT" type="hidden" value="web"><input name="DESCRIPTIONS" type="hidden" value="100"><input name="EXPECT" type="hidden" value="10"><input name="FORMAT_TYPE" type="hidden" value="HTML"><input name="HITLIST_SIZE" type="hidden" value="100"><input name="LAYOUT" type="hidden" value="OneWindow"><input name="NCBI_GI" type="hidden" value="yes"><input name="PAGE" type="hidden" value="Nucleotides"><input name="PID" type="hidden" value="889"><input name="RID" type="hidden" value="1102575580-889-92234598598.BLASTQ4"><input name="RTOE" type="hidden" value="44"><input name="SHOW_OVERVIEW" type="hidden" value="checked"><input name="STEP_NUMBER" type="hidden" value="1"><input name="_PGR" type="hidden" value="2"><input name="_PGR" type="hidden" value="2"><input name="CMD" type="hidden" value="Get"></form>
+<form action="Blast.cgi" enctype="application/x-www-form-urlencoded" method="POST" TARGET=""><input name="ALIGNMENTS" type="hidden" value="50"><input name="AUTO_FORMAT" type="hidden" value="on"><input name="CLIENT" type="hidden" value="web"><input name="DESCRIPTIONS" type="hidden" value="100"><input name="EXPECT" type="hidden" value="10"><input name="FORMAT_TYPE" type="hidden" value="HTML"><input name="HITLIST_SIZE" type="hidden" value="100"><input name="LAYOUT" type="hidden" value="OneWindow"><input name="NCBI_GI" type="hidden" value="yes"><input name="PAGE" type="hidden" value="Nucleotides"><input name="PID" type="hidden" value="889"><input name="RID" type="hidden" value="1102575580-889-92234598598.BLASTQ4"><input name="RTOE" type="hidden" value="44"><input name="SHOW_OVERVIEW" type="hidden" value="checked"><input name="STEP_NUMBER" type="hidden" value="1"><input name="_PGR" type="hidden" value="2"><input name="CMD" type="hidden" value="Get">WAITING
+<HTML>
+<p></p>
+<!--
+QBlastInfoBegin
+	Status=WAITING
+QBlastInfoEnd
+--><p></p>
+
+<script language="JavaScript">
+<!--
+
+function SymError()
+{
+  return true;
+}
+
+window.onerror = SymError;
+
+var SymRealWinOpen = window.open;
+
+function SymWinOpen(url, name, attributes)
+{
+  return (new Object());
+}
+
+window.open = SymWinOpen;
+
+//-->
+</script>
+
+<SCRIPT LANGUAGE="JavaScript"><!--
+setTimeout('document.forms[0].submit();',3000);
+//--></SCRIPT>
+<P><table>
+<tr><td>Request ID</td><td> <b>1102575580-889-92234598598.BLASTQ4</b></td></tr>
+<tr><td>Status</td><td>Searching</td></tr>
+<tr><td>Submitted at</td><td>Thu Dec  9 01:59:40 2004</td></tr>
+<tr><td>Current time</td><td>Thu Dec  9 02:00:28 2004</td></tr>
+<P></table>
+<p><hr>This page will be automatically updated in <b>3</b> seconds until search is done<BR>
+
+
+<script language="JavaScript">
+<!--
+
+window.open = SymRealWinOpen;
+
+//-->
+</script>
+
+</form>
+
+
+<script language="JavaScript">
+<!--
+
+window.open = SymRealWinOpen;
+
+//-->
+</script>
+

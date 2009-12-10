@@ -1,0 +1,211 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="prev" href="node60.html">
+<LINK rel="parent" href="node59.html">
+<LINK rel="next" href="node62.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="データベースの登録とグループ化">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.8.2.2 データベースの登録とグループ化</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.8.2.1 配列の取得" 
+  href="node60.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.8.2 Biopython 固有のインタフェースを使ったリソースの検索" 
+  href="node59.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.9 BioSQL - 配列を関係データベースに入れる" 
+  href="node62.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node60.html">3.8.2.1 配列の取得</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node59.html">3.8.2 Biopython 固有のインタフェースを使ったリソースの検索</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node62.html">3.9 BioSQL - 配列を関係データベースに入れる</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION004822000000000000000">
+3.8.2.2 データベースの登録とグループ化</A>
+</H3>
+
+<P>
+基本となるデータベースレジストリオブジェクトは，基本的な機能を
+提供しているという点で優れてはいますが，もっと高度なシステムが
+あれば，それを新たなデータベースとして追加できれば便利です．
+この話題はいささか高度ではありますが，現在のシステムで十分実現
+可能なことなのです．
+
+<P>
+本節の例では，(GenBank のローカルなミラーのようなものを持っていたとして)
+GenBank データを提供するようなローカルな CGI スクリプトを追加する
+方法について説明し，さらにそのローカルなデータベースと NCBI GenBank 
+を情報の取得先として一つにグループにまとめて登録します．
+こうすれば，普段はローカルのミラーから情報を取得し，ローカルのサーバが
+ダウンしていた場合にメインの GenBank サーバに切り替え，その際に
+情報取得用のコードを変更しなくてもすむようにできます．
+
+<P>
+まず，情報の取得先となる CGI について記述する必要があります．
+この例では CGI スクリプトを使っていますが，実際にはアプリケーションや
+データベース，CORBA サーバのような他の情報源を使いたい場合もあるでしょう．
+CGI スクリプトの場合いんは，以下のように記述します:
+
+<P>
+<div class="verbatim"><pre>
+from Bio.sources import CGI
+local_cgi = CGI(name = "local_cgi",
+                delay = 0.0,
+                cgi = "http://www.myserver.org/cgi-bin/my_local.cgi",
+                url = "http://www.myserver.org/cgi_documentation.html",
+                doc = "Query a local databases",
+                failure_cases = [])
+</pre></div>
+
+<P>
+CGI スクリプトへの接続の詳細を書いたら，次は CGI スクリプトの登録です．
+登録にはもう一つの情報，配列の検索が失敗した際に，スクリプト
+がどんなメッセージを返すか，が必要です．
+これには<tt class="module">Martel</tt> による正規表現を使います:
+
+<P>
+<div class="verbatim"><pre>
+import Martel
+my_failures = [
+     (Martel.Str("Sequence not available"), "No sequence found")]
+</pre></div>
+
+<P>
+必要なものを全て書いたので，データベースに登録できます:
+
+<P>
+<div class="verbatim"><pre>
+from Bio import register_db
+register_db(name = "nucleotide-genbank-local",
+            key = "uid",
+            source = local_cgi,
+            failure = my_failures)
+</pre></div>
+
+<P>
+この作業は，ローカルのデータベースを以前述べたようなインタフェースで
+利用できるようにします．データベースレジストリ <code>db</code> を
+<tt class="function">keys</tt> した結果を表示すると，
+<code>"nucleotide-genbank-local"</code> が利用可能になっているのがわかるはず
+です．さて，ローカルのデータベースを登録したので，次は
+GenBank データベース全てをリンクしてまとめましょう．これには
+<tt class="function">group_db</tt> コマンドを使います．まず，
+データベースに対して情報を取得する際のターゲット名を<code>"genbank"</code> 
+という名前で作成しておく必要があります:
+
+<P>
+<div class="verbatim"><pre>
+register_db(name = "genbank", behavior = "concurrent")
+</pre></div>
+
+<P>
+<var>behavior</var> 引数には，登録されているデータベースから
+どのようにして情報取得を試みるかを指定します．
+<code>concurrent</code> は，全てのデータベースに対して同時に取得を試み，
+いずれかのデータベースから最初に帰ってきた配列レコードを採用する
+よう指示します．<code>serial</code> を指定して，配列レコードが得られるまで
+一度に一つづつデータベースを検索させるようにもできます．
+
+<P>
+グループを作成したら，ローカルの GenBank と NCBI の GenBank を登録
+します:
+
+<P>
+<div class="verbatim"><pre>
+group_db("genbank", "nucleotide-genbank-local")
+group_db("genbank", "nucleotide-genbank-cgi")
+</pre></div>
+
+<P>
+これでデータベースへのアクセスを設定できました．データベースレジストリ
+には，<code>genbak</code> と <code>nucleotide-genbank-local</code> というエントリ
+が新たに追加されています:
+
+<P>
+<div class="verbatim"><pre>
+['embl-dbfetch-cgi', 'embl-fast', 'embl', 'prosite-expasy-cgi',
+'swissprot-expasy-cgi', 'nucleotide-genbank-cgi', 'pdb-ebi-cgi',
+'genbank', 'nucleotide-genbank-local', 'interpro-ebi-cgi',
+'embl-ebi-cgi', 'embl-xembl-cgi', 'protein-genbank-cgi', 'pdb',
+'prodoc-expasy-cgi', 'nucleotide-dbfetch-cgi', 'swissprot',
+'pdb-rcsb-cgi']
+</pre></div>
+
+<P>
+すばらしい．自作のデータベースをレジストリに追加して，情報取得の
+手順を簡単化して使えるようになりました!
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.8.2.1 配列の取得" 
+  rel="prev" title="3.8.2.1 配列の取得" 
+  href="node60.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.8.2 Biopython 固有のインタフェースを使ったリソースの検索" 
+  rel="parent" title="3.8.2 Biopython 固有のインタフェースを使ったリソースの検索" 
+  href="node59.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.9 BioSQL - 配列を関係データベースに入れる" 
+  rel="next" title="3.9 BioSQL - 配列を関係データベースに入れる" 
+  href="node62.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node60.html">3.8.2.1 配列の取得</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node59.html">3.8.2 Biopython 固有のインタフェースを使ったリソースの検索</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node62.html">3.9 BioSQL - 配列を関係データベースに入れる</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

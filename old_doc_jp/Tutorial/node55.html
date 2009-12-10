@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node62.html">
+<LINK rel="prev" href="node49.html">
+<LINK rel="parent" href="node20.html">
+<LINK rel="next" href="node56.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="BioRegistry - 配列ソースの自動検索">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.8 BioRegistry - 配列ソースの自動検索</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.7.2.3 参考文献" 
+  href="node54.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3. クックブック - 便利なツール群" 
+  href="node20.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.8.1 設定ファイルを使ったリソースの検索" 
+  href="node56.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node54.html">3.7.2.3 参考文献</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node20.html">3. クックブック - 便利なツール群</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node56.html">3.8.1 設定ファイルを使ったリソースの検索</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION004800000000000000000">
+3.8 BioRegistry - 配列ソースの自動検索</A>
+</H1>
+
+<P>
+バイオインフォマティクスにおいて一貫して煩わしい問題は，自分の
+プログラムから簡単に配列を見つけて利用できるようにするということです．
+配列は NCBI や EMBL のような標準の場所に加え，ローカルなデータベースや
+Web サーバといった非標準の場所まで，沢山の場所から入手できます．
+こうした問題を簡単化するために Biopython では(もちろん，他の Open-Bio
+関連のプロジェクトでも) ，リソースの位置を特定できる標準化された
+メカニズムの確率を目指しています．一度場所を特定できたら，
+Biopython を使っているコードなら配列がどこに置かれているかを気にせずに
+簡単に取り出せるのです．
+
+<P>
+こうした透過的な情報取得のメカニズムを使うと，コードに様々な利点
+をもたらします．もしある Web サービスがダウンしている
+(例えば，NCBI が処理をさばき切れず，接続を拒否している) ような場合，
+コードに特に変更を加えなくても自動的にバックアップの場所に接続を
+試みます．同様に，よく使う配列に対してローカルなリポジトリを
+作成しておき，それらのリポジトリがオフラインになっていれば Web
+ベースのサービスに切り替える，といったこともできます．さらに，
+情報取得の部分を透過的にしておくことで情報取得に関わる詳細を
+コードから切り離せるので，そうした問題に頭を悩ませることなく
+生物学的な問題だけに集中できるようになります．何といっても，
+この考え方自体がとても cool です．
+
+<P>
+この節では，この自動配列情報取得システムの設定方法と使用方法に
+ついて扱います．最初の節では，Open-Bio システム共通で利用できる
+設定ファイルを操作するためのメソッドについて述べ，その後に
+同様の機能を実現する Biopythn 固有のメソッドについて説明します．
+本来，設定ファイルを使うほうが正攻法で，それで目的を果たせないようなこと
+がない限り，Biopython 固有の方法を使う必要はありません．
+
+<P>
+
+<p><br /></p><hr class='online-navigation' />
+<div class='online-navigation'>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"></a>
+
+<UL CLASS="ChildLinks">
+<LI><A href="node56.html">3.8.1 設定ファイルを使ったリソースの検索</a>
+<UL>
+<LI><A href="node57.html">3.8.1.1 設定ファイルを書く</a>
+<LI><A href="node58.html">3.8.1.2 設定ファイルを使った配列の取得</a>
+</ul>
+<LI><A href="node59.html">3.8.2 Biopython 固有のインタフェースを使ったリソースの検索</a>
+<UL>
+<LI><A href="node60.html">3.8.2.1 配列の取得</a>
+<LI><A href="node61.html">3.8.2.2 データベースの登録とグループ化</a>
+</ul></ul>
+<!--End of Table of Child-Links-->
+</div>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.7.2.3 参考文献" 
+  rel="prev" title="3.7.2.3 参考文献" 
+  href="node54.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3. クックブック - 便利なツール群" 
+  rel="parent" title="3. クックブック - 便利なツール群" 
+  href="node20.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.8.1 設定ファイルを使ったリソースの検索" 
+  rel="next" title="3.8.1 設定ファイルを使ったリソースの検索" 
+  href="node56.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node54.html">3.7.2.3 参考文献</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node20.html">3. クックブック - 便利なツール群</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node56.html">3.8.1 設定ファイルを使ったリソースの検索</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

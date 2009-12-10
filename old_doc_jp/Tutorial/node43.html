@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node44.html">
+<LINK rel="prev" href="node42.html">
+<LINK rel="parent" href="node39.html">
+<LINK rel="next" href="node44.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="位置特異的スコア行列">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.5.4 位置特異的スコア行列</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.5.3 簡単なコンセンサス配列の計算" 
+  href="node42.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.5 アラインメント解析の扱い" 
+  href="node39.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.5.5 情報量" 
+  href="node44.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node42.html">3.5.3 簡単なコンセンサス配列の計算</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node39.html">3.5 アラインメント解析の扱い</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node44.html">3.5.5 情報量</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2>
+<BR>
+3.5.4 位置特異的スコア行列
+</H2>
+
+<P>
+位置特異的スコア行列 (PSSM, position specific score matrix) 
+を使うと，アラインメントの情報をコンセンサスとは違う方法で集約でき，
+様々な用途で有用なことがあります．
+基本的には，PSSM は<em>計数</em>行列 (count matrix) です．
+PSSM では，アラインメントの各カラムについて，各アルファベット文字の
+数を数え，それを合計します．合計結果は，何らかの代表的な配列を
+左側の軸にとって表示します．この配列はコンセンサス配列でかまいませんが，
+アラインメント中の任意の配列にもできます．
+
+<P>
+例えば，以下のアラインメント:
+
+<P>
+<div class="verbatim"><pre>
+GTATC
+AT--C
+CTGTC
+</pre></div>
+
+<P>
+の場合，その PSSM は:
+
+<P>
+<div class="verbatim"><pre>
+      G A T C
+    G 1 1 0 1
+    T 0 0 3 0
+    A 1 1 0 0
+    T 0 0 2 0
+    C 0 0 0 3
+</pre></div>
+
+<P>
+となります．
+
+<P>
+<code>c_align</code> という名前のアラインメントオブジェクトがあると
+しましょう．コンセンサス配列を左側の軸にして PSSM を計算するには，
+まずアラインメントに対するサマリオブジェクトを取得して，
+コンセンサス配列を計算します:
+
+<P>
+<div class="verbatim"><pre>
+summary_align = AlignInfo.SummaryInfo(c_align)
+consensus = summary_align.dumb_consensus()
+</pre></div>
+
+<P>
+ここで， PSMM を作成することになりますが，計算する際には
+曖昧な残基<code>N</code> を無視するようにします:
+
+<P>
+<div class="verbatim"><pre>
+my_pssm = summary_align.pos_specific_score_matrix(consensus,
+                                                  chars_to_ignore = ['N'])
+</pre></div>
+
+<P>
+注意点が二つあります:
+Two notes should be made about this:
+
+<P>
+
+<OL>
+<LI>アルファベットの厳密性を維持するために，上の軸にはアラインメント
+オブジェクトで使われているアルファベット中の文字しか利用できません．
+ギャップ文字は PSSM の上の軸には入りません．
+
+<P>
+</LI>
+<LI>左側の軸に表示する配列には，コンセンサスでないものを渡しても
+かまいません．例えば，アラインメント中の二つ目の配列をここに表示
+したければ，以下のようにします:
+
+<P>
+<div class="verbatim"><pre>
+second_seq = alignment.get_seq_by_num(1)
+my_pssm = summary_align.pos_specific_score_matrix(second_seq
+                                                  chars_to_ignore = ['N'])
+</pre></div>
+
+<P>
+</LI>
+</OL>
+
+<P>
+上の命令を実行すると，<tt class="class">PSSM</tt> オブジェクトを返します．先ほどのように
+PSSM を表示するには，単に <code>print my_pssm</code> を実行します．結果は:
+
+<P>
+<div class="verbatim"><pre>
+    A   C   G   T
+T  0.0 0.0 0.0 7.0
+A  7.0 0.0 0.0 0.0
+T  0.0 0.0 0.0 7.0
+A  7.0 0.0 0.0 0.0
+C  0.0 7.0 0.0 0.0
+A  7.0 0.0 0.0 0.0
+T  0.0 0.0 0.0 7.0
+T  1.0 0.0 0.0 6.0
+...
+</pre></div>
+
+<P>
+のようになります．
+
+<P>
+PSSM の各要素には，<code>your_pssm[sequence_number][residue_count_name]</code> 
+のような添字指定でアクセスできます．例えば，上の PSSM で，二つ目の要素
+に対する残基 <code>'A'</code> のカウントを得るには:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; print my_pssm[1]['A']
+7.0
+</pre></div>
+
+<P>
+のようにします．
+
+<P>
+このように， PSSM クラスの構造は，位置特異的スコア行列の各要素に
+アクセスしたり行列をきれいに出力したりといった処理を簡単にできる
+ようになっています．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.5.3 簡単なコンセンサス配列の計算" 
+  rel="prev" title="3.5.3 簡単なコンセンサス配列の計算" 
+  href="node42.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.5 アラインメント解析の扱い" 
+  rel="parent" title="3.5 アラインメント解析の扱い" 
+  href="node39.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.5.5 情報量" 
+  rel="next" title="3.5.5 情報量" 
+  href="node44.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node42.html">3.5.3 簡単なコンセンサス配列の計算</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node39.html">3.5 アラインメント解析の扱い</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node44.html">3.5.5 情報量</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

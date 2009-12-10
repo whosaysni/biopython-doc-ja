@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node55.html">
+<LINK rel="prev" href="node46.html">
+<LINK rel="parent" href="node20.html">
+<LINK rel="next" href="node50.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="より高度な配列クラス - 配列 ID と Feature">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.7 より高度な配列クラス - 配列 ID と Feature</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.6.2 アラインメントから置換行列を自作する" 
+  href="node48.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3. クックブック - 便利なツール群" 
+  href="node20.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.7.1 配列 ID と" 
+  href="node50.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node48.html">3.6.2 アラインメントから置換行列を自作する</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node20.html">3. クックブック - 便利なツール群</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node50.html">3.7.1 配列 ID と</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H1>
+<BR>
+3.7 より高度な配列クラス - 配列 ID と Feature
+</H1>
+
+<P>
+<A HREF="#sec:sequence"><tex2html_cross_ref_visible_mark></A> 節では，Biopython 配列クラスの基礎の全てについて
+学び，配列情報だけを扱う便利な処理について説明しました．
+とはいえ，配列には，配列情報以外にも重要な feature (特性) が関連付け
+られていることがよくあります．この節では，そうした配列に対する
+高水準の記述を扱う方法について述べます．
+
+<P>
+
+<p><br /></p><hr class='online-navigation' />
+<div class='online-navigation'>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"></a>
+
+<UL CLASS="ChildLinks">
+<LI><A href="node50.html">3.7.1 配列 ID と Description - SeqRecords を扱う</a>
+<LI><A href="node51.html">3.7.2 feature とアノテーション - SeqFeature</a>
+<UL>
+<LI><A href="node52.html">3.7.2.1 SeqFeature の構造</a>
+<LI><A href="node53.html">3.7.2.2 ロケーションとポジション</a>
+<LI><A href="node54.html">3.7.2.3 参考文献</a>
+</ul></ul>
+<!--End of Table of Child-Links-->
+</div>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.6.2 アラインメントから置換行列を自作する" 
+  rel="prev" title="3.6.2 アラインメントから置換行列を自作する" 
+  href="node48.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3. クックブック - 便利なツール群" 
+  rel="parent" title="3. クックブック - 便利なツール群" 
+  href="node20.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.7.1 配列 ID と" 
+  rel="next" title="3.7.1 配列 ID と" 
+  href="node50.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node48.html">3.6.2 アラインメントから置換行列を自作する</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node20.html">3. クックブック - 便利なツール群</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node50.html">3.7.1 配列 ID と</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

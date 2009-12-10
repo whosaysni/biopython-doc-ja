@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node37.html">
+<LINK rel="prev" href="node35.html">
+<LINK rel="parent" href="node35.html">
+<LINK rel="next" href="node37.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="GenBank のエントリを NCBI から入手する">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.4.1 GenBank のエントリを NCBI から入手する</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.4 GenBank" 
+  href="node35.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.4 GenBank" 
+  href="node35.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.4.2 GenBank レコードを解釈する" 
+  href="node37.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node35.html">3.4 GenBank</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node35.html">3.4 GenBank</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node37.html">3.4.2 GenBank レコードを解釈する</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION004410000000000000000">
+3.4.1 GenBank のエントリを NCBI から入手する</A>
+</H2>
+
+<P>
+<tt class="module">Bio.GenBank</tt> ライブラリ のとても素敵な機能は，エントリを
+GenBank から自動的に取得できるというところです．
+これは，日々の作業を自動化するようなスクリプトを書く上でとても
+便利です．本節の例では，NCBI データベースにクエリを送信し，クエリ結果
+からレコードを入手する方法を示します．
+
+<P>
+まずはクエリを作成して，取り出したいレコードに対する ID を検索
+しましょう．ここでは，私のお気に入りの<em>ウチワサボテン (Opuntia)</em>
+を例に取って（なぜなら私が研究しているからです），ちょっとした検索を
+実行してみましょう．以下のコードを使えば，クイック検索を行って，
+全てのレコードに対応する GI (GenBank 識別子) を入手できます:
+
+<P>
+<div class="verbatim"><pre>
+from Bio import GenBank
+
+gi_list = GenBank.search_for("Opuntia AND rpl16")
+</pre></div>
+
+<P>
+<var>gi_list</var> には，クエリに一致したすべての GenBank 識別子からなる
+リストになります:
+
+<P>
+<div class="verbatim"><pre>
+['6273291', '6273290', '6273289', '6273287', '6273286', '6273285', '6273284']
+</pre></div>
+
+<P>
+GI を入手できたので，各 ID を使って辞書インタフェースを介して NCBI 
+データベースにアクセスできます，例えば，最初の GI に対する情報を
+抽出するなら，まず NCBI にアクセスする辞書オブジェクトを作らなくては
+なりません:
+
+<P>
+<div class="verbatim"><pre>
+ncbi_dict = GenBank.NCBIDictionary()
+</pre></div>
+
+<P>
+辞書オブジェクトを作ったら，次のように情報を抽出してみましょう:
+
+<P>
+<div class="verbatim"><pre>
+gb_record = ncbi_dict[gi_list[0]]
+</pre></div>
+
+<P>
+この例では，<var>gb_record</var> は GenBank 形式のレコードになるはずです:
+
+<P>
+<div class="verbatim"><pre>
+LOCUS       AF191665      902 bp    DNA             PLN       07-NOV-1999
+DEFINITION  Opuntia marenae rpl16 gene; chloroplast gene for chloroplast
+            product, partial intron sequence.
+ACCESSION   AF191665
+VERSION     AF191665.1  GI:6273291
+...
+</pre></div>
+
+<P>
+この例では，単に生のレコードを入手しただけです．これらのレコードを
+直接パーザに渡して構文解析させ，レコードに変換することも出来ます．
+例えば， GenBank ファイルから取り出した <tt class="class">SeqFeature</tt>
+オブジェクトを <tt class="class">SeqRecord</tt> オブジェクトに戻したければ，
+まず<tt class="module">GenBank</tt> の <tt class="class">FeatureParser</tt> で辞書オブジェクトを
+作成する必要があります:
+
+<P>
+<div class="verbatim"><pre>
+record_parser = GenBank.FeatureParser()
+ncbi_dict = GenBank.NCBIDictionary(parser = record_parser)
+</pre></div>
+
+<P>
+これで，レコードを抽出すれば，素のテキスト形式のレコードの
+代わりに <tt class="class">SeqRecord</tt> オブジェクトになります:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; gb_seqrecord = ncbi_dict[gi_list[0]]
+&gt;&gt;&gt; print gb_seqrecord
+&lt;Bio.SeqRecord.SeqRecord instance at 0x102f9404&gt;
+</pre></div>
+
+<P>
+GenBank からどんな形式に変換できるかについての詳細は，
+<A HREF="node37.html#sec:gb-parsing">3.4.2</A> 節を参照してください．
+
+<P>
+こうした自動的クエリ結果取得機能を使うと，手作業よりもはるかに有利にな
+ります．その上，取得機能には一定時間ごとに取得を行う time-delay のよう
+な素敵な機能が組み込まれていて，頻繁なアクセスによって NCBI を怒らせ，
+アクセスをブロックされるようなことがないようにしています．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.4 GenBank" 
+  rel="prev" title="3.4 GenBank" 
+  href="node35.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.4 GenBank" 
+  rel="parent" title="3.4 GenBank" 
+  href="node35.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.4.2 GenBank レコードを解釈する" 
+  rel="next" title="3.4.2 GenBank レコードを解釈する" 
+  href="node37.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node35.html">3.4 GenBank</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node35.html">3.4 GenBank</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node37.html">3.4.2 GenBank レコードを解釈する</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

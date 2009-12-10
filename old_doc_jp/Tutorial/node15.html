@@ -1,0 +1,241 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node16.html">
+<LINK rel="prev" href="node14.html">
+<LINK rel="parent" href="node12.html">
+<LINK rel="next" href="node16.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="もっと簡単に">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>2.4.3 もっと簡単に</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="2.4.2 コンシューマを自作する" 
+  href="node14.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="2.4 生物学関連のデータファイルを構文解析する" 
+  href="node12.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="2.4.4 FASTA ファイルを辞書のように扱う" 
+  href="node16.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node14.html">2.4.2 コンシューマを自作する</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node12.html">2.4 生物学関連のデータファイルを構文解析する</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node16.html">2.4.4 FASTA ファイルを辞書のように扱う</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2>
+<BR>
+2.4.3 もっと簡単に
+</H2>
+
+<P>
+前節では，特定の用途に特化したコンシューマを書く実践的な方法に
+ついて述べました．自分用のコンシューマを書けるようになっているという
+柔軟性はすばらしいものではありますが，ほとんどのアプリケーションでは
+いささか役不足です．
+Biopthon ユーザたちは，ほぼ完璧なパーザのように動作する
+単純なアプリケーション向けの便利なクラスをいくつか提供しています．
+したがって，やっつけ仕事的なアプリケーションには，
+こちらの方が参考になるでしょう．
+
+<P>
+上で使ったパーザの大きな問題点は，ファイル内にいくつ要素が
+入っているか知っている必要がある，ということです．
+単にファイル全体を構文解析して，そこから何かを探し出したいだけなら，
+上のパーザはやや実用的ではありません．
+FASTA ファイルの場合，この問題解決の手助けになる 
+<tt class="function">Iterator</tt> インタフェースがあります．
+このインタフェースを使うと，コンシューマやスキャナの作成や
+その類のことに頭を悩ませることもなく，一度にひとつづつレコードを
+処理できます．とはいえ，この手法を使うには，イテレータが
+返すオブジェクトを操作して，そこから必要な情報を取り出せなければ
+なりません．
+
+<P>
+この問題を扱うために，Biopython のパーザの多くには便利なあるクラス
+- <tt class="class">RecordParser</tt> が実装されています．
+<tt class="class">RecordParser</tt> はファイルを構文解析して，その内容を表現する
+Python のクラスにします．たとえば FASTA ファイルの場合，<tt class="class">Record</tt>
+クラスは <var>title</var> や <var>sequence</var> といった属性だけを持った
+オブジェクトになります．
+
+<P>
+先ほどの作業 - FASTA ファイルからすべての種の名前を取り出す - 
+について，<tt class="function">Iterator</tt> および<tt class="class">Record</tt> 
+インタフェースを使った例でもう少し具体的に説明しましょう．
+まずパーザとイテレータを作成する必要があります:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; from Bio import Fasta
+&gt;&gt;&gt; parser = Fasta.RecordParser()
+&gt;&gt;&gt; file = open("ls_orchid.fasta")
+&gt;&gt;&gt; iterator = Fasta.Iterator(file, parser)
+</pre></div>
+
+<P>
+まずパーザを作成します -- <tt class="class">RecordParser</tt> は FASTA 形式を
+構文解析して，FASTA の個々のエントリを表現する <tt class="class">Record</tt> クラスに
+変換します．次にファイルを開いてイテレータを作成すれば，構文解析の
+準備は完了です．
+
+<P>
+ほとんどのイテレータインタフェースと同様，<tt class="function">next</tt> で
+オブジェクトを取り出せます．構文解析対象となる配列がなくなれば，
+<tt class="function">next</tt> を呼び出したときに <tt class="constant">None</tt> を返します．
+先頭のレコードを取り出してみましょう:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; cur_record = iterator.next()
+</pre></div>
+
+<P>
+レコードオブジェクトを
+レコードオブジェクトには，配列を表す <var>sequence</var> と
+タイトルを表す<var>title</var> という属性があり，以下のようにして
+簡単に取得できます:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; dir(cur_record)
+['_colwidth', 'sequence', 'title']
+&gt;&gt;&gt; print cur_record.title
+gi|2765658|emb|Z78533.1|CIZ78533 C.irapeanum 5.8S rRNA gene and ITS1 and ITS2 DNA
+&gt;&gt;&gt; print cur_record.sequence
+CGTAACAAGGTTTCCGTAGGTGAACCTGCGGAAGGATCATTGATGAGACCGTGGAATAAACGATCGAGTGAATCCGGA
+...
+</pre></div>
+
+<P>
+個人的にすばらしいと思っているのは，ここから FASTA 形式に簡単に
+戻せることです:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; print cur_record
+&gt;gi|2765658|emb|Z78533.1|CIZ78533 C.irapeanum 5.8S rRNA gene and ITS1 and ITS2 DNA
+CGTAACAAGGTTTCCGTAGGTGAACCTGCGGAAGGATCATTGATGAGACCGTGGAATAAA
+CGATCGAGTGAATCCGGAGGACCGGTGTACTCAGCTCACCGGGGGCATTGCTCCCGTGGT
+GACCCTGATTTGTTGTTGGGCCGCCTCGGGAGCGTCCATGGCGGGTTTGAACCTCTAGCC
+CGGCGCAGTTTGGGCGCCAAGCCATATGAAAGCATCACCGGCGAATGGCATTGTCTTCCC
+CAAAACCCGGAGCGGCGGCGTGCTGTCGCGTGCCCAATGAATTTTGATGACTCTCGCAAA
+CGGGAATCTTGGCTCTTTGCATCGGATGGAAGGACGCAGCGAAATGCGATAAGTGGTGTG
+AATTGCAAGATCCCGTGAACCATCGAGTCTTTTGAACGCAAGTTGCGCCCGAGGCCATCA
+GGCTAAGGGCACGCCTGCTTGGGCGTCGCGCTTCGTCTCTCTCCTGCCAATGCTTGCCCG
+GCATACAGCCAGGCCGGCGTGGTGCGGATGTGAAAGATTGGCCCCTTGTGCCTAGGTGCG
+GCGGGTCCAAGAGCTGGTGTTTTGATGGCCCGGAACCCGGCAAGAGGTGGACGGATGCTG
+GCAGCAGCTGCCGTGCGAATCCCCCATGTTGTCGTGCTTGTCGGACAGGCAGGAGAACCC
+TTCCGAACCCCAATGGAGGGCGGTTGACCGCCATTCGGATGTGACCCCAGGTCAGGCGGG
+GGCACCCGCTGAGTTTACGC
+</pre></div>
+
+<P>
+<tt class="function">extract_organisms</tt> 関数を書き換えれば，ここまで説明した
+機能を全て利用できます:
+
+<P>
+<div class="verbatim"><pre>
+def extract_organisms(file_to_parse):
+
+    parser = Fasta.RecordParser()
+    file = open(file_to_parse, 'r')
+    iterator = Fasta.Iterator(file, parser)
+
+    all_species = []
+
+    while 1:
+        cur_record = iterator.next()
+
+        if cur_record is None:
+            break
+
+        # extract the info from the title
+        title_atoms = string.split(cur_record.title)
+        new_species = title_atoms[1]
+
+        # append the new species to the list if it isn't there
+        if new_species not in all_species:
+            all_species.append(new_species)
+
+    return all_species
+</pre></div>
+
+<P>
+この関数を実行すると，先に説明したものと同じ結果を得られます．
+前節と本節のどちらのインタフェースを選ぶかは，どちらを使いやすいと
+思うかで決めてください．
+ほら，「何かをする方法はたくさんある」のは Perl だけじゃないんですよ！
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="2.4.2 コンシューマを自作する" 
+  rel="prev" title="2.4.2 コンシューマを自作する" 
+  href="node14.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="2.4 生物学関連のデータファイルを構文解析する" 
+  rel="parent" title="2.4 生物学関連のデータファイルを構文解析する" 
+  href="node12.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="2.4.4 FASTA ファイルを辞書のように扱う" 
+  rel="next" title="2.4.4 FASTA ファイルを辞書のように扱う" 
+  href="node16.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node14.html">2.4.2 コンシューマを自作する</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node12.html">2.4 生物学関連のデータファイルを構文解析する</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node16.html">2.4.4 FASTA ファイルを辞書のように扱う</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="prev" href="node105.html">
+<LINK rel="parent" href="node104.html">
+<LINK rel="next" href="node107.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="メソッド">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>4.4.1.2 メソッド</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.4.1.1 属性" 
+  href="node105.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.4.1 SubsMat モジュール" 
+  href="node104.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.4.2 使用法" 
+  href="node107.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node105.html">4.4.1.1 属性</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node104.html">4.4.1 SubsMat モジュール</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node107.html">4.4.2 使用法</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION005412000000000000000">
+4.4.1.2 メソッド</A>
+</H3>
+
+<P>
+<dl><dt><table cellpadding="0" cellspacing="0"><tr valign="baseline">
+  <td><nobr><b><tt id='l2h-7' xml:id='l2h-7' class="method">entropy</tt></b>(</nobr></td>
+  <td><var>obs_freq_mat</var>)</td></tr></table></dt>
+<dd>
+観測頻度行列 (observed frequency matrix) 
+<var>obs_freq_mat</var> 内の頻度に基づいて，行列のエントロピーを
+返します．行列インスタンスは <code>LO</code> または <code>SUBS</code> で
+なければなりません．
+</dl>
+
+<P>
+<dl><dt><table cellpadding="0" cellspacing="0"><tr valign="baseline">
+  <td><nobr><b><tt id='l2h-8' xml:id='l2h-8' class="method">letter_sum</tt></b>(</nobr></td>
+  <td><var>letter</var>)</td></tr></table></dt>
+<dd>
+<var>letter</var> に対応する行列内の全ての値を加算して返します．
+</dl>
+
+<P>
+<dl><dt><table cellpadding="0" cellspacing="0"><tr valign="baseline">
+  <td><nobr><b><tt id='l2h-9' xml:id='l2h-9' class="method">all_letter_sum</tt></b>(</nobr></td>
+  <td>)</td></tr></table></dt>
+<dd>
+<tt class="member">sum_letters</tt> 属性の値を，行列のアルファベットの各文字に
+対する値の合計で埋めます．
+</dl>
+
+<P>
+<dl><dt><table cellpadding="0" cellspacing="0"><tr valign="baseline">
+  <td><nobr><b><tt id='l2h-10' xml:id='l2h-10' class="method">print_mat</tt></b>(</nobr></td>
+  <td><var>f, format="alphabet=None</var>)</td></tr></table></dt>
+<dd>
+行列をファイルハンドル <var>f</var> に出力します．<var>format</var> は
+行列の各値を出力する際に使う書式化文字列です．
+<var>bottomformat</var> は最下段の各フィールドを書式化する際に使う
+文字列で，各フィールドは行列中の文字を含むようになっています．
+三文字のアルファベットからなる行列の出力例を下に示します:
+
+<P>
+<div class="verbatim"><pre>
+A 23
+B 12 34
+C 7  22  27
+  A   B   C
+</pre></div>
+
+<P>
+オプションの引数<var>alphabet</var> は，アルファベット全ての
+入った文字列です．<var>alphabet</var> を指定した場合，
+軸に使われるアルファベットの順番は，アルファベット順ではなく
+文字列中の順番になります．
+</dl>
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.4.1.1 属性" 
+  rel="prev" title="4.4.1.1 属性" 
+  href="node105.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.4.1 SubsMat モジュール" 
+  rel="parent" title="4.4.1 SubsMat モジュール" 
+  href="node104.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.4.2 使用法" 
+  rel="next" title="4.4.2 使用法" 
+  href="node107.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node105.html">4.4.1.1 属性</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node104.html">4.4.1 SubsMat モジュール</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node107.html">4.4.2 使用法</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

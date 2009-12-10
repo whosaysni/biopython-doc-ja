@@ -1,0 +1,226 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node29.html">
+<LINK rel="prev" href="node27.html">
+<LINK rel="parent" href="node21.html">
+<LINK rel="next" href="node29.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="巨大なファイル中から不正なレコードを探す">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.1.7 巨大なファイル中から不正なレコードを探す</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.1.6 BLAST の出力でいっぱいのファイルを解析する" 
+  href="node27.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.1 BLAST" 
+  href="node21.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.1.8 PSIBlast の扱い" 
+  href="node29.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node27.html">3.1.6 BLAST の出力でいっぱいのファイルを解析する</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node21.html">3.1 BLAST</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node29.html">3.1.8 PSIBlast の扱い</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION004170000000000000000">
+3.1.7 巨大なファイル中から不正なレコードを探す</A>
+</H2>
+
+<P>
+遭遇してとても不快に思う問題は，巨大な BLAST ファイルをしばらくの
+間解析していて，その後パーザが <tt class="exception">SyntaxError</tt> で停止する
+というものです。これは深刻な問題です。というのも，
+<tt class="exception">SyntaxError</tt> がパーザの問題なのか、あるいは <b class="program">BLAST</b>
+の問題なのかが分からないからです。さらに悪いことに、エラーを無視する
+ことすらできません．というのも，どこで解析が失敗したのか判らないので，
+エラーを無視するとデータの重要なポイントを見過ごしてしまうかも
+しれないからです．
+
+<P>
+こうした問題を回避するためにはちょっとしたスクリプトを書かねばならない
+のが常でしたが，今や <tt class="module">Bio.Blast</tt> モジュールには
+<tt class="class">BlastErrorParser</tt> があり，作業を本当に簡単にしてくれます．
+<tt class="class">BlastErrorParser</tt> は，通常の <tt class="class">BlastParser</tt> に
+非常によく似ていますが，パーザが送出した<tt class="exception">SyntaxError</tt> 
+を補足して，原因を分析しようと試みるレイヤが追加されています．
+
+<P>
+このパーザの使い方をちょっと見てみましょう - まず，解析対象の
+ファイルと、発生した問題のレポートを書き出すためのファイルを定義します:
+
+<P>
+<div class="verbatim"><pre>
+import os
+ 
+b_file = os.path.join(os.getcwd(), 'blast_out', 'big_blast.out')
+error_file = os.path.join(os.getcwd(), 'blast_out', 'big_blast.problems')
+</pre></div>
+
+<P>
+ここで<tt class="class">BlastErrorParser</tt> が必要になります:
+
+<P>
+<div class="verbatim"><pre>
+from Bio.Blast import NCBIStandalone
+
+error_handle = open(error_file, 'w')
+
+b_error_parser = NCBIStandalone.BlastErrorParser(error_handle)
+</pre></div>
+
+<P>
+パーザがハンドルをオプションの引数として取っていることに注意
+してください．ハンドルを渡すと，パーザは<tt class="exception">SyntaxError</tt>
+を送出した <b class="program">blast</b> の全てのレコードをこのハンドルに
+書き出します．ハンドルを設定しなければ，こうしたレコードは
+記録されません．
+
+<P>
+さて，<tt class="class">BlastErrorParser</tt> は通常の<b class="program">blast</b> パーザの
+ように使えます．とりわけ，<b class="program">blast</b> レコード全体にわたって
+エラーパーザを使って一つづつレコードを解析するためにイテレータを
+作成しようとしてもかまいません:
+
+<P>
+<div class="verbatim"><pre>
+blast_out = open(b_file)
+iterator = NCBIStandalone.Iterator(blast_out, b_error_parser)
+</pre></div>
+
+<P>
+前に述べたように，こうしたレコードは一度に一つづつ読み出せます．
+ただし，今度は <b class="program">Blast</b> に起因する (かつ，パーザ自体に
+起因しない) エラーを補足して，必要な処理を行えます:
+
+<P>
+<div class="verbatim"><pre>
+try:
+    next_record = iterator.next()
+except NCBIStandalone.LowQualityBlastError, info:
+    print "LowQualityBlastError detected in id %s" % info[1]
+</pre></div>
+
+<P>
+現状では，<tt class="class">BlastErrorParser</tt> は以下のようなエラーを生成できます:
+
+<P>
+<DL>
+<DT><STRONG>SyntaxError</STRONG></DT>
+<DD>- 通常の <tt class="class">BlastParser</tt> が生成するのと
+同じエラーで，パーザが特定のファイルを解析できないことに起因する
+エラーです．このエラーは通常，パーザのバグか，使っている<b class="program">BLAST</b>
+のバージョンと，パーザが処理できる<b class="program">BLAST</b> のバージョンの
+不一致のいずれかが原因です．
+
+<P>
+</DD>
+<DT><STRONG>LowQualityBlastError</STRONG></DT>
+<DD>- ひどく品質の悪い配列 
+(例えば，基本的に単一の核酸の連なりから構成されているような短い配列)
+を BLAST に掛けようとすると，<b class="program">BLAST</b> が配列全体をマスクして
+しまい，結果的に解析対象が何もなくなってしまうことがあります．
+この場合，内容の途切れたレポートが出力され，パーザが
+<tt class="exception">SyntaxError</tt> を出してしまいます．こうした場合には
+<tt class="exception">LowQualityBlastError</tt> を送出します．このエラーは，
+以下のような項目をエラー情報として返します:
+  <DL>
+<DT><STRONG><code>item[0]</code></STRONG></DT>
+<DD>- エラーメッセージです．
+    
+</DD>
+<DT><STRONG><code>item[1]</code></STRONG></DT>
+<DD>- エラーの原因となった入力レコードの id 
+です．この項目は，問題を引き起こしているレコードを全て記録して
+おきたい場合にとても有用です．
+  
+</DD>
+</DL>
+</DD>
+</DL>
+
+<P>
+先に述べたように，エラーが生じると，<tt class="class">BlastErrorParser</tt> は
+問題を起こしているレコードを<code>error_handle</code> に書き出します．
+次に<code>error_handle</code> の内容を調べて，自分の思ったように問題を
+処理できます．単一の <b class="program">blast</b> レポートを使ってパーザを
+デバッグできるでかもしれませんし，blast の実行した内容に問題が
+見つかるかも知れません．いずれにしても，おそらく有意義な体験に
+なること間違いなしです!
+
+<P>
+<tt class="class">BlastErrorParser</tt> を使えば，巨大な <b class="program">blast</b> ファイルの
+デバッグや処理がきっと楽になるはずです．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.1.6 BLAST の出力でいっぱいのファイルを解析する" 
+  rel="prev" title="3.1.6 BLAST の出力でいっぱいのファイルを解析する" 
+  href="node27.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.1 BLAST" 
+  rel="parent" title="3.1 BLAST" 
+  href="node21.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.1.8 PSIBlast の扱い" 
+  rel="next" title="3.1.8 PSIBlast の扱い" 
+  href="node29.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node27.html">3.1.6 BLAST の出力でいっぱいのファイルを解析する</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node21.html">3.1 BLAST</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node29.html">3.1.8 PSIBlast の扱い</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

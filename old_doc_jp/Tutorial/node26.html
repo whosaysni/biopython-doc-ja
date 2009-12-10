@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node27.html">
+<LINK rel="prev" href="node25.html">
+<LINK rel="parent" href="node21.html">
+<LINK rel="next" href="node27.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="ローカル BLAST の出力を解析する">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.1.5 ローカル BLAST の出力を解析する</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.1.4 ローカルで BLAST を走らせる" 
+  href="node25.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.1 BLAST" 
+  href="node21.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.1.6 BLAST の出力でいっぱいのファイルを解析する" 
+  href="node27.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node25.html">3.1.4 ローカルで BLAST を走らせる</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node21.html">3.1 BLAST</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node27.html">3.1.6 BLAST の出力でいっぱいのファイルを解析する</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION004150000000000000000">
+3.1.5 ローカル BLAST の出力を解析する</A>
+</H2>
+
+<P>
+ローカル <b class="program">BLAST</b> の生成する出力は，web ベースの<b class="program">BLAST</b>
+の出力とは違っているので，<tt class="module">Bio.Blast.NCBIStandalone</tt> 入っている
+パーザを使って結果を処理します．
+
+<P>
+WWW blast の場合と同様 (前述の情報を参照してください)，
+パーザに出力を渡すには，ハンドルオブジェクトを持っていなければ
+なりません．ハンドルオブジェクトは <tt class="function">readline</tt> メソッドを
+実装していて，かつ正しくその処理を行ってくれなければなりません．
+こうしたハンドルを得るためによく使うやり方は，<tt class="function">blastall</tt>
+や<tt class="function">blastpgp</tt> のような，Biopython が提供している関数を使って
+ローカル<b class="program">BLAST</b> を実行するか，<b class="program">blast</b> を
+コマンドラインでローカルに実行して，以下のようなコードを実行します:
+
+<P>
+<div class="verbatim"><pre>
+blast_out = open('my_file_of_blast_output', 'r')
+</pre></div>
+
+<P>
+WWW <b class="program">blast</b> と同じように、別に Biopython の便宜関数を
+わざわざ使う必要はありません．
+
+<P>
+さて，ハンドルが手に入ったので　(以後これを <code>blast_out</code> と
+呼ぶことにします) 、出力を解析する準備ができました．出力の解析は
+以下のようなコードで行います:
+
+<P>
+<div class="verbatim"><pre>
+from Bio.Blast import NCBIStandalone
+
+b_parser = NCBIStandalone.BlastParser()
+b_record = b_parser.parse(blast_out)
+</pre></div> 
+
+<P>
+このコードを実行すると，<b class="program">BLAST</b> の生成したレポートを解析して，
+<tt class="module">Blast</tt> <tt class="class">Record</tt> クラス (解析している出力の
+内容によって，<tt class="class">Record</tt> クラスは Blast 用と PSIBlast 用の
+どちらかになります) を生成し，そこからデータを取り出せるように
+してくれます．今回の例では，ある域値以上のアラインメント全てに対する
+簡単なサマリを出力してみます．
+
+<P>
+<div class="verbatim"><pre>
+E_VALUE_THRESH = 0.04
+for alignment in b_record.alignments:
+    for hsp in alignment.hsps:
+        if hsp.expect &lt; E_VALUE_THRESH:
+            print '****Alignment****'
+            print 'sequence:', alignment.title
+            print 'length:', alignment.length
+            print 'e value:', hsp.expect
+            print hsp.query[0:75] + '...'
+            print hsp.match[0:75] + '...'
+            print hsp.sbjct[0:75] + '...'
+</pre></div>
+
+<P>
+WWW 版 の BLAST における出力解析についての節をすでに読んでいれば，
+上記コードがくだんの節の内容と同じだと気づくでしょう。何らかの
+出力を解析して <tt class="class">Record</tt> クラスにしたら，後は元々の
+<b class="program">BLAST</b> の出力形式に関係なく取り扱えるのです。
+まったく素晴らしい！
+
+<P>
+「一つのレコードを解析できるのは確かにすごいけど，私は滅茶苦茶
+沢山レコードの入った<b class="program">BLAST</b> 出力ファイルを作っちゃったんだよね．
+- これってどうやったら全部解析できるの?」心配ご無用．答えは
+次の節にあります．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.1.4 ローカルで BLAST を走らせる" 
+  rel="prev" title="3.1.4 ローカルで BLAST を走らせる" 
+  href="node25.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.1 BLAST" 
+  rel="parent" title="3.1 BLAST" 
+  href="node21.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.1.6 BLAST の出力でいっぱいのファイルを解析する" 
+  rel="next" title="3.1.6 BLAST の出力でいっぱいのファイルを解析する" 
+  href="node27.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node25.html">3.1.4 ローカルで BLAST を走らせる</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node21.html">3.1 BLAST</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node27.html">3.1.6 BLAST の出力でいっぱいのファイルを解析する</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

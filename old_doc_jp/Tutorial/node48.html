@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="prev" href="node47.html">
+<LINK rel="parent" href="node46.html">
+<LINK rel="next" href="node49.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="アラインメントから置換行列を自作する">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.6.2 アラインメントから置換行列を自作する</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.6.1 広く使われている置換行列を使う" 
+  href="node47.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.6 置換行列" 
+  href="node46.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.7 より高度な配列クラス - 配列" 
+  href="node49.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node47.html">3.6.1 広く使われている置換行列を使う</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node46.html">3.6 置換行列</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node49.html">3.7 より高度な配列クラス - 配列</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2>
+<BR>
+3.6.2 アラインメントから置換行列を自作する
+</H2>
+
+<P>
+置換行列クラスの素晴らしい機能の一つに，アラインメントからの
+置換行列の生成があります．実際には，置換行列の生成はタンパクの
+配列アラインメントから行うのが普通です．本節の例題では，
+まず Biopython のアラインメントオブジェクトを取得して，
+アラインメントの情報を算出するサマリオブジェクトを得ます:
+
+<P>
+<div class="verbatim"><pre>
+from Bio import Clustalw
+from Bio.Alphabet import IUPAC
+from Bio.Align import AlignInfo
+
+# Clustalw のアラインメント結果からアラインメントオブジェクトを生成
+c_align = Clustalw.parse_file('protein.aln', IUPAC.protein)
+summary_align = AlignInfo.SummaryInfo(c_align)
+</pre></div>
+
+<P>
+上のコードに関する詳しい情報は<A HREF="node40.html#sec:align-clustal">3.5.1</A> 節や
+<A HREF="node41.html#sec:summary-info">3.5.2</A> 節にあります．
+
+<P>
+さて，<code>summary_align</code> オブジェクトが手に入ったので，
+これを使って，配列間で異なる残基への置き換えが何度起きているか
+調べることにしたいと思います．例題を読みやすいものにするために，
+極性側鎖 (polar charged side chain) を持ったアミノ酸だけに
+注目しましょう．幸運なことに，この作業は，無視したい残基を表す文字
+全てを渡して (オプションの <var>skip_chars</var> を設定していることに
+なります) 文字置換辞書 (replacement dictionary) を作成すれば簡単に
+行えます．そこで，極性アミノ酸だけを対象にするような文字置換辞書を
+以下のようにして作成します:
+
+<P>
+<div class="verbatim"><pre>
+replace_info = summary_align.replacement_dictionary(["G", "A", "V", "L", "I",
+                                                     "M", "P", "F", "W", "S",
+                                                     "T", "N", "Q", "Y", "C"])
+</pre></div>
+
+<P>
+<code>replace_info</code> はアミノ酸残基の置換に関する情報で，Python 辞書
+として表現されていて，内容は以下のようになっています:
+
+<P>
+<div class="verbatim"><pre>
+{('R', 'R'): 2079.0, ('R', 'H'): 17.0, ('R', 'K'): 103.0, ('R', 'E'): 2.0, 
+('R', 'D'): 2.0, ('H', 'R'): 0, ('D', 'H'): 15.0, ('K', 'K'): 3218.0, 
+('K', 'H'): 24.0, ('H', 'K'): 8.0, ('E', 'H'): 15.0, ('H', 'H'): 1235.0, 
+('H', 'E'): 18.0, ('H', 'D'): 0, ('K', 'D'): 0, ('K', 'E'): 9.0, 
+('D', 'R'): 48.0, ('E', 'R'): 2.0, ('D', 'K'): 1.0, ('E', 'K'): 45.0, 
+('K', 'R'): 130.0, ('E', 'D'): 241.0, ('E', 'E'): 3305.0, 
+('D', 'E'): 270.0, ('D', 'D'): 2360.0}
+</pre></div>
+
+<P>
+この情報は，アラインメントの際にアミノ酸置換として許容した残基数，
+あるいは配列間で様々な残基の置換がどれだけ起こりうるかを示しています．
+結局のところ，作業を先に進めて置換行列を作成する上で必要な情報は
+これだけです．まず，この置換辞書の情報を使って，
+受容置換行列 (ARM: Accepted Replacement Matrix) を作成します:
+
+<P>
+<div class="verbatim"><pre>
+from Bio import SubsMat
+my_arm = SubsMat.SeqMat(replace_info)
+</pre></div>
+
+<P>
+この受容置換行列を使って，作業をさらに進めて対数確率行列
+(log odds matrix)，すなわち標準型の置換行列 (Substitution Matrix) を
+作成します:
+
+<P>
+<div class="verbatim"><pre>
+my_lom = SubsMat.make_log_odds_matrix(my_arm)
+</pre></div>
+
+<P>
+対数確率行列の作成は，以下のようなオプション引数でカスタマイズ
+できます:
+
+<P>
+<DL>
+<DT><STRONG><var>exp_freq_table</var></STRONG></DT>
+<DD>- 各アルファベットの出現頻度の
+期待値を渡せます．この値を渡すと，置換の期待値を計算する際に
+accepted replacement matrix の代わりに使われます．
+
+<P>
+</DD>
+<DT><STRONG><var>logbase</var></STRONG></DT>
+<DD>- 対数確率行列を生成するときの対数の
+底です．デフォルトの値は 10 です．
+
+<P>
+</DD>
+<DT><STRONG><var>factor</var></STRONG></DT>
+<DD>- 対数確率行列の各エントリに掛けられる
+倍率です．デフォルトの値は，行列中の数が扱いやすくなるよう 10 に
+設定されています．
+
+<P>
+</DD>
+<DT><STRONG><var>round_digit</var></STRONG></DT>
+<DD>- 行列中の値を少数第何位まで丸めるかを
+表す数です．デフォルトの値は 0 (小数部なし) です．
+
+<P>
+</DD>
+</DL>
+
+<P>
+対数確率行列を得たら，<tt class="function">print_mat</tt> を使ってその内容を綺麗に
+表示できます．今作成した行列を出力すると，以下のようになります:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; my_lom.print_mat()
+D   6
+E  -5   5
+H -15 -13  10
+K -31 -15 -13   6
+R -13 -25 -14  -7   7
+   D   E   H   K   R
+</pre></div>
+
+<P>
+素晴らしい．これで，まさに自分用の置換行列を作成できました!
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.6.1 広く使われている置換行列を使う" 
+  rel="prev" title="3.6.1 広く使われている置換行列を使う" 
+  href="node47.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.6 置換行列" 
+  rel="parent" title="3.6 置換行列" 
+  href="node46.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.7 より高度な配列クラス - 配列" 
+  rel="next" title="3.7 より高度な配列クラス - 配列" 
+  href="node49.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node47.html">3.6.1 広く使われている置換行列を使う</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node46.html">3.6 置換行列</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node49.html">3.7 より高度な配列クラス - 配列</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

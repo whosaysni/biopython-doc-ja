@@ -1,0 +1,406 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node11.html">
+<LINK rel="prev" href="node9.html">
+<LINK rel="parent" href="node8.html">
+<LINK rel="next" href="node11.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="配列情報を操作する">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>2.2 配列情報を操作する</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="2.1 Biopython の機能概要" 
+  href="node9.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="2. クイックスタート - Biopython" 
+  href="node8.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="2.3 例題" 
+  href="node11.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node9.html">2.1 Biopython の機能概要</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node8.html">2. クイックスタート - Biopython</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node11.html">2.3 例題</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H1>
+<BR>
+2.2 配列情報を操作する
+</H1>
+
+<P>
+バイオインフォマティクスにおいて中心的な役割を果たしているのは
+配列情報です (もちろん，これについては議論の分かれるところですが！)．
+そこで，まずは Biopython が配列情報をどう扱うかを説明します．
+配列情報について考えるとき，まず頭に浮かぶのは，いくつかの文字
+からなる <code>AGTACACTGGT</code> のような文字列です．
+これは生物学関連のデータファイル形式で配列情報を表すために
+もっともよく使われているやり方ですし，一見普通のことのように思えます．
+しかし，単に文字からなる文字列だけでは，情報としてさして意味が
+ないのです - 例えば， DNA なのかタンパクの配列情報なのか分かりません
+(そうそう，これはアラニン，グリシン，システイン，スレオニンだけで
+できているタンパクなんですよね！)．また，配列情報がどの生物種由来
+であるかとか，配列情報の何に注目しているのか，なども分かりません．
+そこで，Biopython では，配列情報操作のインタフェースを設計する上で，
+より複雑な情報を取り入れられるだけ表現力に富み，なおかつ単なる
+文字列による配列情報と同じくらい軽量で使いやすい表現を選ぶよう
+試みました．
+
+<P>
+Biopython では配列情報クラスによるアプローチをとっていますが，
+これはクラスを使って複雑な情報を維持できるようにして，なおかつ
+単純な文字列と同様に操作できるようにするためです．
+こうした特性は，演算子のオーバロードを使って，
+Python 文字列型の操作のように配列情報オブジェクトを操作可能に
+することで実現しています．
+この配列情報クラスは，<tt class="class">Seq</tt> という簡単な名前ですが，
+モジュールファイル<span class="file">Bio/Seq.py</span> で定義されています．
+それでは，<tt class="class">Seq</tt> クラスがどんな機能を提供しているか
+もう少し突っ込んで見てみましょう．
+
+<P>
+Biopython の <tt class="class">Seq</tt> オブジェクトには，二つの重要な属性があります:
+
+<P>
+
+<OL>
+<LI><var>data</var> - 名前の通り，配列の実際の配列情報を現す文字列．
+</LI>
+<LI><var>alphabet</var> - 文字列を構成している個々の文字が何を意味していて，
+どのように解釈されるかを記述しているオブジェクト．
+</LI>
+</OL>
+
+<P>
+いうまでもなく，<var>alphabet</var> オブジェクトは，<tt class="class">Seq</tt> 
+オブジェクトをただの文字列以上のものにしている重要な要素です．
+現在のところ Biopython でアルファベットに利用できるオブジェクトは
+<tt class="module">Bio.Alphabet</tt> モジュールで定義されています．
+DNA, RNA, タンパクといったオブジェクトを扱うために，
+ここでは IUPAC (<a class="url" href="http://www.chem.qmw.ac.uk/iupac/">http://www.chem.qmw.ac.uk/iupac/</a>)
+アルファベット を使います．
+
+<P>
+モジュールファイル<span class="file">Bio/Alphabet/IUPAC.py</span> では，
+タンパク，DNA, RNA の配列情報に使われる文字についての基本的な
+定義を行っていますが，その他にも基本的な定義をもとに拡張や
+カスタマイズを行うための機能も提供しています．例えば，タンパクの場合，
+ベースとなる <tt class="class">IUPACProtein</tt> クラスがありますが，それに加えて
+<code>Asx</code> (アスパラギンおよびアスパラギン酸)，
+<code>Sec</code> (セレノシステイン)，
+<code>Glx</code> (グルタミンおよびグルタミン酸) といった，追加の要素
+も提供している<tt class="class">ExtendedIUPACProtein</tt> もあります．
+DNA の場合なら， 各塩基を表現する文字だけを提供する
+<tt class="class">IUPACUnambiguousDNA</tt>，<tt class="class">IUPACUnambiguousDNA</tt> 
+(塩基が曖昧なさまざまな状況を表す文字も提供)，
+そして修飾つきの塩基を表現できるようになっている
+<tt class="class">ExtendedIUPACDNA</tt> があります．同様に， RNA は
+<tt class="class">IUPACAmbigousRNA</tt> や <tt class="class">IUPACUnambigousRNA</tt>
+で表現できます．
+
+<P>
+こうしたアルファベットクラスを用意する利点は二つあります．
+まず，アルファベットによって，<var>data</var> オブジェクトの
+表現する情報がどのような種類か分かります．次に，型チェック
+を行うことで，<var>data</var> オブジェクトに入れてよい情報を
+制約できます．
+
+<P>
+さて，Biopython における配列情報がどんなものか分かったので，
+このクラスを利用して何か面白みのある作業をしてみましょう．
+
+<P>
+まず，配列情報オブジェクトを手持ちの文字列から作成します．
+非曖昧DNA  (unambiguous DNA) オブジェクトを生成してみましょう:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; from Bio.Alphabet import IUPAC
+&gt;&gt;&gt; my_alpha = IUPAC.unambiguous_dna
+&gt;&gt;&gt; from Bio.Seq import Seq
+&gt;&gt;&gt; my_seq = Seq('GATCGATGGGCCTATATAGGATCGAAAATCGC', my_alpha)
+&gt;&gt;&gt; print my_seq
+Seq('GATCGATGGGCCTATATAGGATCGAAAATCGC', IUPACUnambiguousDNA())
+</pre></div>
+
+<P>
+<code>my_seq</code> は配列情報オブジェクトですが，いくつかの点で
+通常の Python 文字列型のように扱えます．試しに配列情報を
+スライスしてみましょう．
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; my_seq[4:12]
+Seq('GATGGGCC', IUPACUnambiguousDNA())
+</pre></div>
+
+<P>
+ここで注意してほしいことが二つあります．最初の点は，この作業が
+通常の Python 配列方におけるスライス方法に従っているということ
+です．ですから，配列の最初の要素は<em>0 番目</em> の要素という
+ことになります (計算機科学では，番号を 0 から始めるのは
+普通のことですが，生物学においてはそうではありませんね)．
+さらに，スライスを行うとき，スライスで最初の要素として指定した
+もの (ここでは <em>0 から数えて</em> 4 番目の要素) はスライスに
+含まれ，最後の要素に指定したもの (ここでは 12) は含まれません．
+これは Python では当たり前のことですが，世界中の人がそう思う
+とは限りません．
+二つ目の点は，実行したのは配列情報に対するスライスでしたが，
+返されたオブジェクトにはもとの <tt class="class">Seq</tt> オブジェクトと
+同じアルファベット情報がそのまま引き継がれているということです．
+
+<P>
+<tt class="class">Seq</tt> オブジェクトを文字列のように扱える操作は他にもたくさん
+あります:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; len(my_seq)
+32
+&gt;&gt;&gt; new_seq = my_seq[0:5]
+&gt;&gt;&gt; print new_seq
+Seq('GATCG', IUPACUnambiguousDNA())
+&gt;&gt;&gt; my_seq + new_seq
+Seq('GATCGATGGGCCTATATAGGATCGAAAATCGCGATCG', IUPACUnambiguousDNA())
+&gt;&gt;&gt; my_seq[5]
+'A'
+&gt;&gt;&gt; my_seq == new_seq
+0
+</pre></div>
+
+<P>
+これらの操作では全て，<var>alphabet</var> 属性がそのまま維持されています．
+これは，間違えてタンパク配列に DNA 配列をくっつけてしまうといった
+間違った操作をたまたま行おうとしてしまった場合に役立ちます:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; protein_seq = Seq('EVRNAK', IUPAC.protein)
+&gt;&gt;&gt; dna_seq = Seq('ACGT', IUPAC.unambiguous_dna)
+&gt;&gt;&gt; protein_seq + dna_seq
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in ?
+  File "/usr/local/lib/python1.6/site-packages/Bio/Seq.py", line 42, in __add__
+    raise TypeError, ("incompatable alphabets", str(self.alphabet),
+TypeError: ('incompatable alphabets', 'IUPACProtein()', 'IUPACUnambiguousDNA()')
+</pre></div>
+
+<P>
+もし，配列中に何か別のものを挿入するなどの理由で本当に文字列が必要なら，
+簡単に取り出せます:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; my_seq.tostring()
+'GATCGATGGGCCTATATAGGATCGAAAATCGC'
+</pre></div> 
+
+<P>
+多くの生物学関連のアプリケーションでは，手持ちの配列情報が
+かならず変更されないよう望むはずですから，配列情報オブジェクトは
+デフォルトの状態では変更不能です:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; my_seq[5] = 'G'
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in ?
+AttributeError: 'Seq' instance has no attribute '__setitem__'
+</pre></div>
+
+<P>
+とはいえ，配列情報を変更可能なものに変換して，思い通りに変更を
+加えることもできます:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; mutable_seq = my_seq.tomutable()
+&gt;&gt;&gt; print mutable_seq
+MutableSeq('GATCGATGGGCCTATATAGGATCGAAAATCGC', IUPACUnambiguousDNA())
+&gt;&gt;&gt; mutable_seq[5] = 'T'
+&gt;&gt;&gt; print mutable_seq
+MutableSeq('GATCGTTGGGCCTATATAGGATCGAAAATCGC', IUPACUnambiguousDNA())
+&gt;&gt;&gt; mutable_seq.remove('T')
+&gt;&gt;&gt; print mutable_seq
+MutableSeq('GACGTTGGGCCTATATAGGATCGAAAATCGC', IUPACUnambiguousDNA())
+&gt;&gt;&gt; mutable_seq.reverse()
+&gt;&gt;&gt; print mutable_seq
+MutableSeq('CGCTAAAAGCTAGGATATATCCGGGTTGCAG', IUPACUnambiguousDNA())
+</pre></div>
+
+<P>
+さて，配列情報オブジェクトの性質をだいぶ理解してもらえたと思います．
+次はこの配列情報でできることを見ていきましょう．
+パッケージディレクトリ<span class="file">Bio</span> には，配列情報オブジェクトに対して
+転写 (transcribe) や翻訳 (translate) を行うための二つの便利な
+モジュールがあります．これらのツールは配列のアルファベットに基づいて
+処理を行います．仮に，上の <var>my_seq</var> オブジェクトを転写して
+みたいとしましょう．この配列情報オブジェクトには，非曖昧な
+アルファベットが使われていたことを思い出してください．
+転写を行うには，以下のようにします:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; from Bio import Transcribe
+&gt;&gt;&gt; transcriber = Transcribe.unambiguous_transcriber
+&gt;&gt;&gt; my_rna_seq = transcriber.transcribe(my_seq)
+&gt;&gt;&gt; print my_rna_seq
+Seq('GAUCGAUGGGCCUAUAUAGGAUCGAAAAUCGC', IUPACUnambiguousRNA())
+</pre></div>
+
+<P>
+新たに作成された RNA <tt class="class">Seq</tt> オブジェクトのアルファベットは
+何もしなくても勝手に作成されます．というわけで，やはり<tt class="class">Seq</tt> 
+オブジェクトの操作は文字列操作に比べてさして難しくはありません．
+
+<P>
+RNA 配列の逆転写も行えます:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; transcriber.back_transcribe(my_rna_seq)
+Seq('GATCGATGGGCCTATATAGGATCGAAAATCGC', IUPACUnambiguousDNA())
+</pre></div>
+
+<P>
+DNA オブジェクトを翻訳する前に，いくつか選択しておかねばならないことが
+あります．まず，この DNA 配列についての知識をもとに，何個か
+翻訳テーブル (translation table) の候補を選びます．
+Biopython で利用できる翻訳テーブルは，
+<a class="url" href="ftp://ncbi.nlm.nih.gov/entrez/misc/data/gc.prt">ftp://ncbi.nlm.nih.gov/entrez/misc/data/gc.prt</a> にある情報から
+とったものです．従って選び方は数え切れないくらいあります．ここでは，
+二つの選択肢: 標準の翻訳テーブルと，脊椎動物のミトコンドリア DNA用の
+翻訳テーブルに限っておきましょう．これらのテーブルはそれぞれ 1 と
+2 という id 番号でラベルづけされています．使う翻訳テーブルを決めたら，
+翻訳処理の準備は完了です．まず，選んだ翻訳テーブルを使うような
+翻訳機構 (translator) を取得します．今扱っている配列情報は
+非曖昧 DNA オブジェクトでしたが，翻訳機構を得る際にもそのことを
+考慮する必要があります:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; from Bio import Translate
+&gt;&gt;&gt; standard_translator = Translate.unambiguous_dna_by_id[1] 
+&gt;&gt;&gt; mito_translator = Translate.unambiguous_dna_by_id[2]
+</pre></div>
+
+<P>
+適切な翻訳機構を得たら，次は実際に配列情報を翻訳してみましょう:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; my_seq = Seq('GCCATTGTAATGGGCCGCTGAAAGGGTGCCCGA', IUPAC.unambiguous_dna)
+&gt;&gt;&gt; standard_translator.translate(my_seq)
+Seq('AIVMGR*KGAR', IUPACProtein())
+&gt;&gt;&gt; mito_translator.translate(my_seq)
+Seq('AIVMGRWKGAR', IUPACProtein())
+</pre></div>
+
+<P>
+デフォルトの翻訳処理では，終止コドンを識別せず，ただひたすら翻訳処理を
+進めていることに注意してください．何らかの推定コード領域 
+(ORF: Open Reading Frame) を翻訳していることが分かっていて，
+終止コドンまでの内容だけを知りたいのなら，単に
+<tt class="function">translate_to_stop</tt> 関数を使えばできます:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; standard_translator.translate_to_stop(my_seq)
+Seq('AIVMGR', IUPACProtein())
+</pre></div>
+
+<P>
+<var>transcriber</var> と同じように，<var>translator</var> もタンパクを DNA 配列
+に逆翻訳できます:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; my_protein = Seq('AVMGRWKGGRAAG', IUPAC.protein)
+&gt;&gt;&gt; standard_translator.back_translate(my_protein)
+Seq('GCTGTTATGGGTCGTTGGAAGGGTGGTCGTGCTGCTGGT', IUPACUnambiguousDNA())
+</pre></div>
+
+<P>
+これで，Biopython における配列情報クラスの基本的な機能と使い方を
+カバーしました．
+配列情報クラスの背後にある設計思想については，このチュートリアルの
+「上級者向けの話題」の節で詳しく説明しています．
+このクラスはまだ開発が進められていて，設計や使用方法についての
+コメントはもちろん大歓迎です．
+さて，Biopython ライブラリとやりとりするにはどうするかが分かってきた
+ところで，ここでちょっと脱線して，「生物学関連のデータファイル形式を
+構文解析 (parse) する」という<em>世にも楽しい</em> 世界を探究してみま
+しょう！
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="2.1 Biopython の機能概要" 
+  rel="prev" title="2.1 Biopython の機能概要" 
+  href="node9.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="2. クイックスタート - Biopython" 
+  rel="parent" title="2. クイックスタート - Biopython" 
+  href="node8.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="2.3 例題" 
+  rel="next" title="2.3 例題" 
+  href="node11.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node9.html">2.1 Biopython の機能概要</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node8.html">2. クイックスタート - Biopython</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node11.html">2.3 例題</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

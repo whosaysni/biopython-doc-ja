@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node96.html">
+<LINK rel="prev" href="node94.html">
+<LINK rel="parent" href="node91.html">
+<LINK rel="next" href="node96.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="スキャナ">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>4.3.4 スキャナ</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.3.3 'noevent' EVENT" 
+  href="node94.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.3 パーザの設計" 
+  href="node91.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.3.5 コンシューマ" 
+  href="node96.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node94.html">4.3.3 'noevent' EVENT</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node91.html">4.3 パーザの設計</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node96.html">4.3.5 コンシューマ</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION005340000000000000000">
+4.3.4 スキャナ</A>
+</H2>
+
+<P>
+<div class="verbatim"><pre>
+class Scanner:
+    def feed(self, handle, consumer):
+        # 実装部分
+</pre></div>
+
+<P>
+スキャナは，ファイルハンドルとコンシューマを引数にとる
+<tt class="function">feed</tt> という名前のメソッドを実装していなければなりません．
+スキャナはファイルハンドルからデータを読み出し，コンシューマに対して
+適切なイベントを送出せねばなりません．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.3.3 'noevent' EVENT" 
+  rel="prev" title="4.3.3 'noevent' EVENT" 
+  href="node94.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.3 パーザの設計" 
+  rel="parent" title="4.3 パーザの設計" 
+  href="node91.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.3.5 コンシューマ" 
+  rel="next" title="4.3.5 コンシューマ" 
+  href="node96.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node94.html">4.3.3 'noevent' EVENT</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node91.html">4.3 パーザの設計</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node96.html">4.3.5 コンシューマ</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

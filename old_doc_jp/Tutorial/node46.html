@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node49.html">
+<LINK rel="prev" href="node39.html">
+<LINK rel="parent" href="node20.html">
+<LINK rel="next" href="node47.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="置換行列">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.6 置換行列</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.5.6 アラインメントの出力形式を変換する" 
+  href="node45.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3. クックブック - 便利なツール群" 
+  href="node20.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.6.1 広く使われている置換行列を使う" 
+  href="node47.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node45.html">3.5.6 アラインメントの出力形式を変換する</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node20.html">3. クックブック - 便利なツール群</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node47.html">3.6.1 広く使われている置換行列を使う</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H1>
+<BR>
+3.6 置換行列
+</H1>
+
+<P>
+置換行列 (substitution matrix) は，バイオインフォマティクスに
+関する日々の作業できわめて重要な部分となっています．
+置換行列は，二つの残基の間が互いにどれくらい置換されやすいかを
+分類する際にスコア付けの方法を提供します．
+置換行列はまた，配列を比較する上で不可欠です．
+Durbin 他の書いた ``Biological Sequence Analysis'' という本には，
+置換行列に関する優れた紹介とその使い方が書かれています．
+置換行列の有名なものには PAM や BLOSAM 系列があります．
+
+<P>
+Biopython では，よく使われている置換行列をたくさん提供していています．
+また，自作の置換行列を作成する手段も提供しています．
+
+<P>
+
+<p><br /></p><hr class='online-navigation' />
+<div class='online-navigation'>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"></a>
+
+<UL CLASS="ChildLinks">
+<LI><A href="node47.html">3.6.1 広く使われている置換行列を使う</a>
+<LI><A href="node48.html">3.6.2 アラインメントから置換行列を自作する</a>
+</ul>
+<!--End of Table of Child-Links-->
+</div>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.5.6 アラインメントの出力形式を変換する" 
+  rel="prev" title="3.5.6 アラインメントの出力形式を変換する" 
+  href="node45.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3. クックブック - 便利なツール群" 
+  rel="parent" title="3. クックブック - 便利なツール群" 
+  href="node20.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.6.1 広く使われている置換行列を使う" 
+  rel="next" title="3.6.1 広く使われている置換行列を使う" 
+  href="node47.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node45.html">3.5.6 アラインメントの出力形式を変換する</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node20.html">3. クックブック - 便利なツール群</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node47.html">3.6.1 広く使われている置換行列を使う</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

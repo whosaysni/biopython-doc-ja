@@ -1,0 +1,260 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node15.html">
+<LINK rel="prev" href="node13.html">
+<LINK rel="parent" href="node12.html">
+<LINK rel="next" href="node15.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="コンシューマを自作する">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>2.4.2 コンシューマを自作する</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="2.4.1 パーザの一般的な設計" 
+  href="node13.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="2.4 生物学関連のデータファイルを構文解析する" 
+  href="node12.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="2.4.3 もっと簡単に" 
+  href="node15.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node13.html">2.4.1 パーザの一般的な設計</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node12.html">2.4 生物学関連のデータファイルを構文解析する</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node15.html">2.4.3 もっと簡単に</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2>
+<BR>
+2.4.2 コンシューマを自作する
+</H2>
+
+<P>
+パーザフレームワークを理解して，われらが友人スリッパーオーキッド
+のことを調べてみましょう．
+手始めに， NCBI の Entrez 検索インタフェース
+(<a class="url" href="lhttp://www.ncbi.nlm.nih.gov:80/entrez/query.fcgi?db=Nucleotide">lhttp://www.ncbi.nlm.nih.gov:80/entrez/query.fcgi?db=Nucleotide</a>)
+を使って，NCBI の核酸データベースからアツモリソウ亜科
+(Cypripedioideae) に関する項目全てを探してみます．
+検索を行うと 94 件のヒットが見つかり，これを FASTA 形式の
+テキストファイルに保存しました．
+
+<P>
+さて，入手した情報がどんなタイプかを，パーザを使ってまとめてみましょう．
+まずは全てのエントリに渡って，各エントリの名前を全て取り出し，
+このデータ中に異なる種類のスリッパーオーキッドがどれだけあるか
+を調べます．
+
+<P>
+この手の実用的な作業を行うには，手を動かして，この問題を解くための
+全ての処理を行う部分 - コンシューマを書く必要があります．
+入力から生物名 (organism) を抜き出すためのコンシューマは
+以下のようになります:
+
+<P>
+<div class="verbatim"><pre>
+import string
+from Bio.ParserSupport import AbstractConsumer
+
+class SpeciesExtractor(AbstractConsumer):
+
+    def __init__(self):
+        self.species_list = []
+
+    def title(self, title_info):
+        title_atoms = string.split(title_info)
+        new_species = title_atoms[1]
+
+        if new_species not in self.species_list:
+            self.species_list.append(new_species)
+</pre></div>
+
+<P>
+最初に行う作業は，コンシューマの基底クラスとなる 
+<tt class="class">AbstractConsumer</tt> の import です．この基底クラスはよく
+できていて，興味の対象外の部分のデータ処理をうまく扱ってくれます．
+次に，自分用のコンシューマクラスを <tt class="class">AbstractConsumer</tt> 
+から導出します．
+
+<P>
+他の Python のクラスと同様，このクラスの
+新たなインスタンスが生成されるときに呼び出されるメソッド
+<tt class="function">__init__</tt> を定義します．この初期化メソッドの中で，
+属性<var>species_list</var> を設定します．この属性は，入力ファイルを
+構文解析する中で見つかった生物種をためておき，あとでそこから
+情報を取り出せるようにするためのものです．
+
+<P>
+さて，次はこのクラスのもっとも気の利いた部分である，
+<tt class="function">title</tt> メソッドの番です．このメソッドは，スキャナが
+'title' イベントを生成するたびに呼び出されます．従って，
+スキャナが FASTA 形式の最初の行:
+
+<P>
+<div class="verbatim"><pre>
+&gt;gi|2765658|emb|Z78533.1|CIZ78533 C.irapeanum 5.8S rRNA gene and ITS1 and ITS2 DNA
+</pre></div>
+
+<P>
+に到達すると，スキャナはこれを 'title' エントリとみなし，
+<tt class="function">title</tt> を呼び出します．そのとき， <var>title_info</var> 引数は
+上の 'title' に応じた値になります．
+
+<P>
+title 行をうまく見つけたところで，ここから興味の対象となる情報を
+取り出す必要があります． FASTA の title 行にある情報を見ると，
+文字列中の二つ目の文字列が生物名であることに気づきます．
+この部分文字列を取り出すために，まず Python の関数
+<tt class="function">string.split</tt> を呼び出して文字列をスペースで分割して
+リストを作成し，<var>title_atoms</var> という名前をつけておきます．
+このリストの二つ目の要素が生物種の名前になるので，それをリストから
+取り出します．次に，いま取り出した生物種名が現在記憶している生物名
+リストに入っているか調べ，入っていなければ追加します．
+
+<P>
+うん，とても簡単でしたね - あとは，スキャナを呼び出して実際の
+作業をさせなくてはなりません．そのためには，以下のようなちょっとした
+関数を書きます:
+
+<P>
+<div class="verbatim"><pre>
+from Bio import Fasta
+
+def extract_organisms(file, num_records):
+    scanner = Fasta._Scanner()
+    consumer = SpeciesExtractor()
+
+    file_to_parse = open(file, 'r')
+
+    for fasta_record in range(num_records):
+        scanner.feed(file_to_parse, consumer)
+
+    file_to_parse.close()
+
+    return handler.species_list
+</pre></div>
+
+<P>
+この関数を一行づつ見てゆきましょう．まず，Biopython ライブラリ
+から <tt class="class">Fasta</tt> パーザを import し，その後で
+関数の定義に入っています．関数は二つの引数をとり，
+<var>file</var> には内容を解釈したい FASTA 形式のファイルを指定し，
+<var>num_records</var> にはファイル中から取り出したいレコード数を指定
+します．この関数はまず FASTA ファイルを走査するスキャナを生成した後，
+上で定義した生物種名を取り出す <tt class="class">SpeciesExtractor</tt> コンシューマを
+生成します．
+
+<P>
+次に，<var>file</var> を開いて，内容を構文解析する準備をします．
+Biopython のパーザは全て，入力をファイルハンドル (file handle) で
+扱います．つまり， 「ファイル類似の」オブジェクトなら何でも
+入力として渡せるわけです．例えば， <tt class="module">urllib</tt> のような
+ライブラリを使うと，遠隔のサーバ上にあるドキュメントを URL で指定
+して，手元にあるファイルのように扱えるので，ネットワーク上の
+どこかにあるドキュメントをパーザに渡せます． 
+
+<P>
+ファイルを開けたので，次はパーザによる構文解析です．パーザを動かすには，
+<tt class="function">feed</tt> を取り出したい項目分呼び出します．このとき，
+構文解析の対象となるファイル類似オブジェクトと，構文解析時に呼び出され
+るコンシューマを指定します．ここでは，コンシューマが入力ファイルを正しく
+扱えると仮定して，ファイル中の全てのレコードにわたって反復処理
+しています．最後に，コンシューマから<var>species_list</var> 属性を
+取り出し，得られた情報を返します．
+
+<P>
+やれやれ！ ここまで作業を終えたら，
+あとのファイルの解釈はとても簡単です:
+
+<P>
+<div class="verbatim"><pre>
+all_species = extract_organisms("ls_orchid.fasta", 94)
+print "number of species:", len(all_species)
+print 'species names:', all_species
+</pre></div>
+
+<P>
+上記の作業をひとつの <em>大きな</em> プログラムにまとめて走らせると
+(まとめたプログラムは <span class="file">Doc/examples/fasta_consumer.py</span> に
+あります)，必要な情報が出てきます:
+
+<P>
+<div class="verbatim"><pre>
+[chapmanb@taxus examples]# python fasta_consumer.py
+number of species: 92
+species names: ['C.irapeanum', 'C.californicum', 'C.fasciculatum', 
+'C.margaritaceum', 'C.lichiangense', 'C.yatabeanum', 'C.guttatum',
+...
+</pre></div>
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="2.4.1 パーザの一般的な設計" 
+  rel="prev" title="2.4.1 パーザの一般的な設計" 
+  href="node13.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="2.4 生物学関連のデータファイルを構文解析する" 
+  rel="parent" title="2.4 生物学関連のデータファイルを構文解析する" 
+  href="node12.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="2.4.3 もっと簡単に" 
+  rel="next" title="2.4.3 もっと簡単に" 
+  href="node15.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node13.html">2.4.1 パーザの一般的な設計</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node12.html">2.4 生物学関連のデータファイルを構文解析する</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node15.html">2.4.3 もっと簡単に</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

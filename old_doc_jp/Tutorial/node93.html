@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node94.html">
+<LINK rel="prev" href="node92.html">
+<LINK rel="parent" href="node91.html">
+<LINK rel="next" href="node94.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="イベント">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>4.3.2 イベント</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.3.1 設計の概要" 
+  href="node92.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.3 パーザの設計" 
+  href="node91.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.3.3 'noevent' EVENT" 
+  href="node94.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node92.html">4.3.1 設計の概要</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node91.html">4.3 パーザの設計</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node94.html">4.3.3 'noevent' EVENT</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION005320000000000000000">
+4.3.2 イベント</A>
+</H2>
+
+<P>
+イベントには二つの種類: info イベントと section イベントがあります．
+info イベントは，データストリーム中の情報のある場所をタグ付けします．
+section イベントはストリーム中の部分 (section) をマークします．
+info イベントはデータ中の特定の行に関連づけられますが，セクション
+イベントはそうではありません．
+
+<P>
+セクションイベント名は必ず <code>start_EVENTNAME</code> および
+<code>end_EVENTNAME</code> という名前にします．<code>EVENTNAME</code> は
+イベントの名前です．
+
+<P>
+例えば， FASTA 形式の配列情報向けのスキャナでは，以下のようなイベント
+が生成されます:
+<div class="verbatim"><pre>
+EVENT NAME      ORIGINAL INPUT
+begin_sequence  
+title           &gt;gi|132871|sp|P19947|RL30_BACSU 50S RIBOSOMAL PROTEIN L30 (BL27
+sequence        MAKLEITLKRSVIGRPEDQRVTVRTLGLKKTNQTVVHEDNAAIRGMINKVSHLVSVKEQ
+end_sequence
+begin_sequence
+title           &gt;gi|132679|sp|P19946|RL15_BACSU 50S RIBOSOMAL PROTEIN L15
+sequence        MKLHELKPSEGSRKTRNRVGRGIGSGNGKTAGKGHKGQNARSGGGVRPGFEGGQMPLFQRLPK
+sequence        RKEYAVVNLDKLNGFAEGTEVTPELLLETGVISKLNAGVKILGNGKLEKKLTVKANKFSASAK
+sequence        GTAEVI
+end_sequence
+[...]
+</pre></div>
+
+<P>
+(見栄えをよくするために一部を削って短くしてあります)
+
+<P>
+上の例では，FASTA スキャナは <code>title</code>，<code>sequence</code>，
+<code>begin_sequence</code>，<code>end_sequence</code> というイベントを
+生成しています．<code>begin_sequence</code> と<code>end_sequence</code> 
+が，元の FASTA 入力データのいずれの行とも関連付けられていない
+ことに注意してください．このイベントは，ファイル中の別々の配列
+情報を区切るために使われています．
+
+<P>
+スキャナが送信できるイベントは，それぞれのデータ形式ごとに
+決まっています．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.3.1 設計の概要" 
+  rel="prev" title="4.3.1 設計の概要" 
+  href="node92.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.3 パーザの設計" 
+  rel="parent" title="4.3 パーザの設計" 
+  href="node91.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.3.3 'noevent' EVENT" 
+  rel="next" title="4.3.3 'noevent' EVENT" 
+  href="node94.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node92.html">4.3.1 設計の概要</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node91.html">4.3 パーザの設計</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node94.html">4.3.3 'noevent' EVENT</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

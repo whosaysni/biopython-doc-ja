@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="prev" href="node69.html">
+<LINK rel="parent" href="node65.html">
+<LINK rel="next" href="node71.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="Atom">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.11.1.5 Atom</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11.1.4 Residue オブジェクト" 
+  href="node69.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11.1 分子構造の表現方式" 
+  href="node65.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.2 ゆらぎ (disorder)" 
+  href="node71.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node69.html">3.11.1.4 Residue オブジェクト</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node65.html">3.11.1 分子構造の表現方式</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node71.html">3.11.2 ゆらぎ (disorder)</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION0041115000000000000000">
+3.11.1.5 Atom</A>
+</H3>
+
+<P>
+<tt class="class">Atom</tt> は原子に関連するデータを記憶し，子エンティティを持ちません．
+原子の id はその原子の名前になります (例えば，<code>"OG"</code> は Ser 残基の
+側鎖の酸素です)．ある残基中では，個々の原子の id は一意でなければ
+なりません．<A HREF="node73.html#disordered_atoms">3.11.2</A> 節でも述べたように，データを構文解析
+する際に原子のゆらぎに遭遇すると例外が発生します．
+
+<P>
+PDB ファイル中では，原子の名前は 4 文字のキャラクタからなり，通常は
+先頭と末尾に空白がついています．PDB ファイルでは，簡単のために
+しばしばこの空白は除去されます (例えば，アミノ酸C<SPAN CLASS="MATH"><IMG
+ WIDTH="14" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img8.png"
+ ALT="$\alpha$"></SPAN> は
+PDB ファイル中では <code>".CA."</code> で，ドットが空白を表します)．
+ある残基内で名前の衝突 (同じ名前と id を持つ <tt class="class">Atom</tt> オブジェクト
+が生成される) が起こらない限り，原子の名前を生成する際にスペースを
+除去します．衝突が発生する場合，パーザはスペースを含めた原子名を使おうと
+試みます．このような状況は，例えば一つの残基に <code>".CA."</code> と
+<code>"CA.."</code> という名前の原子が入っている場合に発生しますが，
+めったに起きることはありません．
+
+<P>
+残基に保存されている原子のデータには，原子の名前，原子の座標
+(もしあれば標準偏差も)，B ファクタ (もしあれば異方性 B ファクタと
+標準偏差も)， altloc 指定子と空白を含む完全な原子名が入っています．
+原子番号 (element number) や原子の電荷といった，あまり利用されない
+要素は， PDB ファイル中には書かれていますが<tt class="class">Atom</tt> のデータと
+しては保存されません
+
+<P>
+<tt class="class">Atom</tt> オブジェクトには以下のようなメソッドがあります: 
+
+<P>
+<div class="verbatim"><pre>
+a.get_name()       # 原子名 (スペースなし，例えば "CA")
+
+a.get_id()         # id (原子名と同じ)
+
+a.get_coord()      # 原子座標
+
+a.get_bfactor()    # B ファクタ
+
+a.get_occupancy()  # 原子ゆらぎにおける占有率
+
+a.get_altloc()     # _REPLACE_代替構造記憶位置指定子 (alternative location specifier) 
+
+a.get_sigatm()     # 原子パラメタの標準偏差
+
+a.get_siguij()     # 異方性 B ファクタの標準偏差
+
+a.get_anisou()     # 異方性 B ファクタ
+
+a.get_fullname()   # 原子名 (スペースを含む, 例. ".CA.")
+</pre></div>
+
+<P>
+原子の座標、異方性 B ファクタおよびその標準偏差，
+原子パラメタの標準偏差の表現には Numerical Python の配列が
+用いられています．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11.1.4 Residue オブジェクト" 
+  rel="prev" title="3.11.1.4 Residue オブジェクト" 
+  href="node69.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11.1 分子構造の表現方式" 
+  rel="parent" title="3.11.1 分子構造の表現方式" 
+  href="node65.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.2 ゆらぎ (disorder)" 
+  rel="next" title="3.11.2 ゆらぎ (disorder)" 
+  href="node71.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node69.html">3.11.1.4 Residue オブジェクト</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node65.html">3.11.1 分子構造の表現方式</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node71.html">3.11.2 ゆらぎ (disorder)</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

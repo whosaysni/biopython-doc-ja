@@ -1,0 +1,153 @@
+\chapter{はじめに}
+
+\section{Biopython とは}
+
+Biopython プロジェクトは，無料で利用できる計算機分子生物学ソフトウェアを
+Python (\url{http://www.python.org}) で開発している人々の
+国際的なつながりです．Biopython のウェブサイト，
+\url{http://www.Biopython.org} では，モジュールやスクリプトといった
+オンラインの情報， Python ベースの生命科学研究向けソフトウェアを開発
+している人たちへのウェブリンクを提供しています．
+
+Biopython にかかわる人たちは，基本的に Python でのプログラム作成が好きな
+人々です．彼らは高品質で再利用できるモジュールやスクリプトを作成することで
+Python のバイオインフォマティクスへの応用を可能な限り簡単にしたいと
+考えています．
+
+\subsection{Biopython パッケージの内容}
+
+Biopython の主要なリリースには以下のような様々な機能があります:
+
+\begin{itemize}
+  \item バイオインフォマティクス関連のファイルを解析して， Python で利用
+できるデータ構造に変換する機能．以下のフォーマットをサポートしています:
+  \begin{itemize}
+    \item Blast 出力 -- スタンドアロンプログラム，および WWW 上の Blast
+    \item Clustalw
+    \item FASTA
+    \item GenBank
+    \item PubMed および Medline
+    \item Expasy ファイル, Enzyme, Prodoc や Prosite
+    \item SCOP の 'dom' ファイルや 'lin' ファイル
+    \item Rebase
+    \item UniGene
+    \item SwissProt
+  \end{itemize}
+
+  \item サポートされているファイル形式では，レコード単位での反復処理を
+行ったり，辞書インタフェースでアクセスしたりできます．
+
+  \item 広く利用されているバイオインフォマティクス関連のサービスを扱う
+ためのコード．例えば以下のサービスを扱えます:
+
+  \begin{itemize}
+    \item NCBI -- Blast, Entrez および PubMed サービス
+    \item Expasy -- Prodoc および Prosite エントリ
+  \end{itemize}
+
+  \item 広く使われているバイオインフォマティクスプログラムへの
+インタフェース．以下のプログラムへのインタフェースがあります:
+
+  \begin{itemize}
+    \item NCBI によるスタンドアロン Blast プログラム
+    \item Clustalw アラインメントプログラム
+  \end{itemize}
+
+  \item 配列自体，配列の id ，配列の機能 (feature) を扱える配列データクラス．
+
+  \item 塩基配列の転写や翻訳，質量計算といった配列に対してよく行われる
+操作を実行するためのツール．
+
+  \item k-NN (k Nearest Neighbors) 法やNaive Bayes 法，SVM (Support Vector
+Machines) 法を使ってデータのクラスタリングを行うためのコード．
+
+  \item 代替行列 (substitution matrix) の作成や操作を含むアラインメント
+処理を扱うためのコード．
+
+  \item 並列化可能なタスクを別々のプロセスに分割しやすくするためのコード．
+
+  \item 基本的な配列の操作，塩基配列の翻訳，BLAST処理などを行うための
+GUI ベースのプログラム．
+
+  \item モジュールの利用法に関するドキュメントやヘルプ，オンライン上の
+Wiki ドキュメントや Web サイト，メーリングリスト．
+
+  \item BioCorba インタフェース標準を利用した，Bioperl や Biojava 
+プロジェクトといった他言語との協調 (Biopython-corba モジュールから
+利用できます)．
+
+\end{itemize}
+
+ここまで読んだあなたは，きっと Biopython をダウンロードして
+使い始めるだけの理由をいくつも見つけたでしょうね！
+
+\section{インストール}
+
+Biopython のインストールに関する情報は，最新情報を反映するために
+全て別個のドキュメントに書かれています．ドキュメントは
+PDF 形式
+(\url{http://www.Biopython.org/docs/install/Installation.pdf})
+および HTML 形式
+(\url{http://www.Biopython.org/docs/install/Installation.html})
+で入手でき， Biopython が依存しているソフトウェアと
+ Biopython 自体のインストールについて説明しています．
+
+\section{FAQ}
+
+\begin{enumerate}
+
+\item \emph{ある処理を行っているコードを探そうとしたのですが，コードの
+入っているはずのディレクトリを見ても見つかりませんでした．どこに隠され
+ているんですか？}
+
+まず， \file{__init__.py} と呼ばれるファイルにコードを書いていることを
+知っておいてもらわねばなりません．普段\file{__init__.py} の中に目的のコードを
+探そうとしていなければ，混乱するかもしれませんね．\file{__init__.py} の
+中にコードを書くのは，ユーザが import 作業を楽にできるようにするためです．
+たとえば，\code{from Bio.GenBank import GenBank} のような「くどい」 
+import 命令を実行する代わりに， ただ \code{from Bio import GenBank} を
+実行するだけですみます．
+
+\item \emph{回帰テストプログラム\file{br_regrtest.py} はどうなっているの
+ですか？}
+
+回帰テストフレームワークを PyUnit を使うように変更して，改行に関する
+問題も修正しました．\file{br_regrtest.py} はまだありますが，その機能の
+ほとんどは\file{run_tests.py} に (コピーして) 移動しました．
+
+\item \emph{回帰テストを実行中に，テストのいくつかが}
+\begin{verbatim}
+Writing: '\012', expected: '\015'
+\end{verbatim}
+\emph{のような出力とともに失敗するのはなぜですか？}
+
+そんなはずは！我々は回帰テストスイートを修正して，PyUnit を使うように
+する同時に改行コードの問題を解決しました．もしテストが失敗するようで
+あれば教えてください．
+\end{enumerate}
+
+\section{ライセンス}
+
+\begin{verbatim}
+                 Biopython License Agreement
+
+Permission to use, copy, modify, and distribute this software and its
+documentation with or without modifications and for any purpose and
+without fee is hereby granted, provided that any copyright notices
+appear in all copies and that both those copyright notices and this
+permission notice appear in supporting documentation, and that the
+names of the contributors or copyright holders not be used in
+advertising or publicity pertaining to distribution of the software
+without specific prior permission.
+
+THE CONTRIBUTORS AND COPYRIGHT HOLDERS OF THIS SOFTWARE DISCLAIM ALL
+WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL THE
+CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT
+OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
+OR PERFORMANCE OF THIS SOFTWARE.
+\end{verbatim}
+
+

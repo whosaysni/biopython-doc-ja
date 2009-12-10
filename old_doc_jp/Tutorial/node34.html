@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="prev" href="node33.html">
+<LINK rel="parent" href="node32.html">
+<LINK rel="next" href="node35.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="PubMed のレコードを入手する">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.3.2 PubMed のレコードを入手する</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.3.1 PubMed にクエリを送信する" 
+  href="node33.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.3 PubMed" 
+  href="node32.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.4 GenBank" 
+  href="node35.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node33.html">3.3.1 PubMed にクエリを送信する</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node32.html">3.3 PubMed</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node35.html">3.4 GenBank</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION004320000000000000000">
+3.3.2 PubMed のレコードを入手する</A>
+</H2>
+
+<P>
+前節では，一連の ID を手に入れる方法を説明しました．
+ID を入手したら，次は各 ID に関係のある MEDLINE のレコードを入手して，
+そこから情報を抽出したいと考えるでしょう．
+
+<P>
+PubMed からレコードを抽出するインターフェースは，Python プログラマーに
+とってはとても直感的なはず - Python における辞書型のモデル化 - です．
+このインターフェースをセットアップするには，PubMed から取得した結果を
+構文解析するためのパーザが必要です．以下のコードで，全てのセットアップ
+を行います:
+
+<P>
+<div class="verbatim"><pre>
+from Bio import PubMed
+from Bio import Medline
+
+rec_parser = Medline.RecordParser()
+medline_dict = PubMed.Dictionary(parser = rec_parser)
+</pre></div>
+
+<P>
+ここで行ったのは，辞書ライクなオブジェクトの <var>medline_dict</var> の作成
+です．文献情報を得るには，<code>medline_dict[id_to_get]</code> のようにして
+アクセスします．この操作を行うと， PubMed に接続し，探している文献を
+見つけ，文献情報を構文解析してレコードオブジェクトに変換して返します．
+なんて賢いんでしょう! 
+
+<P>
+さて，この素晴らしい辞書オブジェクトをどう使えば，ある ID からある情報
+を出力できるか見てみましょう．必要な作業は，単に手元の ID (前節で入手
+した <var>orchid_ids</var> ）にわたってループし，興味の対象となる情報を表示
+するだけです:
+
+<P>
+<div class="verbatim"><pre>
+for id in orchid_ids[0:5]:
+    cur_record = medline_dict[id]
+    print 'title:', string.rstrip(cur_record.title)
+    print 'authors:', cur_record.authors
+    print 'source:', string.strip(cur_record.source)
+    print
+</pre></div>
+
+<P>
+上のコードに対する出力は以下のようになります：
+
+<P>
+<div class="verbatim"><pre>
+title: Sex pheromone mimicry in the early spider orchid (ophrys sphegodes):
+patterns of hydrocarbons as the key mechanism for pollination by sexual
+deception [In Process Citation]
+authors: ['Schiestl FP', 'Ayasse M', 'Paulus HF', 'Lofstedt C', 'Hansson BS', 
+'Ibarra F', 'Francke W']
+source: J Comp Physiol [A] 2000 Jun;186(6):567-74
+</pre></div>
+
+<P>
+特筆すべきは，著者名のリストです．これは標準の Python リスト型として
+返されています．こうすることで，Python の標準ツールを使って操作したり
+検索したりできます．例えば，以下のようなコードを使えば，一連のエントリ
+全体にわたってループして，特定の著者を探し出せます:
+
+<P>
+<div class="verbatim"><pre>
+search_author = 'Waits T'
+
+for id in our_id_list:
+    cur_record = medline_dict[id]
+    
+    if search_author in cur_record.authors:
+        print "Author %s found: %s" % (search_author,
+                                       string.strip(cur_record.source))
+</pre></div> 
+
+<P>
+PubMed と Medline のインターフェースは成熟し，よく出来ています - 
+本節を読んで，きっとこのインタフェースの威力と使い方をよく理解して
+もらえたことでしょう．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.3.1 PubMed にクエリを送信する" 
+  rel="prev" title="3.3.1 PubMed にクエリを送信する" 
+  href="node33.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.3 PubMed" 
+  rel="parent" title="3.3 PubMed" 
+  href="node32.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.4 GenBank" 
+  rel="next" title="3.4 GenBank" 
+  href="node35.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node33.html">3.3.1 PubMed にクエリを送信する</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node32.html">3.3 PubMed</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node35.html">3.4 GenBank</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

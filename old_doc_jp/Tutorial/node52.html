@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node53.html">
+<LINK rel="prev" href="node51.html">
+<LINK rel="parent" href="node51.html">
+<LINK rel="next" href="node53.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="SeqFeature の構造">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.7.2.1 SeqFeature の構造</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.7.2 feature とアノテーション -" 
+  href="node51.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.7.2 feature とアノテーション -" 
+  href="node51.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.7.2.2 ロケーションとポジション" 
+  href="node53.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node51.html">3.7.2 feature とアノテーション -</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node51.html">3.7.2 feature とアノテーション -</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node53.html">3.7.2.2 ロケーションとポジション</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION004721000000000000000">
+3.7.2.1 SeqFeature の構造</A>
+</H3>
+
+<P>
+配列 feature を扱う際，<tt class="class">SeqFeature</tt> クラス自体がデータ構造の最初の
+段階となります．このクラスには様々な属性があるので，まずは
+それぞれの属性と一般的な機能を列挙して，その後で実例の GenBank の
+feature テーブルに適用する方法を示すために例題を解いてゆくことに
+しましょう．<tt class="class">SeqFeature</tt> の属性は以下のようになっています:
+
+<P>
+<DL>
+<DT><STRONG><tt class="member">location</tt></STRONG></DT>
+<DD>- <tt class="class">SeqFeature</tt> の表す feature が
+対象にしている配列上の位置です．<tt class="member">location</tt> の端点情報はあいまいでも
+かまいません - <tt class="member">location</tt> を扱う方法についての詳しい説明は
+<A HREF="node53.html#sec:locations">3.7.2</A> にあります．
+
+<P>
+</DD>
+<DT><STRONG><tt class="member">type</tt></STRONG></DT>
+<DD>- feature のタイプをテキストで表したものです
+(例えばこの値は 'CDS' や 'gene' になります)．
+
+<P>
+</DD>
+<DT><STRONG><tt class="member">ref</tt></STRONG></DT>
+<DD>- 別の配列に対する参照です．配列 feature は時に，
+ある配列の「上に」ありながら，別の配列に対する参照を行っている
+場合があります．この属性は，そうした他の配列を (通常はアクセション
+番号で) 参照する手段を提供します．配列の大部分がコード領域であるような
+ゲノム配列があり，そのエクソンの一つが別のアクセションを割り当てられて
+いる場合が良い例です．このような場合，feature 情報中で欠失している
+エクソンに対するアクセションを参照する必要が生じます．
+
+<P>
+</DD>
+<DT><STRONG><tt class="member">ref_db</tt></STRONG></DT>
+<DD>- <tt class="member">ref</tt> と合わせて，配列間の参照を
+表現する場合に使います．配列間で参照を行っている場合，
+同じデータベース内での参照であれば <tt class="member">ref_db</tt> は<tt class="constant">None</tt>
+になり，それ以外の場合にはデータベースの名前になります．
+
+<P>
+</DD>
+<DT><STRONG><tt class="member">strand</tt></STRONG></DT>
+<DD>- 該当する feature が位置しているストランド
+です．トップストランドの場合には <code>'1'</code>，ボトムストランドの
+場合には <code>'-1'</code> ，両方のストランド (またはストランドを区別しない)
+場合には <code>'0'</code> です．この属性は二重鎖 DNA の場合にのみ有効で，
+タンパクや RNA 配列では意味を成さないので注意してください．
+
+<P>
+</DD>
+<DT><STRONG><tt class="member">qualifiers</tt></STRONG></DT>
+<DD>- その他の feature に関する情報を
+入れておくための Python 辞書型オブジェクトです．キーには入っている
+情報を簡単な言葉で表した文字列を入れ，値には実際の情報を入れます．
+例えば，よく使われるのは <code>``evidence''</code> というキーと，
+<code>``computational (non-experimental'')</code> という値のような組み合わせ
+です．このような情報を入れておくことで，この feature を調べている
+人に，該当する feature が実験的に (wet のラボで) 確認されていないことを
+教えられます．
+
+<P>
+</DD>
+<DT><STRONG><tt class="member">sub_features</tt></STRONG></DT>
+<DD>- 属性情報の構造で最も重要な機能は，
+ある属性が別の <tt class="member">sub_features</tt> を自分の下に持てるということです．
+これによって属性情報を入れ子にでき，GenBank/EMBL の feature
+行を直感的な (はずの) やり方で扱う助けになります．
+</DD>
+</DL>
+
+<P>
+<tt class="class">SeqFeature</tt> を実際に使った例を示すために，GenBank の属性
+テーブルの以下の属性エントリに注目してみます:
+
+<P>
+<div class="verbatim"><pre>
+     mRNA            complement(join(&lt;49223..49300,49780..&gt;50208))
+                     /gene="F28B23.12"
+</pre></div>
+
+<P>
+このエントリに対する <tt class="class">SeqFeature</tt> オブジェクトを得て，
+その属性のうち簡単なものを見てみれば，<tt class="member">type</tt> が <code>'mRNA'</code>
+であり，<tt class="member">strand</tt> は <code>-1</code> (<code>complement()</code> のため)，
+そして外部のデータベースを参照していないので <tt class="member">ref</tt> および
+<tt class="member">ref_db</tt> は <tt class="constant">None</tt> になっているはずです．
+<tt class="member">qualifiers</tt> は <code>{'gene': 'F28B23.12'}</code> のような
+Python 辞書型になっているはずです．
+
+<P>
+さて，もっとトリッキーな部分である，<code>'join'</code> がどのように
+処理されるかを見てみましょう．まず，トップレベルの<tt class="class">SeqFeature</tt>
+(今見ている<tt class="class">SeqFeature</tt> そのもの) の <tt class="member">location</tt> は
+<code>'&lt;49223'</code> から <code>'&gt;50208'</code> に設定されます
+(曖昧 (fuzzy) な<tt class="member">location</tt> をどのように扱うかについては
+<A HREF="node53.html#sec:locations">3.7.2</A> 節を参照してください)．
+さて，トップレベルオブジェクトの <tt class="member">location</tt> は feature 全体に
+わたる区間を指していまが，それでは<code>'join()'</code> の情報は
+どこにあるのでしょう? そう，<tt class="member">sub_features</tt> の中にあるのです．
+
+<P>
+<tt class="member">sub_features</tt> 属性は二つの<tt class="class">SeqFeature</tt> オブジェクトから
+なるリストになっているはずで，ここに <code>join</code> に関する情報
+が入っています．<code>top_level_feature.sub_features[0]</code> が指す
+オブジェクトを見てみましょう．このオブジェクトは <tt class="class">SeqFeature</tt>
+オブジェクトで，<tt class="member">type</tt> は <code>mRNA_join</code> ，
+<tt class="member">strand</tt> は <code>-1</code> (親となる <tt class="class">SeqFeature</tt> オブジェクトから
+受け継いでいます) であり，<tt class="member">location</tt> は <code>'&lt;49223'</code> から
+<code>'49300'</code> です．
+
+<P>
+つまり，<tt class="member">sub_features</tt> を使えば，必要に応じて (例えばゲノム配列
+中からエクソンだけを取り出したい場合) feature の内部情報にアクセス
+したり，単に概要だけ (ある領域内に存在するある遺伝子のコード配列だけを
+知りたい場合) を扱ったりできるのです．こうした構造化によって，
+時に複雑になる<tt class="class">SeqFeature</tt> 内の情報を簡単かつ直感的に
+扱えるようになるはずです．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.7.2 feature とアノテーション -" 
+  rel="prev" title="3.7.2 feature とアノテーション -" 
+  href="node51.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.7.2 feature とアノテーション -" 
+  rel="parent" title="3.7.2 feature とアノテーション -" 
+  href="node51.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.7.2.2 ロケーションとポジション" 
+  rel="next" title="3.7.2.2 ロケーションとポジション" 
+  href="node53.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node51.html">3.7.2 feature とアノテーション -</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node51.html">3.7.2 feature とアノテーション -</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node53.html">3.7.2.2 ロケーションとポジション</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

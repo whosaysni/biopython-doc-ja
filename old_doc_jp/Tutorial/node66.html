@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node67.html">
+<LINK rel="prev" href="node65.html">
+<LINK rel="parent" href="node65.html">
+<LINK rel="next" href="node67.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="Structure オブジェクト">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.11.1.1 Structure オブジェクト</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11.1 分子構造の表現方式" 
+  href="node65.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11.1 分子構造の表現方式" 
+  href="node65.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.1.2 Model オブジェクト" 
+  href="node67.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node65.html">3.11.1 分子構造の表現方式</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node65.html">3.11.1 分子構造の表現方式</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node67.html">3.11.1.2 Model オブジェクト</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+<div class='online-navigation'>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"></a>
+
+<UL CLASS="ChildLinks">
+<LI><A href="node66.html#SECTION0041111100000000000000">3.11.1.1.1 Structure オブジェクトを構築する</a>
+<LI><A href="node66.html#SECTION0041111200000000000000">3.11.1.1.2 ヘッダ (header) とトレイラ (trailer)</a>
+</ul>
+<!--End of Table of Child-Links-->
+</div>
+<HR>
+
+<H3><A NAME="SECTION0041111000000000000000">
+3.11.1.1 Structure オブジェクト</A>
+</H3>
+
+<P>
+<tt class="class">Structure</tt> オブジェクトは高分子を表現するデータの階層構造の
+頂点に位置しています．<tt class="class">Structure</tt> の id はユーザが指定した
+文字列になります．<tt class="class">Structure</tt> オブジェクトには，複数の
+<tt class="class">Model</tt> オブジェクトが子エンティティとして入っています．
+ほとんどの (全てではありませんが) 結晶構造には単一のモデルしか
+ない一方， NMR で決定される構造には一般的にいくつかのモデルが
+入っています．結晶構造において多くの分子にゆらぎが生じている場合
+にも，複数のモデルができます．
+
+<P>
+
+<H4><A NAME="SECTION0041111100000000000000">
+3.11.1.1.1 Structure オブジェクトを構築する</A>
+</H4>
+
+<P>
+<tt class="class">Structure</tt> オブジェクトは <tt class="class">PDBParser</tt> オブジェクトから
+生成されます:
+
+<P>
+<div class="verbatim"><pre>
+from Bio.PDB.PDBParser import PDBParser
+
+p=PDBParser(PERMISSIVE=1)
+
+structure_id="1fat"
+
+filename="pdb1fat.ent"
+
+s=p.get_structure(structure_id, filename)
+</pre></div>
+
+<P>
+<var>PERMISSIVE</var> フラグは，PDB ファイルに関するよくあるいくつかの問題
+(<A HREF="node81.html#problem_structures">3.11.5</A> 参照) をパーザに無視させます (とはいえ，
+これによっていくつかの原子や残基が失われるかもしれないので注意して
+ください) ．このこのフラグを指定しない場合，パーザが PDB ファイルを
+構文解析している際に問題が生じると<tt class="exception">PDBConstructionException</tt>
+を送出します．
+
+<P>
+
+<H4><A NAME="SECTION0041111200000000000000">
+3.11.1.1.2 ヘッダ (header) とトレイラ (trailer)</A>
+</H4>
+
+<P>
+<tt class="function">get_header</tt> および <tt class="function">get_trailer</tt> といったメソッドを
+用いると，PDB ファイル中のヘッダとトレイラを (文字列からなる単純なリスト
+で) <tt class="class">PDBParser</tt> オブジェクトから取り出せます．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11.1 分子構造の表現方式" 
+  rel="prev" title="3.11.1 分子構造の表現方式" 
+  href="node65.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11.1 分子構造の表現方式" 
+  rel="parent" title="3.11.1 分子構造の表現方式" 
+  href="node65.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.1.2 Model オブジェクト" 
+  rel="next" title="3.11.1.2 Model オブジェクト" 
+  href="node67.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node65.html">3.11.1 分子構造の表現方式</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node65.html">3.11.1 分子構造の表現方式</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node67.html">3.11.1.2 Model オブジェクト</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

@@ -1,0 +1,2834 @@
+\chapter{クックブック -- 便利なツール群}
+\label{sec:cookbook}
+\section{BLAST}
+
+皆さん\program{BLAST} は大好きですよね? まったくもって，
+手持ちの配列を世界中の既知の配列と比較するのに，これ以上簡単な方法は
+ありませんね．もし同じことを行うコードを私が書いたとしても，
+一日半かかった挙句，結果もたいしてよくないでしょう．
+とはいえ，この節はもちろん\program{BLAST} がどれだけすごいか，といった
+もうご存知のことを説明するところではありません．
+この節では，\program{BLAST} にかかわる問題 --
+大規模な\program{BLAST} 処理から生成される膨大なデータの処理や，
+一般的な\program{BLAST} 実行の自動化がとても難しいという問題を
+扱います．
+
+幸い，Biopython folks たちはこの問題にきわめて精通していて，
+\program{BLAST} を操作して作業を簡単にするためのツールを沢山開発
+してきました．この節では，こうしたツールの使い方や，作業にツールを
+役立てる方法について説明します．
+
+\subsection{BLAST をインターネット越しに走らせる}
+\label{sec:running-www-blast}
+
+BLASTing を自動化するには，まず最初の段階として\program{BLAST} の全てに
+Python からアクセスできるようにしなければなりません．そこで，Biopython
+には \program{BLAST} の WWW 版 (\url{http://www.ncbi.nih.gov/BLAST/})
+を直接 Python スクリプトから動作させられるコードが入っています．
+これはとても素晴らしいことです．というのも，とりわけ \program{BLAST} 
+では処理を待ち行列化したり，結果を別のページに表示したりするため，
+スクリプトから\program{BLAST} を扱うのは本当に苦痛だからです．
+NCBI が行った全ての変更に対応できるように，Biopython のコードを更新
+しつづけるのは，とても大変なんですよ!
+
+WWW 版の BLAST を扱うコードは \module{Bio.Blast.NCBIWWW} モジュール内
+と \function{blast} 関数に入っています．
+仮に FASTA 形式のファイルとして持っている情報を，データベース上の情報
+に対して BLAST したいとしましょう。まずは FASTA ファイルから情報を
+取り出す必要があります。もっとも簡単なのは、\class{Fasta} イテレータ
+を用いてレコードを取り出す方法です。以下の例では、イテレータを用いて、
+あるファイルから一番目の FASTA レコードだけを取り出すこちにします
+（FASTA イテレータについては \ref{sec:fasta-parsing} 節で詳しく説明
+しています）．
+
+\begin{verbatim}
+from Bio import Fasta
+
+file_for_blast = open('m_cold.fasta', 'r')
+f_iterator = Fasta.Iterator(file_for_blast)
+
+f_record = f_iterator.next()
+\end{verbatim}
+
+さて，FASTA のレコードを手に入れたので、blast する準備ができました。
+もっとも簡単な BLAST (互いに重複しない全てのデータベースエントリに
+対する単純な \program{blastn} の実行) を行うコードは以下のように
+なります:
+
+\begin{verbatim}
+from Bio.Blast import NCBIWWW
+b_results = NCBIWWW.blast('blastn', 'nr', f_record)
+\end{verbatim}
+
+関数\function{blast} はこの他にもたくさんの引数をとります．こうした
+引数は，基本 \program{BLAST} (basic \program{BLAST}) のページ
+(\url{http://www.ncbi.nlm.nih.gov/blast/blast.cgi?Jform=0})
+で設定できる様々なパラメタと基本的に同じです．とはいえ，ここでは
+先頭のいくつかの重要な (そして省略できない) 引数についてだけ
+説明します．
+
+最初の引数は配列の検索に用いる blast プログラムです。プログラムの
+オプションと説明は 
+\url{http://www.ncbi.nlm.nih.gov/BLAST/blast_program.html}
+にあります．第二の引数には検索対象のデータベースを指定します．
+データベースの選択肢もまた NCBI のウェブページ，
+\url{http://www.ncbi.nlm.nih.gov/BLAST/blast_databases.html} に
+あります．
+
+検索オプションを設定したら，あとは自分の FASTA 配列を文字列で
+渡すだけです．これが三つ目の引数で，これを設定すれば \program{BLAST}
+の準備は完了です．Biopython は検索結果がいつ利用できるようになるか
+を気にかけ，結果が得られるまで処理を一時停止した後，得られた結果を
+返してくれます．
+
+結果を解析する前に結果をファイルに保存しておき，後で後戻りしたり
+\program{BLAST} をかけなおしたりしなくてすむようにしておけば，
+便利なことがよくあります．私は\program{BLAST} の結果ファイルから
+情報を抽出するコードをデバッグしているときにとても便利に思いましたが，
+単に解析済みの内容をバックアップするためだけでも便利かもしれません．
+戻ってきた解析結果を保存したり，結果を解析したいのなら注意してください．
+というのは，ファイルに結果を書き出す際に\code{handle.read()} を
+使ってしまうと，\code{handle} にはもはや情報が入ってないからです．
+この問題をうまく回避するには，まず\function{read} を使って
+全ての情報を \code{handle} から取り出して文字列に入れ，その後で
+文字列を処理します (注意: \module{copy} モジュールを使っても
+\code{handle} はコピーできないのでうまくいきません)．
+BLAST の結果の入った文字列を取得して，それをファイルに書き出すには
+次のようにします:
+
+\begin{verbatim}
+# save the results for later, in case we want to look at it
+save_file = open('my_blast.out', 'w')
+blast_results = result_handle.read()
+save_file.write(blast_results)
+save_file.close()
+\end{verbatim}
+
+この操作を行うと，結果は\file{my_blast.out} に入り，
+\code{blast_results} は結果の入った文字列になります．
+
+\program{BLAST} パーザの\function{parse} 関数は，
+\ref{sec:parsing-www-blast} 節でも述べるように，ファイルハンドル
+類似のオブジェクトを解析対象として引数にとります．
+\program{BLAST} 結果の文字列からハンドル類似オブジェクトを手に入れる
+には，Python の標準ライブラリモジュール\module{cStringIO} を使います．
+以下のコードを使えば，パーザに直接入力できるようなハンドルを
+入手できます:
+
+\begin{verbatim}
+import cStringIO
+string_result_handle = cStringIO.StringIO(blast_results)
+\end{verbatim}
+
+結果が得られたので、これで作業を行う準備ができました。では
+\program{BLAST} 出力の解析の節に移りましょう．
+
+
+\subsection{WWW 版 BLAST の出力を解析する}
+\label{sec:parsing-www-blast}
+
+WWW 版の \program{BLAST} はしばしば出力を変更してしまい、パーザを
+役立たずにしまうので悪名を馳せています．このため、Biopython のように
+集中管理されたパーザを持つのは重要なことです．なぜなら多くの人が
+パーザをテストし、利用して、最新のものに保てるからです．
+そのほうが，こうしたツールを自分で維持しようとするよりずっとまし
+です．
+
+WWW \program{BLAST} パーザの解析対象となる情報を得るには二つの方法
+があります．第一の方法は，\program{blast} を操作する Biopython
+の関数を使って情報を取り出すというものです -- この方法は
+\ref{sec:running-www-blast} で解説しています．
+二つ目の方法は，NCBI のサイトで手動で \program{BLAST} を実行して，
+その結果を保存するやり方です．正しい形式で出力を得るには，
+\program{BLAST} の最終結果のページ (欲しいデータが全て入った
+ページのことですよ!) を HTML 形式でファイルに保存する必要があります
+(テキスト形式で保存してはいけません!)． 重要な点は，こうした
+解析対象のデータを得るために，別に Biopython のスクリプトを
+使わなくてもかまわないということです．
+
+どちらの方法を用いるにせよ、その次には出力結果に対するハンドルを得る
+必要があります。Python では、ハンドルは様々な情報源から情報を 
+\function{read} や\function{readline()} といった関数で
+取り出せるようにするために入力を記述する一般的な方法です．
+ハンドルは \program{BLAST} パーザへの入力形式になっています
+(他の biopython パーザでも同じです）．
+
+上述のコードに従ってスクリプトを介して\program{BLAST} やりとりして
+いれば，既に\code{blast_results} を手に入れているはずで，パーザに
+渡すにはもってこいです．結果をファイルへ保存しているなら、以下のような
+コードを使ってファイルを開けば必要なものが手に入ります:
+
+\begin{verbatim}
+blast_results = open('my_blast_results', 'r')
+\end{verbatim}
+
+ハンドルを得たので、出力を解析する準備ができました。解析の
+コードは本当に小さなものです:
+
+\begin{verbatim}
+from Bio.Blast import NCBIWWW
+
+b_parser = NCBIWWW.BlastParser()
+b_record = b_parser.parse(blast_results)
+\end{verbatim}
+
+このコードでは，\program{BLAST} 出力を解析して \module{Blast} の
+\class{Record} クラスにしています．このクラスに何が入っているかは
+下の\class{Record} クラスに関する節で説明しますが，大雑把に言えば，
+取り出したいと思うようなものは何でも入っています．
+ここでは単に \program{BLAST} レポートから情報を取り出す方法を例示
+するだけですが，ここで示していない別な情報が欲しい場合には、
+\class{Record} クラスに関する情報を詳しく調べたり、コードや
+自動生成されるドキュメントを一読するとよいでしょう -- docstring
+には，\class{Record} の各々の情報に何が入っているかが詳しく書かれ
+ています．
+
+例題を先に進めて，\program{blast} の結果レポートから指定した
+域値以上の blast の全てのヒットについてサマリー情報を出力して
+みましょう。コードは以下の通りです:
+
+\begin{verbatim}
+E_VALUE_THRESH = 0.04
+
+for alignment in b_record.alignments:
+    for hsp in alignment.hsps:
+        if hsp.expect < E_VALUE_THRESH:
+            print '****Alignment****'
+            print 'sequence:', alignment.title
+            print 'length:', alignment.length
+            print 'e value:', hsp.expect
+            print hsp.query[0:75] + '...'
+            print hsp.match[0:75] + '...'
+            print hsp.sbjct[0:75] + '...'
+\end{verbatim}
+
+このコードは以下のようなサマリレポートを出力します:
+
+\begin{verbatim}
+****Alignment****
+sequence: >gb|AF283004.1|AF283004 Arabidopsis thaliana cold acclimation protein WCOR413-like protein
+alpha form mRNA, complete cds
+length: 783
+e value: 0.034
+tacttgttgatattggatcgaacaaactggagaaccaacatgctcacgtcacttttagtcccttacatattcctc...
+||||||||| | ||||||||||| || ||||  || || |||||||| |||||| |  | |||||||| ||| ||...
+tacttgttggtgttggatcgaaccaattggaagacgaatatgctcacatcacttctcattccttacatcttcttc...
+\end{verbatim}
+
+基本的には，一度 \program{BLAST} のレポートを解析したら、その情報を使っ
+てやりたいことをできます。もちろん，何をやりたいかによりますが，
+やりたいことをはじめる上で本節が手助けになるように祈ります!
+
+\subsection{BLAST レコードクラス}
+
+\program{BLAST} のレポートから情報を取り出す上で考慮すべき重要なことは、
+情報が蓄えられているオブジェクトの型です。Biopython では、何の出力を
+解析しているかによって，\program{Blast} か \program{PSIBlast} いずれか
+の\class{Record} オブジェクトを返します．これらのオブジェクトは
+\module{Bio.Blast.Record} で定義されており、きわめて完成されたものです。
+
+以下は，\program{Blast} と\program{PSIBlast} の \class{Record} クラス
+を試しにクラス図に書いてみたものです．UML に詳しい読者で，間違いや
+改善すべき点を見つけた方は教えてください．\module{Blast} の
+クラス図は図\ref{fig:blastrecord} です．
+
+%\begin{htmlonly}
+%\label{fig:blastrecord}
+%\imgsrc[width=650, height=750]{images/BlastRecord.png}
+%\end{htmlonly}
+
+%\begin{latexonly}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{images/BlastRecord}
+\caption{BLAST のレポート内の情報を表現している Blast Record のクラス図}
+\label{fig:blastrecord}
+\end{figure}
+%\end{latexonly}
+
+
+\class{PSIBlast} レコードオブジェクトは良く似ていますが、
+\program{PSIBlast} の繰り返しのステップで用いられる \var{rounds}
+をサポートしています。\class{PSIBlast} のクラス図を図
+\ref{fig:psiblastrecord} に示します。
+
+%\begin{htmlonly}
+%\label{fig:psiblastrecord}
+%\imgsrc[width=650, height=750]{images/PSIBlastRecord.png}
+%\end{htmlonly}
+
+%\begin{latexonly}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{images/PSIBlastRecord}
+\caption{PSIBlast Record クラスのクラス図}
+\label{fig:psiblastrecord}
+\end{figure}
+%\end{latexonly}
+
+\subsection{ローカルで BLAST を走らせる}
+
+配列を検索する対象となるデータベースを自作したいなら，ローカルでの
+\program{BLAST} の実行がまさにその方法です．オンラインでの
+\program{BLAST} と同様，Biopython ではスクリプトからローカルの 
+\program{BLAST} 実行形式を呼び出せる素晴らしいコードを沢山提供しており，
+\program{BLAST} 実行形式が提供している数多くのコマンドラインオプション
+に全てアクセスできるようになっています．
+様々なプラットフォーム向けのコンパイル済みのローカル実行用
+\program{BLAST} は，
+\url{ftp://ncbi.nlm.nih.gov/blast/executables/} で手に入ります．
+また，NCBI toolbox (\url{ftp://ncbi.nlm.nih.gov/toolbox/}) から
+自分でコンパイルしても作成できます．
+
+ローカルでの\program{BLAST} 実行を操作するためのコード，とりわけ
+\function{blastall} や\function{blastpgp} といった関数は，
+\module{Bio.Blast.NCBIStandalone} にあります．これらの関数は
+その名が示すプログラム実行形式に対応しています．
+
+これらの関数を使ってローカルのデータベースに対して\program{blastall}
+を実行し、結果を返させてみましょう。まず，\program{blast} を実行するた
+めに必要なパスを設定しておきましょう．知っておかねばならないのは，
+(\program{formatdb} で用意しておいたはずの) 検索対象とするデータベース
+へのパス，検索したい配列の入ったファイルへのパス，そして
+\program{blastall} 実行可能形式へのパスを通す必要があります．
+
+\begin{verbatim}
+import os
+
+my_blast_db = os.path.join(os.getcwd(), 'at-est', 'a_cds-10-7.fasta')
+my_blast_file = os.path.join(os.getcwd(), 'at-est', 'test_blast',
+                             'sorghum_est-test.fasta')
+my_blast_exe = os.path.join(os.getcwd(), 'blast', 'blastall')
+\end{verbatim}
+
+全てのパスを設定したので，\program{blast} を実行して結果を取り出す
+準備が整いました．下の二行で\program{blast} を実行します:
+
+\begin{verbatim}
+from Bio.Blast import NCBIStandalone
+
+blast_out, error_info = NCBIStandalone.blastall(my_blast_exe, 'blastn',
+                                                my_blast_db, my_blast_file)
+\end{verbatim}
+
+ローカルの\program{blast} プログラムに対する Biopython の
+インタフェースは，二つの値を返していることに注意してください．
+最初の戻り値は\program{blast} の出力に対するハンドルで，
+保存したりパーザに渡したりできます．二つ目の戻り値は，\program{blast}
+コマンドが生成することがあるエラー出力が入ります．
+
+エラー情報の取り扱いは厄介です．というのは，エラーが存在しない場合に
+\code{error_info.read()} を実行しようとすると，\function{read}
+の処理がブロックされてしまって値を返さないためにスクリプトが
+停止してしまうからです．私の考えでは，\code{blast_out} に
+返された結果を解析しても何も得られなかった場合にのみエラーを
+出力し，それ以外の場合には何もせずほうっておくのが，エラーを
+うまく取り扱う一番いい方法です．
+
+結果を解析する前にファイルに保存しておこうと思っているなら，
+前の WWW \program{blast} の節を参照して，\module{copy} モジュールの
+使い方について調べておくと良いでしょう．
+
+さて，出力が手に入ったので，その解析を行わねばなりませんね．
+では先に読み進んで，ローカルで実行した\program{BLAST} の出力を解析する
+方法について学びましょう．
+
+\subsection{ローカル BLAST の出力を解析する}
+
+ローカル \program{BLAST} の生成する出力は，web ベースの\program{BLAST}
+の出力とは違っているので，\module{Bio.Blast.NCBIStandalone} 入っている
+パーザを使って結果を処理します．
+
+WWW blast の場合と同様 (前述の情報を参照してください)，
+パーザに出力を渡すには，ハンドルオブジェクトを持っていなければ
+なりません．ハンドルオブジェクトは \function{readline} メソッドを
+実装していて，かつ正しくその処理を行ってくれなければなりません．
+こうしたハンドルを得るためによく使うやり方は，\function{blastall}
+や\function{blastpgp} のような，Biopython が提供している関数を使って
+ローカル\program{BLAST} を実行するか，\program{blast} を
+コマンドラインでローカルに実行して，以下のようなコードを実行します:
+
+\begin{verbatim}
+blast_out = open('my_file_of_blast_output', 'r')
+\end{verbatim}
+
+WWW \program{blast} と同じように、別に Biopython の便宜関数を
+わざわざ使う必要はありません．
+
+さて，ハンドルが手に入ったので　(以後これを \code{blast_out} と
+呼ぶことにします) 、出力を解析する準備ができました．出力の解析は
+以下のようなコードで行います:
+
+\begin{verbatim}
+from Bio.Blast import NCBIStandalone
+
+b_parser = NCBIStandalone.BlastParser()
+b_record = b_parser.parse(blast_out)
+\end{verbatim} 
+
+このコードを実行すると，\program{BLAST} の生成したレポートを解析して，
+\module{Blast} \class{Record} クラス (解析している出力の
+内容によって，\class{Record} クラスは Blast 用と PSIBlast 用の
+どちらかになります) を生成し，そこからデータを取り出せるように
+してくれます．今回の例では，ある域値以上のアラインメント全てに対する
+簡単なサマリを出力してみます．
+
+
+\begin{verbatim}
+E_VALUE_THRESH = 0.04
+for alignment in b_record.alignments:
+    for hsp in alignment.hsps:
+        if hsp.expect < E_VALUE_THRESH:
+            print '****Alignment****'
+            print 'sequence:', alignment.title
+            print 'length:', alignment.length
+            print 'e value:', hsp.expect
+            print hsp.query[0:75] + '...'
+            print hsp.match[0:75] + '...'
+            print hsp.sbjct[0:75] + '...'
+\end{verbatim}
+
+WWW 版 の BLAST における出力解析についての節をすでに読んでいれば，
+上記コードがくだんの節の内容と同じだと気づくでしょう。何らかの
+出力を解析して \class{Record} クラスにしたら，後は元々の
+\program{BLAST} の出力形式に関係なく取り扱えるのです。
+まったく素晴らしい！
+
+「一つのレコードを解析できるのは確かにすごいけど，私は滅茶苦茶
+沢山レコードの入った\program{BLAST} 出力ファイルを作っちゃったんだよね．
+-- これってどうやったら全部解析できるの?」心配ご無用．答えは
+次の節にあります．
+
+
+\subsection{BLAST の出力でいっぱいのファイルを解析する}
+
+もちろん，沢山の配列情報を一まとめにしてデータベースに当て，
+全ての配列に対してよくできたレポートを取り出せるという点では，
+ローカル \program{blast} はよくできています．
+ですから，Biopython には，馬鹿でかいファイルをメモリ問題に
+悩まされずに解析する機能があります．
+
+巨大なファイルの解析は，blast イテレータ (blast iterator)
+を用いて行えます．イテレータを使えるようにするには，まず
+パーザを設定して，blast の出力レポートを解析して Blast 
+\class{Record} オブジェクトにします:
+
+\begin{verbatim}
+from Bio.Blast import NCBIStandalone
+
+b_parser = NCBIStandalone.BlastParser()
+\end{verbatim}
+
+次に，これら一群の blast レコードに対するハンドルが手元にあると
+仮定して，これを \code{blast_out} と呼ぶことにします．
+ハンドルの取得については，上の blast 出力の解析に関する節で
+詳しく述べています．
+
+パーザをハンドルが手に入ったところで，以下のようなコマンドを実行
+すれば，イテレータを準備できます:
+
+\begin{verbatim}
+b_iterator = NCBIStandalone.Iterator(blast_out, b_parser)
+\end{verbatim}
+
+二つ目のオプション，\code{b_parser} はオプションです．
+パーザを指定しなければ，このイテレータは生の BLAST レポートを
+一つ一つ返してゆきます．
+
+イテレータが手に入ったら，(パーザが生成した) blast レコードを
+\function{next} で取り出します:
+
+\begin{verbatim}
+b_record = b_iterator.next()
+\end{verbatim}
+
+イテレータは\function{next} を呼び出すたびに新しいレコードを一つ
+返します．
+さて，このレコード全体にわたって反復操作 (iteration) を行い，
+お気に入りの blast 小レポートを作成できます:
+
+\begin{verbatim}
+while 1:
+    b_record = b_iterator.next()
+
+    if b_record is None:
+        break
+
+    E_VALUE_THRESH = 0.04
+    for alignment in b_record.alignments:
+        for hsp in alignment.hsps:
+            if hsp.expect < E_VALUE_THRESH:
+                print '****Alignment****'
+                print 'sequence:', alignment.title
+                print 'length:', alignment.length
+                print 'e value:', hsp.expect
+
+                if len(hsp.query) > 75:
+                    dots = '...'
+                else:
+                    dots = ''
+                
+                print hsp.query[0:75] + dots
+                print hsp.match[0:75] + dots
+                print hsp.sbjct[0:75] + dots
+\end{verbatim}
+
+レコードを解析しきってしまうと\code{b_iterator.next()} は
+\code{None} を返すことに注意してください．これによって，
+レコードが存在するか調べながら\keyword{while} ループを実行すれば，
+簡単にファイル全体にわたって反復処理できます．
+
+イテレータを使うと，処理対象を一度に一単位づつ読み込むので，巨大な
+blast レコードをメモリ上の問題なしに処理できます．私はこの
+機能を使ってとんでもなくばかでかいファイルを全く問題なく
+解析したことがあります．
+
+\subsection{巨大なファイル中から不正なレコードを探す}
+
+遭遇してとても不快に思う問題は，巨大な BLAST ファイルをしばらくの
+間解析していて，その後パーザが \exception{SyntaxError} で停止する
+というものです。これは深刻な問題です。というのも，
+\exception{SyntaxError} がパーザの問題なのか、あるいは \program{BLAST}
+の問題なのかが分からないからです。さらに悪いことに、エラーを無視する
+ことすらできません．というのも，どこで解析が失敗したのか判らないので，
+エラーを無視するとデータの重要なポイントを見過ごしてしまうかも
+しれないからです．
+
+こうした問題を回避するためにはちょっとしたスクリプトを書かねばならない
+のが常でしたが，今や \module{Bio.Blast} モジュールには
+\class{BlastErrorParser} があり，作業を本当に簡単にしてくれます．
+\class{BlastErrorParser} は，通常の \class{BlastParser} に
+非常によく似ていますが，パーザが送出した\exception{SyntaxError} 
+を補足して，原因を分析しようと試みるレイヤが追加されています．
+
+このパーザの使い方をちょっと見てみましょう -- まず，解析対象の
+ファイルと、発生した問題のレポートを書き出すためのファイルを定義します:
+
+\begin{verbatim}
+import os
+ 
+b_file = os.path.join(os.getcwd(), 'blast_out', 'big_blast.out')
+error_file = os.path.join(os.getcwd(), 'blast_out', 'big_blast.problems')
+\end{verbatim}
+
+ここで\class{BlastErrorParser} が必要になります:
+
+\begin{verbatim}
+from Bio.Blast import NCBIStandalone
+
+error_handle = open(error_file, 'w')
+
+b_error_parser = NCBIStandalone.BlastErrorParser(error_handle)
+\end{verbatim}
+
+パーザがハンドルをオプションの引数として取っていることに注意
+してください．ハンドルを渡すと，パーザは\exception{SyntaxError}
+を送出した \program{blast} の全てのレコードをこのハンドルに
+書き出します．ハンドルを設定しなければ，こうしたレコードは
+記録されません．
+
+さて，\class{BlastErrorParser} は通常の\program{blast} パーザの
+ように使えます．とりわけ，\program{blast} レコード全体にわたって
+エラーパーザを使って一つづつレコードを解析するためにイテレータを
+作成しようとしてもかまいません:
+
+\begin{verbatim}
+blast_out = open(b_file)
+iterator = NCBIStandalone.Iterator(blast_out, b_error_parser)
+\end{verbatim}
+
+前に述べたように，こうしたレコードは一度に一つづつ読み出せます．
+ただし，今度は \program{Blast} に起因する (かつ，パーザ自体に
+起因しない) エラーを補足して，必要な処理を行えます:
+
+\begin{verbatim}
+try:
+    next_record = iterator.next()
+except NCBIStandalone.LowQualityBlastError, info:
+    print "LowQualityBlastError detected in id %s" % info[1]
+\end{verbatim}
+
+現状では，\class{BlastErrorParser} は以下のようなエラーを生成できます:
+
+
+\begin{description}
+\item [SyntaxError] -- 通常の \class{BlastParser} が生成するのと
+同じエラーで，パーザが特定のファイルを解析できないことに起因する
+エラーです．このエラーは通常，パーザのバグか，使っている\program{BLAST}
+のバージョンと，パーザが処理できる\program{BLAST} のバージョンの
+不一致のいずれかが原因です．
+
+\item [LowQualityBlastError] -- ひどく品質の悪い配列 
+(例えば，基本的に単一の核酸の連なりから構成されているような短い配列)
+を BLAST に掛けようとすると，\program{BLAST} が配列全体をマスクして
+しまい，結果的に解析対象が何もなくなってしまうことがあります．
+この場合，内容の途切れたレポートが出力され，パーザが
+\exception{SyntaxError} を出してしまいます．こうした場合には
+\exception{LowQualityBlastError} を送出します．このエラーは，
+以下のような項目をエラー情報として返します:
+  \begin{description}
+    \item [\code{item[0]}] -- エラーメッセージです．
+    \item [\code{item[1]}] -- エラーの原因となった入力レコードの id 
+です．この項目は，問題を引き起こしているレコードを全て記録して
+おきたい場合にとても有用です．
+  \end{description}
+\end{description}
+
+先に述べたように，エラーが生じると，\class{BlastErrorParser} は
+問題を起こしているレコードを\code{error_handle} に書き出します．
+次に\code{error_handle} の内容を調べて，自分の思ったように問題を
+処理できます．単一の \program{blast} レポートを使ってパーザを
+デバッグできるでかもしれませんし，blast の実行した内容に問題が
+見つかるかも知れません．いずれにしても，おそらく有意義な体験に
+なること間違いなしです!
+
+\class{BlastErrorParser} を使えば，巨大な \program{blast} ファイルの
+デバッグや処理がきっと楽になるはずです．
+
+
+\subsection{PSIBlast の扱い}
+
+\program{PSIBlast} をスクリプトから簡単に直接操作できるようにする
+には，(アラインメント結果から，適切な形式で align ファイルを出力ような)
+コードを色々と書いていかねばなりません．まずは \program{PSIBlast} を
+よく調べて，うまく解決方法を思いつく必要があります...
+
+% 
+\section{SWISS-PROT}
+\label{sec:swiss-prot}
+
+\subsection{SWISS-PROT のレコードを入手する}
+
+SwissProt (\url{http://www.expasy.ch/sprot/sprot-top.html}) は
+タンパク配列のデータベースで，その内容は人手によって編集されています．
+スクリプトから SWISS-PROT に接続する方法と，
+SWISS-PROT 形式で返される結果を構文解析する方法を見てみましょう．
+
+最初に，構文解析する対象のデータをいくつか取り出しておく必要があります．
+ランのカルコン合成酵素 (chalcone synthase) に注目しているとしましょう
+(なぜ興味深い問題をランに求めようとしているかは ~\ref{sec:orchids} を
+参照してください)．カルコン合成酵素は，植物のフラボノイドの生合成に
+関係しています．フラボノイドからは，顔料や UV 保護剤などの多くの
+素晴らしい商品が生成されます．
+
+SwissProt で検索を行うと，カルコン合成酵素に関するラン由来のタンパク，
+ID O23729, O23730, O23731 が見つかるはずです．
+では，スクリプトを書いて，これらのタンパクに関するデータを入手し，
+データを構文解析して面白そうな情報を取り出してみましょう．
+
+まずは \module{Bio.WWW.Expasy} の \function{get_sprot_raw} という関数
+を使ってこれらのレコードを入手します．
+この関数はとても素晴らしく， id を入力すると，普通のテキスト形式で
+レコードを返します (html で苦労しなくてすみます!)．
+
+目的の 3 つのレコードを手に入れたら，1 つの大きな文字列としてまとめ，
+つぎにその文字列を解釈させます．今書いたことそのものが，以下に示す
+コードで実現できます:
+
+\begin{verbatim}
+from Bio.WWW import ExPASy
+
+ids = ['O23729', 'O23730', 'O23731']
+
+all_results = ''
+for id in ids:
+    results = ExPASy.get_sprot_raw(id)
+    all_results = all_results + results.read()
+\end{verbatim}
+
+さて，Expasy での検索結果を入手したので，その結果を構文解析して興味深
+い情報を取り出す準備が整いました．他の多くのパーザと同じように，
+イテレータとパーザをセットアップします．ここで用いるパーザは SwissProt
+ファイルを構文解析してレコードオブジェクトに変換します．レコードでは，
+興味の対象となる属性情報 (feature) がオブジェクトの属性になっています:
+
+\begin{verbatim}
+from Bio.SwissProt import SProt
+from Bio import File
+
+s_parser = SProt.RecordParser()
+s_iterator = SProt.Iterator(File.StringHandle(all_results), s_parser)
+\end{verbatim}
+
+パーザで構文解析を行う前に，文字列の \var{all_results} をハンドル
+(handle) に変換していることに注意してください．イテレータが入力データ
+を一行づつ読み込めるようにするために，イテレータにはハンドルを渡さねば
+なりません．
+\module{Bio.File} モジュールには，\function{StringHandle} というよく
+できた便利な関数があり，文字列をハンドルに変換してくれます．
+素晴らしい! これで，情報を抽出する準備が整いました．
+
+情報を取り出すために，イテレータを使って，全てのレコードを順に
+たどります．ここでは，各レコードに対して，単にちょっとしたサマリ情報を
+表示しましょう:
+
+\begin{verbatim}
+while 1:
+    cur_record = s_iterator.next()
+
+    if cur_record is None:
+        break
+
+    print "description:", cur_record.description
+    for ref in cur_record.references:
+        print "authors:", ref.authors
+        print "title:", ref.title
+
+    print "classification:", cur_record.organism_classification
+    print
+\end{verbatim}
+
+上のコードは，以下のようなサマリを出力します:
+
+\begin{verbatim}
+description: CHALCONE SYNTHASE 8 (EC 2.3.1.74) (NARINGENIN-CHALCONE SYNTHASE 8)
+authors: Liew C.F., Lim S.H., Loh C.S., Goh C.J.;
+title: "Molecular cloning and sequence analysis of chalcone synthase cDNAs of
+Bromheadia finlaysoniana.";
+classification: ['Eukaryota', 'Viridiplantae', 'Embryophyta', 'Tracheophyta', 
+'Spermatophyta', 'Magnoliophyta', 'Liliopsida', 'Asparagales', 'Orchidaceae', 
+'Bromheadia']
+\end{verbatim}
+
+SwissProt レコードから他の情報を取り出したければ，同じように簡単に
+行えます．
+
+\section{PubMed}
+\label{sec:pub-med}
+
+\subsection{PubMed にクエリを送信する}
+
+医学分野あるいはヒトに関心があるなら (たとえそうでなくても，ほとんどの
+場合!)，PubMed (\url{http://www.ncbi.nlm.nih.gov/PubMed/}) があらゆる
+情報の優れた情報源になるでしょう．ですから，他の情報と同じように，ここでも 
+Python スクリプトを使って情報を手に入れて使えるようになりたいですね．
+
+Biopython を用いて PubMed にクエリを送るのは簡単です．ランに関係のある
+すべての文献 ID (article id) を得たければ，以下のたった 3 行のコード
+しか必要ありません:
+
+\begin{verbatim}
+from Bio import PubMed
+
+search_term = 'orchid'
+orchid_ids = PubMed.search_for(search_term)
+\end{verbatim}
+
+このコードは，ランに関するすべての文献 ID を python のリストとして
+返します:
+
+
+\begin{verbatim}
+['11070358', '11064040', '11028023', '10947239', '10938351', '10936520', 
+'10905611', '10899814', '10856762', '10854740', '10758893', '10716342', 
+...
+\end{verbatim}
+
+この ID リストを得たら，各レコードを取得する準備は完了です．次節に
+進みましょう．
+
+\subsection{PubMed のレコードを入手する}
+
+前節では，一連の ID を手に入れる方法を説明しました．
+ID を入手したら，次は各 ID に関係のある MEDLINE のレコードを入手して，
+そこから情報を抽出したいと考えるでしょう．
+
+PubMed からレコードを抽出するインターフェースは，Python プログラマーに
+とってはとても直感的なはず -- Python における辞書型のモデル化 -- です．
+このインターフェースをセットアップするには，PubMed から取得した結果を
+構文解析するためのパーザが必要です．以下のコードで，全てのセットアップ
+を行います:
+
+\begin{verbatim}
+from Bio import PubMed
+from Bio import Medline
+
+rec_parser = Medline.RecordParser()
+medline_dict = PubMed.Dictionary(parser = rec_parser)
+\end{verbatim}
+
+ここで行ったのは，辞書ライクなオブジェクトの \var{medline_dict} の作成
+です．文献情報を得るには，\code{medline_dict[id_to_get]} のようにして
+アクセスします．この操作を行うと， PubMed に接続し，探している文献を
+見つけ，文献情報を構文解析してレコードオブジェクトに変換して返します．
+なんて賢いんでしょう! 
+
+
+さて，この素晴らしい辞書オブジェクトをどう使えば，ある ID からある情報
+を出力できるか見てみましょう．必要な作業は，単に手元の ID (前節で入手
+した \var{orchid_ids} ）にわたってループし，興味の対象となる情報を表示
+するだけです:
+
+
+\begin{verbatim}
+for id in orchid_ids[0:5]:
+    cur_record = medline_dict[id]
+    print 'title:', string.rstrip(cur_record.title)
+    print 'authors:', cur_record.authors
+    print 'source:', string.strip(cur_record.source)
+    print
+\end{verbatim}
+
+上のコードに対する出力は以下のようになります：
+
+\begin{verbatim}
+title: Sex pheromone mimicry in the early spider orchid (ophrys sphegodes):
+patterns of hydrocarbons as the key mechanism for pollination by sexual
+deception [In Process Citation]
+authors: ['Schiestl FP', 'Ayasse M', 'Paulus HF', 'Lofstedt C', 'Hansson BS', 
+'Ibarra F', 'Francke W']
+source: J Comp Physiol [A] 2000 Jun;186(6):567-74
+\end{verbatim}
+
+特筆すべきは，著者名のリストです．これは標準の Python リスト型として
+返されています．こうすることで，Python の標準ツールを使って操作したり
+検索したりできます．例えば，以下のようなコードを使えば，一連のエントリ
+全体にわたってループして，特定の著者を探し出せます:
+
+
+\begin{verbatim}
+search_author = 'Waits T'
+
+for id in our_id_list:
+    cur_record = medline_dict[id]
+    
+    if search_author in cur_record.authors:
+        print "Author %s found: %s" % (search_author,
+                                       string.strip(cur_record.source))
+\end{verbatim} 
+
+PubMed と Medline のインターフェースは成熟し，よく出来ています -- 
+本節を読んで，きっとこのインタフェースの威力と使い方をよく理解して
+もらえたことでしょう．
+
+\section{GenBank}
+
+
+GenBank レコード形式は，配列や配列に関する属性情報 (feature)，
+その他関連する配列の情報を記録する方法として広く使われています．
+この形式は，NCBI のデータベース (\url{http://www.ncbi.nih.gov/}) 
+から情報を得るための良い手段でもあります．
+
+
+\subsection{GenBank のエントリを NCBI から入手する}
+
+\module{Bio.GenBank} ライブラリ のとても素敵な機能は，エントリを
+GenBank から自動的に取得できるというところです．
+これは，日々の作業を自動化するようなスクリプトを書く上でとても
+便利です．本節の例では，NCBI データベースにクエリを送信し，クエリ結果
+からレコードを入手する方法を示します．
+
+まずはクエリを作成して，取り出したいレコードに対する ID を検索
+しましょう．ここでは，私のお気に入りの\emph{ウチワサボテン (Opuntia)}
+を例に取って（なぜなら私が研究しているからです），ちょっとした検索を
+実行してみましょう．以下のコードを使えば，クイック検索を行って，
+全てのレコードに対応する GI (GenBank 識別子) を入手できます:
+
+\begin{verbatim}
+from Bio import GenBank
+
+gi_list = GenBank.search_for("Opuntia AND rpl16")
+\end{verbatim}
+
+\var{gi_list} には，クエリに一致したすべての GenBank 識別子からなる
+リストになります:
+
+\begin{verbatim}
+['6273291', '6273290', '6273289', '6273287', '6273286', '6273285', '6273284']
+\end{verbatim}
+
+GI を入手できたので，各 ID を使って辞書インタフェースを介して NCBI 
+データベースにアクセスできます，例えば，最初の GI に対する情報を
+抽出するなら，まず NCBI にアクセスする辞書オブジェクトを作らなくては
+なりません:
+
+
+\begin{verbatim}
+ncbi_dict = GenBank.NCBIDictionary()
+\end{verbatim}
+
+辞書オブジェクトを作ったら，次のように情報を抽出してみましょう:
+
+\begin{verbatim}
+gb_record = ncbi_dict[gi_list[0]]
+\end{verbatim}
+
+この例では，\var{gb_record} は GenBank 形式のレコードになるはずです:
+
+\begin{verbatim}
+LOCUS       AF191665      902 bp    DNA             PLN       07-NOV-1999
+DEFINITION  Opuntia marenae rpl16 gene; chloroplast gene for chloroplast
+            product, partial intron sequence.
+ACCESSION   AF191665
+VERSION     AF191665.1  GI:6273291
+...
+\end{verbatim}
+
+この例では，単に生のレコードを入手しただけです．これらのレコードを
+直接パーザに渡して構文解析させ，レコードに変換することも出来ます．
+例えば， GenBank ファイルから取り出した \class{SeqFeature}
+オブジェクトを \class{SeqRecord} オブジェクトに戻したければ，
+まず\module{GenBank} の \class{FeatureParser} で辞書オブジェクトを
+作成する必要があります:
+
+\begin{verbatim}
+record_parser = GenBank.FeatureParser()
+ncbi_dict = GenBank.NCBIDictionary(parser = record_parser)
+\end{verbatim}
+
+これで，レコードを抽出すれば，素のテキスト形式のレコードの
+代わりに \class{SeqRecord} オブジェクトになります:
+
+\begin{verbatim}
+>>> gb_seqrecord = ncbi_dict[gi_list[0]]
+>>> print gb_seqrecord
+<Bio.SeqRecord.SeqRecord instance at 0x102f9404>
+\end{verbatim}
+
+GenBank からどんな形式に変換できるかについての詳細は，
+\ref{sec:gb-parsing} 節を参照してください．
+
+こうした自動的クエリ結果取得機能を使うと，手作業よりもはるかに有利にな
+ります．その上，取得機能には一定時間ごとに取得を行う time-delay のよう
+な素敵な機能が組み込まれていて，頻繁なアクセスによって NCBI を怒らせ，
+アクセスをブロックされるようなことがないようにしています．
+
+\subsection{GenBank レコードを解釈する}
+\label{sec:gb-parsing}
+
+GenBank ファイルは素晴らしくできていて，たくさんの情報がおさめられて
+いる一方で，実際には一時にほんの少しの情報しか取り出したくないかも
+しれません．こうした作業の鍵となるのは，データをいかに構文解析するかで
+す．
+Biopython では複数の GenBank パーザを提供していて，こうした作業を
+行う上で手助けできるようにしています．これまでのところ，
+\module{GenBank} では以下のパーザを提供しています:
+
+
+\begin{description}
+
+\item [RecordParser] このパーザは素のレコードを構文解析して， GenBank 
+特有のレコードオブジェクト形式に変換します．このオブジェクトでは
+情報を素のレコードに非常に近いモデルで扱うので，単に GenBank の
+個々のレコード自体に興味がある場合にはこのパーザを使うのがよいでしょう．
+
+\item [FeatureParser] このパーザは素のレコードを\class{SeqRecord} 
+オブジェクトに変換します．\class{SeqRecord} オブジェクトでは，
+全ての属性テーブル情報が\class{SeqFeatures} で表現されています
+(これらのオブジェクトについての詳細は \ref{sec:advanced-seq} を
+参照してください)．より標準的な形式で情報を入手したい場合には
+こちらのパーザを使うのがよいでしょう．
+
+\end{description}
+
+どちらの方法をとるにせよ，こうしたのパーザの最も一般的な使い方は，
+イテレータを作成して，GenBank レコードの入ったファイルをパースする
+というものになります．この作業は，他のデータ形式での処理方法と非常に
+似ていて，例えば以下のようなコードになります:
+
+
+\begin{verbatim}
+from Bio import GenBank
+
+gb_file = "my_file.gb"
+gb_handle = open(gb_file, 'r')
+
+feature_parser = GenBank.FeatureParser()
+
+gb_iterator = GenBank.Iterator(gb_handle, feature_parser)
+
+while 1:
+   cur_record = gb_iterator.next()
+
+   if cur_record is None:
+       break
+
+   # now do something with the record
+   print cur_record.seq
+\end{verbatim}
+
+このコードでは，単に GenBank ファイルに渡って反復処理を行い，
+レコードごとに構文解析を行って SeqRecord と SeqFeature オブジェクトに
+変換し，そのレコードの配列を表す \class{Seq} オブジェクトを
+出力します．
+
+他の形式と同様，GenBank レコードを扱うツールがたくさんあります．
+それらのツールを使えば GenBank を使ってやりたいことは何でもできる
+はずです．
+
+
+\subsection{自作の GenBank データベースを作成する}
+
+自分用の個人的な GenBank データベースを作成して，辞書オブジェクトの
+ようにアクセスできるというとても素晴らしい機能があります．
+(これは素晴らしくクールな機能です．というのは，このローカルな
+データベースにも，BioCorba を使ってネットワーク越しにアクセス
+できるからです -- 詳細は BioCorba のドキュメントを参照してください)
+
+ローカルなデータベースの作成では，まずインデクスファイルを作成して，
+ファイル内の各レコードに素早くアクセスできるようにします．
+これを行うには，\function{index_file} 関数を使います:
+
+\begin{verbatim}
+>>> from Bio import GenBank
+>>> dict_file = 'cor6_6.gb'
+>>> index_file = 'cor6_6.idx'
+>>> GenBank.index_file(dict_file, index_file)
+\end{verbatim}
+
+この作業で， \file{my_index_file.idx} という名前のファイルが作成
+されます．さて，このインデクスを使えば，個々のレコードにアクセス
+できるような辞書オブジェクトを作成できます．
+\class{Iterator} や \class{NCBIDictionary} インタフェースのように，
+素のレコードに戻したり，辞書オブジェクトをパーザに渡して，レコードを
+返す前に内容を構文解析させたりできます．
+この場合，レコードを得る時には \class{FeatureParser} を渡しておき，
+その後で \class{SeqRecord} オブジェクトを取得します．
+
+辞書の準備は簡単で，以下の 1 行だけです:
+
+\begin{verbatim}
+>>> gb_dict = GenBank.Dictionary(index_file, GenBank.FeatureParser())
+\end{verbatim}
+
+これで，Genbank のデータを辞書風に扱えるようになりました．
+例えば:
+
+\begin{verbatim}
+>>> len(gb_dict)
+7
+>>> gb_dict.keys()
+['L31939', 'AJ237582', 'X62281', 'AF297471', 'M81224', 'X55053']
+\end{verbatim}
+
+最後に，添字表記 (subscripting) でオブジェクトを取り出します: 
+
+\begin{verbatim}
+>>> gb_dict['AJ237582']
+<Bio.SeqRecord.SeqRecord instance at 0x102fdd8c>
+\end{verbatim}
+\section{アラインメント解析の扱い}
+
+特定の配列群に対してアラインメントを掛けられると，とても便利なことが
+よくあります．作者はこれをよく使って，やっつけ的に配列間の関連性を
+調べたりします．従って，アラインメントを掛けて，その結果を操作しやすい
+オブジェクトで返すような Python スクリプトをすばやく書き上げられると
+いうのはとても素晴らしいことなのです．Biopython におけるアラインメント
+関連のコードは，Python レベルからアラインメント解析プログラムにアクセス
+できるようにし，スクリプト上からの素早いアラインメント解析を可能に
+するためのものです．
+
+\subsection{clustalw}
+\label{sec:align-clustal}
+
+\program{clustalx}
+(\url{http://www-igbmc.u-strasbg.fr/BioInfo/ClustalX/Top.html}) 
+は，マルチプルアラインメントを行うための優れたプログラムです．
+Biopython では，\program{clustalx} が生成する clustal 形式のアラインメント情報
+(通常は拡張子 \file{*.aln} がついています) にアクセスするための
+方法を提供しています．また，\program{clustalx} のコマンドライン版である
+\program{clustalw} へのアクセス手段も提供しています．
+
+\program{clustalw} とやりとりを行う上では，まず最初のステップとして，
+プログラムに渡すコマンドライン引数を設定します． \program{clustalw}
+ には膨大な
+数のコマンドラインオプションがあり，たくさんのパラメタを設定することに
+なれば，膨大なコマンドラインの入力にすぐ飽きてしまうでしょう．
+コマンドラインクラス (command line class) では，設定できる
+コマンドラインオプションをクラスの属性として扱うことで，コマンドライン
+をモデル化しています．特定のパラメタを設定するための便宜関数も
+いくつかあり，パラメタ設定にかかわるエラーを検出できるように
+なっています．
+
+\program{clustalw} によるマルチプルアラインメントを実行するための
+コマンドラインオブジェクトを作成するには，以下のようにします:
+
+\begin{verbatim}
+import os
+from Bio.Clustalw import MultipleAlignCL
+
+cline = MultipleAlignCL(os.path.join(os.curdir, 'opuntia.fasta'))
+cline.set_output('test.aln')
+\end{verbatim}
+
+まず，\class{MultipleAlignCL} を import します．このクラスは
+\program{clustalw} によるマルチプルアラインメントの実行をモデル化
+しています．
+次に，このコマンドラインクラスを初期化します．その際，
+アラインメントの対象にする FASTA 形式のファイルを引数として
+指定します．
+初期化関数には，オプションの第二引数として，\program{clustalw}
+の実行ファイルがある場所も指定できます．デフォルトでは，
+\program{clustalw} が\envvar{PATH} 上のどこかにあると仮定して，
+コマンドラインオブジェクトは単に \code{'clastalw'} という名前で
+プログラムを呼び出します．
+
+次の行では，結果の出力先をファイル \file{test.aln} に設定しています．
+\class{MultipleAlignCL} オブジェクトには他にもたくさんのパラメタ
+があり，出力の形式や配列ギャップのコストといった指定を行えます．
+
+コマンドラインの内容は，\class{MultipleAlignCL} の\function{__str__} 
+メソッドを呼び出して生成すれば読めます．実際には，\code{str(cline)}
+としたり，単に \code{print cline} とするだけで表示されます．
+上の例では，以下のような出力になるはずです:
+
+\begin{verbatim}
+clustalw ./opuntia.fasta -OUTFILE=test.aln
+\end{verbatim}
+
+さて，簡単なコマンドラインを作成できたので，このコマンドラインを
+実行して結果を取りまとめ，処理できるようにしましょう．
+この操作は，\class{Clastalw} の\function{do_alignment} を使って
+以下のように行います:
+
+\begin{verbatim}
+from Bio import Clustalw
+
+alignment = Clustalw.do_alignment(cline)
+\end{verbatim}
+
+上を実行すると，Biopython は先ほど設定したコマンドラインを実行して，
+所定のパラメタで \program{clustalw} を走らせます．次に
+\program{clustalw} からの出力を取り込み，Biopython が解析できる
+形式 (現在のところ clustal 形式のみ) であれば，解析を行って，
+適切な型のアラインメントオブジェクトにして返します．上の例では，
+結果をデフォルトの clustal 形式にしているので，戻り値のオブジェクト
+\code{alignment} オブジェクトは \class{ClustalAlignment} 型になります．
+
+\code{alignment} オブジェクトを得たら，例えばアラインメント中の
+全ての配列に対して\class{seq_record} オブジェクトを得るといった
+ような処理を行えます:
+
+\begin{verbatim}
+all_records = alignment.get_all_seqs()
+
+print 'description:', all_records[0].description
+print 'sequence:', all_records[0].seq
+\end{verbatim}
+
+上のコードを実行すると，アラインメントの最初の配列オブジェクトに
+対する説明 (description) と配列オブジェクトを出力します:
+
+\begin{verbatim}
+description: gi|6273285|gb|AF191659.1|AF191
+sequence: Seq('TATACATTAAAGAAGGGGGATGCGGATAAATGGAAAGGCGAAAGAAAGAAAAAAATGAAT 
+...', IUPACAmbiguousDNA())
+\end{verbatim}
+
+アラインメントの最大長も計算できます:
+
+\begin{verbatim}
+length = alignment.get_alignment_length()
+\end{verbatim}
+
+アラインメントオブジェクトをオリジナルの形式で出力したければ，
+単に \function{__str__} にアクセスするだけです．つまり，
+\code{print alignment} を実行するだけでかまいません:
+
+
+\begin{verbatim}
+CLUSTAL X (1.81) multiple sequence alignment
+
+
+gi|6273285|gb|AF191659.1|AF191      TATACATTAAAGAAGGGGGATGCGGATAAATGGAAAGGCGAAAGAAAGAA
+gi|6273284|gb|AF191658.1|AF191      TATACATTAAAGAAGGGGGATGCGGATAAATGGAAAGGCGAAAGAAAGAA
+...
+\end{verbatim}
+
+こうすれば，オリジナルの情報に手を加えることなく，アラインメント結果を
+ファイルに簡単に書き戻せます．
+
+アラインメント結果を使って他にもいろいろなことをしてみたければ，
+アラインメント結果を\class{SummaryInfo} オブジェクト
+のようなアラインメント情報生成オブジェクトに渡すのがベストです．
+これについては\ref{sec:summary-info} 節で説明します．
+
+\subsection{サマリ情報の算出}
+\label{sec:summary-info}
+
+アラインメント結果を得たら，次はそこから情報を取り出そうとする
+はずですね．Biopython では，あるアラインメント情報に関する全ての情報を
+生成するような一連の関数を全てアラインメントオブジェクトに持たせる
+代わりに，そうした機能をアラインメントオブジェクトを処理する別の
+クラスに分離しようと試みています．
+
+アラインメントオブジェクトからサマリ情報を算出する準備はとても
+簡単です．例えば，\code{alignment} という名前のオブジェクトが
+あるとしましょう．サマリ情報を算出するオブジェクトの生成に必要なのは
+これだけです:
+
+\begin{verbatim}
+from Bio.Align import AlignInfo
+summary_align = AlignInfo.SummaryInfo(alignment)
+\end{verbatim}
+
+\code{summary_align} はとても便利なオブジェクトで，以下のような
+気の利いた処理を行ってくれます:
+
+\begin{enumerate}
+  \item 簡単なコンセンサス配列の計算 -- \ref{sec:consensus} 節参照
+  \item 位置特異的スコア行列 (position specific score matrix) の計算
+    -- \ref{sec:pssm} 節参照
+  \item 情報量の計算 -- \ref{sec:getting-info-content} 節参照
+  \item 残基置換情報の生成 -- この機能を
+    使った置換行列生成法の詳細は\ref{sec:sub-matrix} 節参照
+\end{enumerate}
+
+\subsection{簡単なコンセンサス配列の計算}
+\label{sec:consensus}
+
+\ref{sec:summary-info} 節で解説されている\class{SummaryInfo} 
+オブジェクトでは，アラインメントにおける簡単なコンセンサス配列
+を計算する機能を提供しています．\code{summary_align} という名前の
+\class{SummaryInfo} オブジェクトを得ているとして，コンセンサス配列の
+計算は以下のようにして行います:
+
+
+\begin{verbatim}
+consensus = summary_align.dumb_consensus()
+\end{verbatim}
+
+名前が示唆するように，この関数が行うのは本当に簡単なコンセンサス計算
+で，コンセンサス部分の各点で全ての残基を照合し，最も共通性の高い残基の
+値が閾値 (デフォルトは 0.3) より高い値を持つ場合に，その残基を
+コンセンサス配列に追加します．
+閾値に達しなければ，曖昧な残基を表す文字をコンセンサス配列に追加
+します．戻り値のコンセンサス配列は \class{Seq} オブジェクトで，その
+アルファベットはコンセンサスを取ろうとした元の配列から推測します．
+従って，\code{print consensus} を実行すると，以下のような出力に
+なるはずです:
+
+
+\begin{verbatim}
+consensus Seq('TATACATNAAAGNAGGGGGATGCGGATAAATGGAAAGGCGAAAGAAAGAAAAAAATGAAT 
+...', IUPACAmbiguousDNA())
+\end{verbatim} 
+
+オプションのパラメタを渡すと，\function{dumb_consensus} の動作を
+調整できます:
+
+\begin{description}
+\item[閾値] コンセンサス配列の各点において，特定の残基をコンセンサス
+として採用するために必要な残基の共通性です．デフォルトは 0.7 です．
+
+\item[曖昧な残基を表す文字] 曖昧な残基の表現に使われる文字です．
+デフォルトは \code{'N'} です．
+
+\item[コンセンサス配列のアルファベット] コンセンサス配列に使う
+アルファベットです．アルファベットを指定しない場合，アラインメント
+対象の配列のアルファベットに基づいた推測が行われます．
+\end{description}
+
+\subsection{位置特異的スコア行列}
+\label{sec:pssm}
+
+位置特異的スコア行列 (PSSM, position specific score matrix) 
+を使うと，アラインメントの情報をコンセンサスとは違う方法で集約でき，
+様々な用途で有用なことがあります．
+基本的には，PSSM は\emph{計数}行列 (count matrix) です．
+PSSM では，アラインメントの各カラムについて，各アルファベット文字の
+数を数え，それを合計します．合計結果は，何らかの代表的な配列を
+左側の軸にとって表示します．この配列はコンセンサス配列でかまいませんが，
+アラインメント中の任意の配列にもできます．
+
+例えば，以下のアラインメント:
+
+\begin{verbatim}
+GTATC
+AT--C
+CTGTC
+\end{verbatim}
+
+の場合，その PSSM は:
+
+\begin{verbatim}
+      G A T C
+    G 1 1 0 1
+    T 0 0 3 0
+    A 1 1 0 0
+    T 0 0 2 0
+    C 0 0 0 3
+\end{verbatim}
+
+となります．
+
+\code{c_align} という名前のアラインメントオブジェクトがあると
+しましょう．コンセンサス配列を左側の軸にして PSSM を計算するには，
+まずアラインメントに対するサマリオブジェクトを取得して，
+コンセンサス配列を計算します:
+
+\begin{verbatim}
+summary_align = AlignInfo.SummaryInfo(c_align)
+consensus = summary_align.dumb_consensus()
+\end{verbatim}
+
+ここで， PSMM を作成することになりますが，計算する際には
+曖昧な残基\code{N} を無視するようにします:
+
+
+\begin{verbatim}
+my_pssm = summary_align.pos_specific_score_matrix(consensus,
+                                                  chars_to_ignore = ['N'])
+\end{verbatim}
+
+注意点が二つあります:
+Two notes should be made about this:
+
+\begin{enumerate}
+  \item アルファベットの厳密性を維持するために，上の軸にはアラインメント
+オブジェクトで使われているアルファベット中の文字しか利用できません．
+ギャップ文字は PSSM の上の軸には入りません．
+
+  \item 左側の軸に表示する配列には，コンセンサスでないものを渡しても
+かまいません．例えば，アラインメント中の二つ目の配列をここに表示
+したければ，以下のようにします:
+
+\begin{verbatim}
+second_seq = alignment.get_seq_by_num(1)
+my_pssm = summary_align.pos_specific_score_matrix(second_seq
+                                                  chars_to_ignore = ['N'])
+\end{verbatim}
+
+\end{enumerate}
+
+上の命令を実行すると，\class{PSSM} オブジェクトを返します．先ほどのように
+PSSM を表示するには，単に \code{print my_pssm} を実行します．結果は:
+
+\begin{verbatim}
+    A   C   G   T
+T  0.0 0.0 0.0 7.0
+A  7.0 0.0 0.0 0.0
+T  0.0 0.0 0.0 7.0
+A  7.0 0.0 0.0 0.0
+C  0.0 7.0 0.0 0.0
+A  7.0 0.0 0.0 0.0
+T  0.0 0.0 0.0 7.0
+T  1.0 0.0 0.0 6.0
+...
+\end{verbatim}
+
+のようになります．
+
+PSSM の各要素には，\code{your_pssm[sequence_number][residue_count_name]} 
+のような添字指定でアクセスできます．例えば，上の PSSM で，二つ目の要素
+に対する残基 \code{'A'} のカウントを得るには:
+
+
+\begin{verbatim}
+>>> print my_pssm[1]['A']
+7.0
+\end{verbatim}
+
+のようにします．
+
+このように， PSSM クラスの構造は，位置特異的スコア行列の各要素に
+アクセスしたり行列をきれいに出力したりといった処理を簡単にできる
+ようになっています．
+
+\subsection{情報量}
+\label{sec:getting-info-content}
+
+進化の過程における配列の保存性を表す可能性を持つ測度に，
+配列内の情報量があります．
+
+分子生物学者向けに書かれた有用な情報理論の説明としては，
+\url{http://www.lecb.ncifcrf.gov/~toms/paper/primer/} があります．
+アラインメント解析を目的とした場合，コンセンサス配列や，その部分配列の
+情報量を調べることになります．
+マルチプル配列アラインメント中の特定のカラムにおける情報量の計算は，
+以下の式で行います:
+
+
+\begin{displaymath}
+IC_{j} = \sum_{i=1}^{N_{a}} P_{ij} * log(\frac{P_{ij}}{Q_{i}}) 
+\end{displaymath}
+
+ここで，それぞれの変数の意味は以下のようになっています:
+
+\begin{description}
+  \item [$IC_{j}$] -- アラインメント中の $j$ 番目のカラムの情報量．
+  \item [$N_{a}$] -- アルファベットを構成する文字の数．
+  \item [$P_{ij}$] -- カラム中に特定の文字が出現する頻度 (例えば，
+あるアラインメントのあるカラム中で，G が 6 回中 3 回出現していれば，
+その値は 0.5 です)．
+  \item [$Q_{i}$] -- 特定の文字の出現頻度の期待値．この項はオプションで
+あり，その使い方はユーザにゆだねられています．デフォルトでは，
+タンパク配列に対しては常に 0.05，核酸配列に対しては 0.25 を自動的に
+割り当てます．これは，事前確率分布に対する仮定を一切行わない場合の
+情報量の計算に相当します．何らかの事前確率分布を仮定したい場合や，
+非標準のアルファベットを使いたい場合には，ユーザが $Q_{i}$ の値を
+提供しなければなりません．
+\end{description}
+
+さて，Biopython でどのように情報量を計算しているかを理解したところで，
+アラインメントの特定の領域に対して情報量を計算する方法を見てゆきましょう．
+
+まず，アラインメントオブジェクトを使ってサマリオブジェクトを取得します．
+この名前を \code{summary_align} とします (サマリの取得方法は
+\ref{sec:summary-info} 節を参照してください) ．サマリオブジェクトが
+得られたら，情報量の計算は簡単です:
+
+\begin{verbatim}
+info_content = summary_align.information_content(5, 30, 
+                                                 chars_to_ignore = ['N'])
+\end{verbatim}
+
+おおっ，難しそうな式にしては，断然簡単に計算できますね! 
+\code{info_content} には，指定した領域 (アラインメント中の 5 から 30 までの
+間) における情報量を示す浮動小数点型の値が入っています．
+ここでは，情報量を計算するときにあいまいな残基 \code{'N'} を無視させて
+います．これは通常のアルファベットに \code{'N'} が入っていない
+からです．
+
+上でも触れたように，出現頻度の期待値を与えれば相対情報量も計算
+できます:
+
+\begin{verbatim}
+expect_freq = {
+    'A' : .3,
+    'G' : .2,
+    'T' : .3,
+    'C' : .2}
+\end{verbatim}
+
+この期待値は素の辞書ではなく，\class{SubMat.FreqTable} オブジェクト
+(\class{FreqTable} の詳細は \ref{sec:freq-table} 節を参照してください) に
+して渡します．FreqTable オブジェクトは，Biopython の \class{Seq} クラス
+におけるからくりと同じように，辞書を\class{Alphabet} オブジェクトに
+関連づけるための標準を提供しています．
+
+\class{FreqTable} オブジェクトの出現頻度辞書からの作成は，
+以下のようにするだけです:
+
+\begin{verbatim}
+from Bio.Alphabet import IUPAC
+from Bio.SubsMat import FreqTable
+
+e_freq_table = FreqTable.FreqTable(expect_freq, FreqTable.FREQ,
+                                   IUPAC.unambigous_dna)
+\end{verbatim}
+
+出現頻度テーブルが手に入れば，アラインメント上の領域に対する
+相対情報量の計算はいとも簡単です:
+
+\begin{verbatim}
+info_content = summary_align.information_content(5, 30,
+                                                 e_freq_table = e_freq_table,
+                                                 chars_to_ignore = ['N'])
+\end{verbatim}
+
+今度は，\code{info_content} には指定した出現頻度期待値に基づいた相対
+情報量が入ります．
+
+戻り値は，先程の式での対数の基数を 2 とした計算の結果になります．
+この値は\var{log_base} パラメタに使いたい値を指定して変更できます:
+
+\begin{verbatim}
+info_content = summary_align.information_content(5, 30, log_base = 10
+                                                 chars_to_ignore = ['N'])
+\end{verbatim}
+
+さあ，これで情報量の計算もできるようになりました．実際の問題にこの情報量
+を応用してみようと考えているなら，まずは情報量に関する文献を掘り下げて
+みて，その使い方を考えてみるとよいでしょう．調べた結果，この関数のコードを
+書くときに何らかの間違いを犯していたことがわかった．．．ということは
+ないはずですけどね!
+
+\subsection{アラインメントの出力形式を変換する}
+\label{sec:align-translate}
+
+異なる出力形式間で変換を行わなければならなくなり，途方にくれてしまう
+ことがよくあります．Biopython では，アラインメントオブジェクトに関する
+こうした変換を \class{FormatConverter} クラスで行っています．
+まず，あるアラインメント結果を clustal 形式で解析し，
+\class{ClustalAlignment} オブジェクトとして持っているとします:
+
+\begin{verbatim}
+import os
+from Bio import Clustalw
+
+alignment = Clustalw.parse_file(os.path.join(os.curdir, 'test.aln'))
+\end{verbatim}
+
+そこで，このアラインメント結果を FASTA 形式に変換しましょう．まず，
+\class{FormatConverter} オブジェクト \code{converter} を作成します:
+
+\begin{verbatim}
+from Bio.Align.FormatConvert import FormatConverter
+
+converter = FormatConverter(alignment)
+\end{verbatim}
+
+この \code{converter} に変換したいアラインメント結果を渡します．
+FASTA 形式に変換したければ以下のようにするだけです:
+
+\begin{verbatim}
+fasta_align = converter.to_fasta()
+\end{verbatim}
+
+新たに生成された \code{fasta_align} オブジェクトを
+\code{print fasta_align} して表示してみると，以下のようになります:
+
+\begin{verbatim}
+>gi|6273285|gb|AF191659.1|AF191
+TATACATTAAAGAAGGGGGATGCGGATAAATGGAAAGGCGAAAGAAAGAATATATA----
+------ATATATTTCAAATTTCCTTATATACCCAAATATAAAAATATCTAATAAATTAGA
+...
+\end{verbatim}
+
+もちろん，変換の過程では，特定の形式固有の情報が失われてしまうことも
+あります．とはいえ，アラインメントに関する基本的な情報のほとんどは
+残されるはずです．
+
+将来，様々な形式のサポートが追加されるにつれ，コンバータは様々な形式を
+読み書きできるように改良されてゆくはずです．
+
+\section{置換行列}
+\label{sec:sub-matrix}
+
+置換行列 (substitution matrix) は，バイオインフォマティクスに
+関する日々の作業できわめて重要な部分となっています．
+置換行列は，二つの残基の間が互いにどれくらい置換されやすいかを
+分類する際にスコア付けの方法を提供します．
+置換行列はまた，配列を比較する上で不可欠です．
+Durbin 他の書いた ``Biological Sequence Analysis'' という本には，
+置換行列に関する優れた紹介とその使い方が書かれています．
+置換行列の有名なものには PAM や BLOSAM 系列があります．
+
+Biopython では，よく使われている置換行列をたくさん提供していています．
+また，自作の置換行列を作成する手段も提供しています．
+
+\subsection{広く使われている置換行列を使う}
+
+\subsection{アラインメントから置換行列を自作する}
+\label{sec:subs-mat-ex}
+
+置換行列クラスの素晴らしい機能の一つに，アラインメントからの
+置換行列の生成があります．実際には，置換行列の生成はタンパクの
+配列アラインメントから行うのが普通です．本節の例題では，
+まず Biopython のアラインメントオブジェクトを取得して，
+アラインメントの情報を算出するサマリオブジェクトを得ます:
+
+\begin{verbatim}
+from Bio import Clustalw
+from Bio.Alphabet import IUPAC
+from Bio.Align import AlignInfo
+
+# Clustalw のアラインメント結果からアラインメントオブジェクトを生成
+c_align = Clustalw.parse_file('protein.aln', IUPAC.protein)
+summary_align = AlignInfo.SummaryInfo(c_align)
+\end{verbatim}
+
+上のコードに関する詳しい情報は\ref{sec:align-clustal} 節や
+\ref{sec:summary-info} 節にあります．
+
+さて，\code{summary_align} オブジェクトが手に入ったので，
+これを使って，配列間で異なる残基への置き換えが何度起きているか
+調べることにしたいと思います．例題を読みやすいものにするために，
+極性側鎖 (polar charged side chain) を持ったアミノ酸だけに
+注目しましょう．幸運なことに，この作業は，無視したい残基を表す文字
+全てを渡して (オプションの \var{skip_chars} を設定していることに
+なります) 文字置換辞書 (replacement dictionary) を作成すれば簡単に
+行えます．そこで，極性アミノ酸だけを対象にするような文字置換辞書を
+以下のようにして作成します:
+
+\begin{verbatim}
+replace_info = summary_align.replacement_dictionary(["G", "A", "V", "L", "I",
+                                                     "M", "P", "F", "W", "S",
+                                                     "T", "N", "Q", "Y", "C"])
+\end{verbatim}
+
+\code{replace_info} はアミノ酸残基の置換に関する情報で，Python 辞書
+として表現されていて，内容は以下のようになっています:
+
+\begin{verbatim}
+{('R', 'R'): 2079.0, ('R', 'H'): 17.0, ('R', 'K'): 103.0, ('R', 'E'): 2.0, 
+('R', 'D'): 2.0, ('H', 'R'): 0, ('D', 'H'): 15.0, ('K', 'K'): 3218.0, 
+('K', 'H'): 24.0, ('H', 'K'): 8.0, ('E', 'H'): 15.0, ('H', 'H'): 1235.0, 
+('H', 'E'): 18.0, ('H', 'D'): 0, ('K', 'D'): 0, ('K', 'E'): 9.0, 
+('D', 'R'): 48.0, ('E', 'R'): 2.0, ('D', 'K'): 1.0, ('E', 'K'): 45.0, 
+('K', 'R'): 130.0, ('E', 'D'): 241.0, ('E', 'E'): 3305.0, 
+('D', 'E'): 270.0, ('D', 'D'): 2360.0}
+\end{verbatim}
+
+この情報は，アラインメントの際にアミノ酸置換として許容した残基数，
+あるいは配列間で様々な残基の置換がどれだけ起こりうるかを示しています．
+結局のところ，作業を先に進めて置換行列を作成する上で必要な情報は
+これだけです．まず，この置換辞書の情報を使って，
+受容置換行列 (ARM: Accepted Replacement Matrix) を作成します:
+
+\begin{verbatim}
+from Bio import SubsMat
+my_arm = SubsMat.SeqMat(replace_info)
+\end{verbatim}
+
+この受容置換行列を使って，作業をさらに進めて対数確率行列
+(log odds matrix)，すなわち標準型の置換行列 (Substitution Matrix) を
+作成します:
+
+\begin{verbatim}
+my_lom = SubsMat.make_log_odds_matrix(my_arm)
+\end{verbatim}
+
+対数確率行列の作成は，以下のようなオプション引数でカスタマイズ
+できます:
+
+\begin{description}
+  \item [\var{exp_freq_table}] -- 各アルファベットの出現頻度の
+期待値を渡せます．この値を渡すと，置換の期待値を計算する際に
+accepted replacement matrix の代わりに使われます．
+
+  \item [\var{logbase}] -- 対数確率行列を生成するときの対数の
+底です．デフォルトの値は 10 です．
+
+  \item [\var{factor}] -- 対数確率行列の各エントリに掛けられる
+倍率です．デフォルトの値は，行列中の数が扱いやすくなるよう 10 に
+設定されています．
+
+  \item [\var{round_digit}] -- 行列中の値を少数第何位まで丸めるかを
+表す数です．デフォルトの値は 0 (小数部なし) です．
+
+\end{description}
+
+対数確率行列を得たら，\function{print_mat} を使ってその内容を綺麗に
+表示できます．今作成した行列を出力すると，以下のようになります:
+
+\begin{verbatim}
+>>> my_lom.print_mat()
+D   6
+E  -5   5
+H -15 -13  10
+K -31 -15 -13   6
+R -13 -25 -14  -7   7
+   D   E   H   K   R
+\end{verbatim}
+
+素晴らしい．これで，まさに自分用の置換行列を作成できました!
+
+\section{より高度な配列クラス -- 配列 ID と Feature}
+\label{sec:advanced-seq}
+
+\ref{sec:sequence} 節では，Biopython 配列クラスの基礎の全てについて
+学び，配列情報だけを扱う便利な処理について説明しました．
+とはいえ，配列には，配列情報以外にも重要な feature (特性) が関連付け
+られていることがよくあります．この節では，そうした配列に対する
+高水準の記述を扱う方法について述べます．
+
+\subsection{配列 ID と Description -- SeqRecords を扱う}
+
+上で言うところの配列クラスとは，実際には \module{Bio.SeqRecord}
+モジュールで定義されている \class{SeqRecord} クラスです．
+このクラスでは，配列の id や特性を配列情報に関連づけ
+できるようになっています．クラス自体はとても単純で，以下のような
+情報をインスタンス属性の形で提供しています:
+
+\begin{description}
+  \item[seq] -- 配列自体 -- \module{Bio} モジュールの \class{Seq} 
+オブジェクトです．
+
+  \item[id] -- 配列を識別する際に使うプライマリの id です．
+ほとんどの場合，アクセション番号などを id にします．
+
+  \item[name] -- 配列の「一般的な」名前/id です．この値は
+アクセション番号と同じになることもあいｒますが，クローン名に
+なっていることもあります．私はこの値を GenBank レコードにおける
+LOCUS id のようなものだと考えています．
+
+  \item[description] -- 配列に対する，人間の読めるわかり易い説明文
+です．FASTA 形式のエントリで， id の後ろに続く内容と同じようなものです．
+
+  \item[annotations] -- 配列の付属情報を辞書にしたものです．
+各情報の名前がキーに，情報の内容が値になっています．この辞書を
+使うことで，配列の「構造化されていない」情報を追加できます．
+
+  \item[features] -- 配列の feature に関する構造化された情報
+が入った\class{SeqFeature} オブジェクトからなるリストです．
+\class{SeqFeature} の構造については下の\ref{sec:seq-features}
+で詳しく説明します．
+\end{description}
+
+\class{SeqRecord} クラスには全ての情報が属性として保存されているため，
+使い方はさほど難しくありません．クラスの初期化は，単に \class{Seq}
+オブジェクトを \class{SeqRecord} に渡すだけです:
+
+\begin{verbatim}
+>>> from Bio.Seq import Seq
+>>> simple_seq = Seq("GATC")
+>>> from Bio.SeqRecord import SeqRecord
+>>> simple_seq_r = SeqRecord(simple_seq)
+\end{verbatim}
+
+さらに，初期化関数には \var{id} や \var{name}，\var{description}
+といったパラメタを与えられます．パラメタを与えない場合には，
+それらの特性が未知であることを示す文字列が設定されます．この
+値は後で変更できます:
+
+\begin{verbatim}
+>>> simple_seq_r.id
+'<unknown id>'
+>>> simple_seq_r.id = 'AC12345'
+>>> simple_seq_r.description = 'My little made up sequence I wish I could 
+write a paper about and submit to GenBank'
+>>> print simple_seq_r.description
+My little made up sequence I wish I could write a paper about and submit 
+to GenBank
+>>> simple_seq_r.seq
+Seq('GATC', Alphabet())
+\end{verbatim}
+
+アノテーションの追加はとても簡単で，単に \member{annotation} 辞書
+を直接操作するだけです:
+
+\begin{verbatim}
+>>> simple_seq_r.annotations['evidence'] = 'None. I just made it up.'
+>>> print simple_seq_r.annotations
+{'evidence': 'None. I just made it up.'}
+\end{verbatim}
+
+覚えることはこれだけです! 次は，配列に関する情報を構造化して
+表現できる \class{SeqFeature} について知りたくなったことでしょう．
+
+\subsection{feature とアノテーション -- SeqFeature}
+\label{sec:seq-features}
+
+配列の特性:feature は，配列の記述上重要な部分を占めています．
+配列以外の情報が手に入った場合，そうした情報を組織化して，
+配列について判っている情報をより「抽象化」して得やすくするような
+手段が必要になります．何もかもを扱えるような汎用の配列 feature クラス
+を開発するのは不可能かもしれませんが，Biopython の配列 feature クラス
+では配列に関する情報をできる限りカプセル化しようと試みています．
+配列 feature クラスの設計は，GenBank/EMBL の特性テーブルに強く依存
+しているので，もし GenBank や EMBL 形式の読み方を知っていれば，
+Biopython の配列 feature クラスがどういう構造になっているか簡単に
+把握できるでしょう．
+
+\subsubsection{SeqFeature の構造}
+
+配列 feature を扱う際，\class{SeqFeature} クラス自体がデータ構造の最初の
+段階となります．このクラスには様々な属性があるので，まずは
+それぞれの属性と一般的な機能を列挙して，その後で実例の GenBank の
+feature テーブルに適用する方法を示すために例題を解いてゆくことに
+しましょう．\class{SeqFeature} の属性は以下のようになっています:
+
+\begin{description}
+  \item[\member{location}] -- \class{SeqFeature} の表す feature が
+対象にしている配列上の位置です．\member{location} の端点情報はあいまいでも
+かまいません -- \member{location} を扱う方法についての詳しい説明は
+\ref{sec:locations} にあります．
+
+  \item[\member{type}] -- feature のタイプをテキストで表したものです
+(例えばこの値は 'CDS' や 'gene' になります)．
+
+  \item[\member{ref}] -- 別の配列に対する参照です．配列 feature は時に，
+ある配列の「上に」ありながら，別の配列に対する参照を行っている
+場合があります．この属性は，そうした他の配列を (通常はアクセション
+番号で) 参照する手段を提供します．配列の大部分がコード領域であるような
+ゲノム配列があり，そのエクソンの一つが別のアクセションを割り当てられて
+いる場合が良い例です．このような場合，feature 情報中で欠失している
+エクソンに対するアクセションを参照する必要が生じます．
+
+  \item[\member{ref_db}] -- \member{ref} と合わせて，配列間の参照を
+表現する場合に使います．配列間で参照を行っている場合，
+同じデータベース内での参照であれば \member{ref_db} は\constant{None}
+になり，それ以外の場合にはデータベースの名前になります．
+
+  \item[\member{strand}] -- 該当する feature が位置しているストランド
+です．トップストランドの場合には \code{'1'}，ボトムストランドの
+場合には \code{'-1'} ，両方のストランド (またはストランドを区別しない)
+場合には \code{'0'} です．この属性は二重鎖 DNA の場合にのみ有効で，
+タンパクや RNA 配列では意味を成さないので注意してください．
+
+  \item[\member{qualifiers}] -- その他の feature に関する情報を
+入れておくための Python 辞書型オブジェクトです．キーには入っている
+情報を簡単な言葉で表した文字列を入れ，値には実際の情報を入れます．
+例えば，よく使われるのは \code{``evidence''} というキーと，
+\code{``computational (non-experimental'')} という値のような組み合わせ
+です．このような情報を入れておくことで，この feature を調べている
+人に，該当する feature が実験的に (wet のラボで) 確認されていないことを
+教えられます．
+  
+  \item[\member{sub_features}] -- 属性情報の構造で最も重要な機能は，
+ある属性が別の \member{sub_features} を自分の下に持てるということです．
+これによって属性情報を入れ子にでき，GenBank/EMBL の feature
+行を直感的な (はずの) やり方で扱う助けになります．
+\end{description}
+
+\class{SeqFeature} を実際に使った例を示すために，GenBank の属性
+テーブルの以下の属性エントリに注目してみます:
+
+\begin{verbatim}
+     mRNA            complement(join(<49223..49300,49780..>50208))
+                     /gene="F28B23.12"
+\end{verbatim}
+
+このエントリに対する \class{SeqFeature} オブジェクトを得て，
+その属性のうち簡単なものを見てみれば，\member{type} が \code{'mRNA'}
+であり，\member{strand} は \code{-1} (\code{complement()} のため)，
+そして外部のデータベースを参照していないので \member{ref} および
+\member{ref_db} は \constant{None} になっているはずです．
+\member{qualifiers} は \code{\{'gene': 'F28B23.12'\}} のような
+Python 辞書型になっているはずです．
+
+さて，もっとトリッキーな部分である，\code{'join'} がどのように
+処理されるかを見てみましょう．まず，トップレベルの\class{SeqFeature}
+(今見ている\class{SeqFeature} そのもの) の \member{location} は
+\code{'<49223'} から \code{'>50208'} に設定されます
+(曖昧 (fuzzy) な\member{location} をどのように扱うかについては
+\ref{sec:locations} 節を参照してください)．
+さて，トップレベルオブジェクトの \member{location} は feature 全体に
+わたる区間を指していまが，それでは\code{'join()'} の情報は
+どこにあるのでしょう? そう，\member{sub_features} の中にあるのです．
+
+\member{sub_features} 属性は二つの\class{SeqFeature} オブジェクトから
+なるリストになっているはずで，ここに \code{join} に関する情報
+が入っています．\code{top_level_feature.sub_features[0]} が指す
+オブジェクトを見てみましょう．このオブジェクトは \class{SeqFeature}
+オブジェクトで，\member{type} は \code{mRNA_join} ，
+\member{strand} は \code{-1} (親となる \class{SeqFeature} オブジェクトから
+受け継いでいます) であり，\member{location} は \code{'<49223'} から
+\code{'49300'} です．
+
+つまり，\member{sub_features} を使えば，必要に応じて (例えばゲノム配列
+中からエクソンだけを取り出したい場合) feature の内部情報にアクセス
+したり，単に概要だけ (ある領域内に存在するある遺伝子のコード配列だけを
+知りたい場合) を扱ったりできるのです．こうした構造化によって，
+時に複雑になる\class{SeqFeature} 内の情報を簡単かつ直感的に
+扱えるようになるはずです．
+
+\subsubsection{ロケーションとポジション}
+\label{sec:locations}
+上の \class{SeqFeatures} の節では，feature のやや難解な部分である
+\member{location} (ロケーション) の扱いは飛ばして話を進めました．この
+難解さは，あるロケーション内のポジション (position) の表現が曖昧な
+ことに起因しています．ここでは，まず話を進める前に用語をきちんと
+定義しておくことにしましょう．基本的には二つの用語を使って説明を
+してゆくことになります:
+
+\begin{description}
+  \item[ポジション (position)] -- 配列中のある一箇所を表します．
+この場所は曖昧な場合もあります．例えば， \code{5}，\code{20}，
+\code{<100}，\code{3\^5} は全てポジションを表しています．
+
+  \item[ロケーション (location)] -- 配列中の領域を決める二つの
+ポジションからなる単位です．例えば，\code{5..20}  (\code{5} から 
+\code{20}) はロケーションを表しています．
+\end{description}
+
+これら二つの用語はよく混同してしまうので，念のため定義しておきます．
+
+さて，ロケーションを扱う上での難解な問題は，ポジション自体に
+あります．生物学の世界では，(我々 wet なラボにいる生物学者たちが
+はっきりさせようとしているくらいには) 完全に確実とはいえない
+ことが沢山あります．例えば，ダイヌクレオチドによるプライミングの
+実験を行って， mRNA 転写の開始点が二つあるサイトのうちのいずれかで
+あると判ったとします．これはとても有用な情報ではありますが，
+ポジションとして表すには厄介です．こうした情報を扱えるようにする
+ために，曖昧 (fuzzy) なポジションという概念があります．基本的に
+曖昧なポジションは 5 つのタイプに分かれるので，Biopython でも
+5 つのクラスで取り扱います:
+
+\begin{description}
+  \item[\class{ExactPosition}] -- 名前の通り，配列上の特定の
+ポジションを表すためのクラスです．ポジションは単に一つの数で表現
+され，その値を得るには \member{position} 属性を調べます．
+
+  \item[\class{BeforePosition}] -- 特定の場所より前のどこかを
+示す曖昧なポジションを表すためのクラスです． GenBank/EMBL では，
+例えば \code{'<13'} のように表記し，実際のポジションが \code{13} 
+より前にあることを表します．ポジションの上界値 (この例では\code{13}) 
+を得るには\member{position} 属性を調べます．
+
+  \item[\class{AfterPosition}] -- \class{BeforePosition} の逆で，
+特定の場所より後ろのどこかを示す曖昧なポジションを表すための
+クラスです．GenBank では例えば\code{'>13'} のように表記し，
+\class{BeforePosition} と同様，\member{position} 属性から
+境界値を調べられます．
+
+  \item[\class{WithinPosition}] -- 指定された範囲内のどこかを示す
+曖昧なポジションをモデル化したクラスです．
+GenBank/EMBL では，例えば \code{(1.5)} のように表記し，
+\code{1} から\code{5} \emph{にいたるまでの範囲} にあるポジションを
+表します．このクラスが表現している情報を調べるには，二つの属性を
+見る必要があります．\member{position} 属性には，ヌクレオチド範囲の
+下界値が入ります．従って上の例で言えばこの値は \code{1} に
+なります．一方，\member{extenstion} にはヌクレオチド範囲の上界値
+\emph{までの残基数} が入っており，この場合には 4 になります．
+つまり，\code{object.position} が下界値に，
+\code{object.position + object.extenstion} が上界値になるわけです．
+
+  \item[\class{BetweenPosition}] -- 二つの座標の間にある
+ポジションを扱うためのクラスです．例えば，あるタンパクの結合部位が
+配列中の二つのヌクレオチド間にあるような場合を考えます．
+このような状況は，例えば \code{'2\^3'} のように表記して，
+実際の結合部位が\code{2} から \code{3} の間にあることを示します．
+情報の取り出し方は\class{WithinPosition} に良く似ていて，
+\member{position} が下界値 (今の例では \code{2})，\member{extension}
+は上界値\emph{までの残基数} (この場合では 1) です．
+\end{description}
+
+さて，取り扱える全ての曖昧なポジション型について理解したので，
+配列上のロケーションを実際に指定できるようになりました．
+ロケーションは\code{FeatureLocation} クラスで扱います．
+このクラスのオブジェクトは，基本的にはある feature の始点と
+終点の位置を曖昧さを許して保存するようになっているだけです．
+\class{FeatureLocation} オブジェクトは，ポジションを作成して，
+それ(ら)を\class{FeatureLocation} クラスに渡して作成できます:
+
+\begin{verbatim}
+>>> from Bio import SeqFeature
+>>> start_pos = SeqFeature.AfterPosition(5)
+>>> end_pos = SeqFeature.BetweenPosition(8, 9)
+>>> my_location = SeqFeature.FeatureLocation(start_pos, end_pos)
+\end{verbatim}
+
+\class{FeatureLocation} を\keyword{print} すると，ロケーション
+情報がうまく表現された文字列を出力します:
+
+\begin{verbatim}
+>>> print my_location
+(>5..(8^9))
+\end{verbatim}
+
+始点や終点のポジション情報にアクセスするには，ロケーションの
+\member{start} 属性や\member{end} 属性を使います:
+
+\begin{verbatim}
+>>> my_location.start
+<Bio.SeqFeature.AfterPosition instance at 0x101d7164>
+>>> print my_location.start
+>5
+>>> print my_location.end
+(8^9)
+\end{verbatim}
+
+ポジションを曖昧な値ではなく単なる数字として扱いたい場合，
+\member{nofuzzy_start} や\member{nofuzzy_end} といった属性を
+使って値を調べます:
+
+\begin{verbatim}
+>>> my_location.nofuzzy_start 
+5
+>>> my_location.nofuzzy_end
+8
+\end{verbatim}
+
+これらの属性が単に曖昧なロケーションの\member{position}
+属性の値を返しているにすぎないことに注意してください．
+
+同様に，曖昧なポジションを気にせずポジションオブジェクトを簡単に
+作成したければ，単に \class{FeatureLocation} のコンストラクタに
+数値を渡して，\class{ExactPosition} オブジェクトを取得できます:
+
+\begin{verbatim}
+>>> exact_location = SeqFeature.FeatureLocation(5, 8)
+>>> print exact_location
+(5..8)
+>>> exact_location.start
+<Bio.SeqFeature.ExactPosition instance at 0x101dcab4>
+\end{verbatim}
+
+これが，Biopython における曖昧なポジションの扱い方の全てです．
+こうした設計は，曖昧なポジションの扱いが，明確なポジションの扱い
+よりさほど難しくならないように行われてきました．おそらく読者の
+皆さんもその通りだと思うことでしょう!
+ 
+\subsubsection{参考文献}
+
+もう一つ，配列情報でよく見られるアノテーションに，同じ配列について
+言及しているようなジャーナル論文や出版物に対する参考文献 (reference)
+です．Biopython では，参考文献の表現にはかなり単純な方法を
+取っています -- Biopython には， \module{Bio.SeqFeature} モジュールの
+\class{Reference} クラスがあり，オブジェクトに関する参考文献の
+情報を属性の形で保存しています．
+
+\class{Reference} オブジェクトには，\member{journal}，\member{title}，
+および\member{authors} といった，参考文献の情報として必要な属性が
+入っています．加えて，\class{Reference} オブジェクトでは
+参考文献の\member{medline_id} や \member{pubmed_id} ，\member{comment}
+といった情報も保存しています．こうした値は全て，オブジェクトの
+属性としてアクセスできます．
+
+\class{Reference} オブジェクトには，参考文献が参照している配列の
+ロケーションを指定できるようにするため，ロケーションオブジェクトの
+入る\member{location} という属性もあります．例えば，BAC 上の特定の
+遺伝子を扱っているようなジャーナル論文があり，その論文がその
+遺伝子のポジションだけを厳密に参照しているかどうか知りたい場合が
+あるかもしれません．もちろん，\member{location} は\ref{sec:locations}
+節で述べたように，曖昧な場所を表しているかもしれません．
+
+\class{Reference} もまた，簡単に扱えるように配慮されており，
+おそらく多くのユースケースで利用できるくらい柔軟なはずです．
+
+\section{BioRegistry -- 配列ソースの自動検索}
+
+バイオインフォマティクスにおいて一貫して煩わしい問題は，自分の
+プログラムから簡単に配列を見つけて利用できるようにするということです．
+配列は NCBI や EMBL のような標準の場所に加え，ローカルなデータベースや
+Web サーバといった非標準の場所まで，沢山の場所から入手できます．
+こうした問題を簡単化するために Biopython では(もちろん，他の Open-Bio
+関連のプロジェクトでも) ，リソースの位置を特定できる標準化された
+メカニズムの確率を目指しています．一度場所を特定できたら，
+Biopython を使っているコードなら配列がどこに置かれているかを気にせずに
+簡単に取り出せるのです．
+
+こうした透過的な情報取得のメカニズムを使うと，コードに様々な利点
+をもたらします．もしある Web サービスがダウンしている
+(例えば，NCBI が処理をさばき切れず，接続を拒否している) ような場合，
+コードに特に変更を加えなくても自動的にバックアップの場所に接続を
+試みます．同様に，よく使う配列に対してローカルなリポジトリを
+作成しておき，それらのリポジトリがオフラインになっていれば Web
+ベースのサービスに切り替える，といったこともできます．さらに，
+情報取得の部分を透過的にしておくことで情報取得に関わる詳細を
+コードから切り離せるので，そうした問題に頭を悩ませることなく
+生物学的な問題だけに集中できるようになります．何といっても，
+この考え方自体がとても cool です．
+
+この節では，この自動配列情報取得システムの設定方法と使用方法に
+ついて扱います．最初の節では，Open-Bio システム共通で利用できる
+設定ファイルを操作するためのメソッドについて述べ，その後に
+同様の機能を実現する Biopythn 固有のメソッドについて説明します．
+本来，設定ファイルを使うほうが正攻法で，それで目的を果たせないようなこと
+がない限り，Biopython 固有の方法を使う必要はありません．
+
+\subsection{設定ファイルを使ったリソースの検索}
+
+\subsubsection{設定ファイルを書く}
+
+\subsubsection{設定ファイルを使った配列の取得}
+
+\subsection{Biopython 固有のインタフェースを使ったリソースの検索}
+
+Biopython では，Biopython 固有のプロプライエタリな情報取得メカニズム
+を開発しています．このインタフェースをお勧めするのは，標準的な設定
+ファイルを使ったシステムで求めるものが手に入らない場合に限ります．
+というのも，ここで提供されているメソッドは他の Open-Bio プロジェクト
+と互換性を持たないからです．
+
+\subsubsection{配列の取得}
+
+デフォルトでは， Biopython は様々な標準の場所から配列を取得できる
+ように設定されています．このため， BioRegistry システムをよく
+知らなくてもすぐに使えるようになっています．データベースの
+レジストリを取り出すには，以下のようにするだけです:
+
+\begin{verbatim}
+>>> from Bio import db
+\end{verbatim}
+
+情報を取得できる様々なデータベースの全容を知りたければ，
+単に \code{db} を \keyword{print} します．プログラム的に
+取り出したければ，\code{db} に \function{keys} を適用します:
+
+\begin{verbatim}
+>>> print db
+DBRegistry, exporting 'embl', 'embl-dbfetch-cgi', 'embl-ebi-cgi',
+'embl-fast', 'embl-xembl-cgi', 'interpro-ebi-cgi',
+'nucleotide-dbfetch-cgi', 'nucleotide-genbank-cgi', 'pdb',
+'pdb-ebi-cgi', 'pdb-rcsb-cgi', 'prodoc-expasy-cgi',
+'prosite-expasy-cgi', 'protein-genbank-cgi', 'swissprot',
+'swissprot-expasy-cgi'
+>>> db.keys()
+['embl-dbfetch-cgi', 'embl-fast', 'embl', 'prosite-expasy-cgi',
+'swissprot-expasy-cgi', 'nucleotide-genbank-cgi', 'pdb-ebi-cgi',
+'interpro-ebi-cgi', 'embl-ebi-cgi', 'embl-xembl-cgi',
+'protein-genbank-cgi', 'pdb', 'prodoc-expasy-cgi',
+'nucleotide-dbfetch-cgi', 'swissprot', 'pdb-rcsb-cgi']
+\end{verbatim}
+
+さて，ランのカルコン合成酵素の一つに対する SWISS-PROT のレコードを
+取り出したいとしましょう．まず， SWISS-PROT への接続を取得して，
+インターネットからレコードを取り出します:
+
+\begin{verbatim}
+>>> sp = db["swissprot"]
+>>> sp
+<Bio.DBRegistry.DBGroup instance at 0x82fdb2c>
+record_handle = sp['O23729']
+>>> print record_handle.read()[:200]
+ID   CHS3_BROFI     STANDARD;      PRT;   394 AA.
+AC   O23729;
+DT   15-JUL-1999 (Rel. 38, Created)
+DT   15-JUL-1999 (Rel. 38, Last sequence update)
+DT   15-JUL-1999 (Rel. 38, Last annotation update)
+\end{verbatim}
+
+この取得方法は，いくつも理由で優れています．第一に，実際にどこから
+SWISS-PROT のレコードを取り出せばよいのか気にする必要がありません -- 
+単にあるオブジェクトを要求するだけで，現在入手できるいずれかの 
+SWISS-PROT のレコードを得られます．第二に，SWISS-PROT オブジェクトを
+得たら，そこから配列を取り出す方法について悩む必要がありません -- 
+単に id を使って要求するだけでよく，実装の詳細について考えなくても
+よいのです．
+
+デフォルトの Biopython データベースレジストリオブジェクトでは，
+同様にして EMBL，prosite，PDB，interpro，GenBank および XEMBL
+から配列を取り出せます．
+
+\subsubsection{データベースの登録とグループ化}
+
+基本となるデータベースレジストリオブジェクトは，基本的な機能を
+提供しているという点で優れてはいますが，もっと高度なシステムが
+あれば，それを新たなデータベースとして追加できれば便利です．
+この話題はいささか高度ではありますが，現在のシステムで十分実現
+可能なことなのです．
+
+本節の例では，(GenBank のローカルなミラーのようなものを持っていたとして)
+GenBank データを提供するようなローカルな CGI スクリプトを追加する
+方法について説明し，さらにそのローカルなデータベースと NCBI GenBank 
+を情報の取得先として一つにグループにまとめて登録します．
+こうすれば，普段はローカルのミラーから情報を取得し，ローカルのサーバが
+ダウンしていた場合にメインの GenBank サーバに切り替え，その際に
+情報取得用のコードを変更しなくてもすむようにできます．
+
+まず，情報の取得先となる CGI について記述する必要があります．
+この例では CGI スクリプトを使っていますが，実際にはアプリケーションや
+データベース，CORBA サーバのような他の情報源を使いたい場合もあるでしょう．
+CGI スクリプトの場合いんは，以下のように記述します:
+
+\begin{verbatim}
+from Bio.sources import CGI
+local_cgi = CGI(name = "local_cgi",
+                delay = 0.0,
+                cgi = "http://www.myserver.org/cgi-bin/my_local.cgi",
+                url = "http://www.myserver.org/cgi_documentation.html",
+                doc = "Query a local databases",
+                failure_cases = [])
+\end{verbatim}
+
+CGI スクリプトへの接続の詳細を書いたら，次は CGI スクリプトの登録です．
+登録にはもう一つの情報，配列の検索が失敗した際に，スクリプト
+がどんなメッセージを返すか，が必要です．
+これには\module{Martel} による正規表現を使います:
+
+\begin{verbatim}
+import Martel
+my_failures = [
+     (Martel.Str("Sequence not available"), "No sequence found")]
+\end{verbatim}
+
+必要なものを全て書いたので，データベースに登録できます:
+
+\begin{verbatim}
+from Bio import register_db
+register_db(name = "nucleotide-genbank-local",
+            key = "uid",
+            source = local_cgi,
+            failure = my_failures)
+\end{verbatim}
+
+この作業は，ローカルのデータベースを以前述べたようなインタフェースで
+利用できるようにします．データベースレジストリ \code{db} を
+\function{keys} した結果を表示すると，
+\code{"nucleotide-genbank-local"} が利用可能になっているのがわかるはず
+です．さて，ローカルのデータベースを登録したので，次は
+GenBank データベース全てをリンクしてまとめましょう．これには
+\function{group_db} コマンドを使います．まず，
+データベースに対して情報を取得する際のターゲット名を\code{"genbank"} 
+という名前で作成しておく必要があります:
+
+\begin{verbatim}
+register_db(name = "genbank", behavior = "concurrent")
+\end{verbatim}
+
+\var{behavior} 引数には，登録されているデータベースから
+どのようにして情報取得を試みるかを指定します．
+\code{concurrent} は，全てのデータベースに対して同時に取得を試み，
+いずれかのデータベースから最初に帰ってきた配列レコードを採用する
+よう指示します．\code{serial} を指定して，配列レコードが得られるまで
+一度に一つづつデータベースを検索させるようにもできます．
+
+グループを作成したら，ローカルの GenBank と NCBI の GenBank を登録
+します:
+
+\begin{verbatim}
+group_db("genbank", "nucleotide-genbank-local")
+group_db("genbank", "nucleotide-genbank-cgi")
+\end{verbatim}
+
+これでデータベースへのアクセスを設定できました．データベースレジストリ
+には，\code{genbak} と \code{nucleotide-genbank-local} というエントリ
+が新たに追加されています:
+
+\begin{verbatim}
+['embl-dbfetch-cgi', 'embl-fast', 'embl', 'prosite-expasy-cgi',
+'swissprot-expasy-cgi', 'nucleotide-genbank-cgi', 'pdb-ebi-cgi',
+'genbank', 'nucleotide-genbank-local', 'interpro-ebi-cgi',
+'embl-ebi-cgi', 'embl-xembl-cgi', 'protein-genbank-cgi', 'pdb',
+'prodoc-expasy-cgi', 'nucleotide-dbfetch-cgi', 'swissprot',
+'pdb-rcsb-cgi']
+\end{verbatim}
+
+すばらしい．自作のデータベースをレジストリに追加して，情報取得の
+手順を簡単化して使えるようになりました!
+
+\section{BioSQL -- 配列を関係データベースに入れる}
+
+\section{BioCorba}
+
+BioCorba は，CORBA を介したクールな処理を実現します．基本的には，
+BioCorba を使うと Perl や Java といった他の言語で書かれたコードと簡単に
+やりとりできるようになります．やりとりは全て，標準的な Biopython の
+インタフェースに非常に近いインタフェースで行われます．CORBA に
+ついてほとんど知らなくても簡単に使えるように，様々なことが行われて
+います．詳しい使用法については，Biocorba を専門的に扱っている
+ドキュメントを調べてください．
+
+\section{3D の世界へ: PDB モジュール}
+
+Biopython を使うと，高分子構造の広大な世界も探索できるようになります．
+Biopython には\class{Structure} と呼ばれるオブジェクトを生成する
+\class{PDBParser} クラスがあります． \class{Structure} オブジェクトを
+使うと，PDB ファイル中の原子データに簡便な方法でアクセスできるように
+なります．
+
+\subsection{分子構造の表現方式}
+
+高分子構造は構造 (structure)，モデル (model)，分子鎖 (chain)，
+残基 (residue)，原子 (atom) を使った階層構造 (SMCRA階層) で表現します．
+SMCRA データ構造を UML によるクラス図で表したものを図\ref{fig:scmra}
+に示します．このようなデータ構造は，ある構造をとる高分子の内容を表現
+する方法としては，必ずしも最適というわけではありません．とはいえ，
+こうしたデータ構造は，(PDB や MMCIF ファイル形式のような) 分子構造
+を記述したファイルデータに入っている情報をうまく解釈する上で必ず必要に
+なります．もしこの階層構造を使ってある構造記述ファイルの内容を表現でき
+ないとすれば，おそらくファイルにエラーが含まれているか，少なくとも
+構造が曖昧さなく記述されていないかです．もし SMCRA データ構造をうまく
+生成できなければ，その問題を引き起こす理由があります．従って，
+PDB ファイルの構文解析を行えば，こうした問題を検出できます．
+これについては，\ref{problem structures} 節でいくつか例を挙げて
+説明します．
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{images/smcra.eps}
+\label{fig:smcra}
+\caption{高分子構造を表現する際に使われる SMCRA データ構造の UML クラス図}
+\end{figure}
+
+\class{Structure}，\class{Model}，\class{Chain} および \class{Residue}
+は，いずれも基底クラス \class{Entity} (エンティティ) のサブクラスです．
+\class{Atom} クラスだけは\class{Entity} インターフェースの一部しか
+実装していません (\class{Atom} クラスには子クラスが必要ないからです)．
+
+\class{Entity} サブクラスのオブジェクトは，いずれも一意な識別子
+(id) をキーに使うことで，自分の子エンティティを取り出せます (例えば，
+原子の名前を表す文字列をキーにして，ある \class{Residue} オブジェクト
+から\class{Atom} オブジェクトを取り出したり，分子鎖の id をキーと
+して，\class{Model} オブジェクトから \class{Chain} オブジェクトを
+取り出したりできます)．
+
+原子や残基のゆらぎ (disorder) は \class{DisorderedAtom} や
+\class{DisorderedResidue} クラスで表現されます，これらはいずれも
+基底クラス\class{DisorderedEntityWrapper} のサブクラスです．
+これらのクラスは，ゆらぎに伴う複雑さを隠蔽し，あたかも普通の
+\class{Atom} や \class{Residue} オブジェクトであるかのように振る舞い
+ます．
+
+一般的には，ある親エンティティ (\class{Residue}, \class{Chain},
+\class{Model}, \class{Structure}) の子にあたるエンティティオブジェクト
+(\class{Atom}, \class{Residue}, \class{Model}, \class{Structure}) は，
+id をキーにして取り出せます．
+
+\begin{verbatim}
+child_entity=parent_entity[child_id]
+\end{verbatim}
+
+また，ある親エンティティオブジェクトの子エンティティ全てのリストも
+取り出せます．このリストは特殊なやりかたで並んでいるので注意してくださ
+い (例えば，\class{Model} オブジェクトが親の場合，子の\class{Chain} 
+オブジェクトは側鎖 id (chain identifier) に応じて並びます)．
+
+\begin{verbatim}
+child_list=parent_entity.get_list()
+\end{verbatim}
+
+ある子エンティティオブジェクトの親エンティティオブジェクトも
+取り出せます．
+
+\begin{verbatim}
+parent_entity=child_entity.get_parent()
+\end{verbatim}
+
+また，SMCRA 階層のどの階層のオブジェクトに対しても，
+\emph{完全 id (full id)} を取り出せます．
+完全 id とは，最上位のオブジェクト (\class{Structure}) から下って，
+現在のオブジェクトまで辿ったときに経由した全てのオブジェクトの id から
+なるタプルです．例えば，ある \class{Residue} オブジェクトの完全 id は
+以下のようになります:
+
+\begin{verbatim}
+full_id=residue.get_full_id()
+
+print full_id
+
+("1abc", 0, "A", ("", 10, "A"))
+\end{verbatim}
+
+このタプルの内容は，それぞれ
+
+\begin{itemize}
+\item \code{"1abc"} を id に持つ \class{Structure} オブジェクト
+\item \code{0} を id に持つ \class{Model} オブジェクト
+\item \code{"A"} を id に持つ \class{Chain} オブジェクト
+\item \code{("", 10, "A")} を id に持つ \class{Residue} オブジェクト
+\end{itemize}
+
+に対応します．
+
+最後の \class{Residue} オブジェクトの id は，ヘテロフィールド
+(最初のフィールド) が空白になっています．これは，この残基が
+ヘテロ残基 (もしくは水) ではないことを示しています．また，
+配列の識別子は 10 で，挿入コード (insertion code) は \code{"A"} 
+になっています．
+
+エンティティにはいくつか便利なメソッドがあります:
+
+\begin{verbatim}
+# エンティティの id を得る
+
+entity.get_id()
+
+# ある id をもった子エンティティが存在するかを調べる
+
+entity.has_id(entity_id)
+
+# 子エンティティの数を得る
+
+nr_children=len(entity)
+\end{verbatim}
+
+ある親エンティティに対して，その子エンティティを削除したり，
+子エンティティの名前を変更したり，新たな子エンティティを追加したりは
+できますが，その際にデータの正当性チェック (sanity check) は
+行われません (例えば，ある分子鎖に同じ id を持つ二つの残基を
+付加したりできてしまいます)．\class{Decorator} クラスを用いると，
+整合性を含めたこうしたチェックをうまく行ってくれますが，もし
+素のインタフェースを利用したいなら，ソースコード (\file{Entity.py})
+を参照してみてください．
+
+\subsubsection{Structure オブジェクト}
+
+\class{Structure} オブジェクトは高分子を表現するデータの階層構造の
+頂点に位置しています．\class{Structure} の id はユーザが指定した
+文字列になります．\class{Structure} オブジェクトには，複数の
+\class{Model} オブジェクトが子エンティティとして入っています．
+ほとんどの (全てではありませんが) 結晶構造には単一のモデルしか
+ない一方， NMR で決定される構造には一般的にいくつかのモデルが
+入っています．結晶構造において多くの分子にゆらぎが生じている場合
+にも，複数のモデルができます．
+
+\paragraph{Structure オブジェクトを構築する}
+
+\class{Structure} オブジェクトは \class{PDBParser} オブジェクトから
+生成されます:
+
+\begin{verbatim}
+from Bio.PDB.PDBParser import PDBParser
+
+p=PDBParser(PERMISSIVE=1)
+
+structure_id="1fat"
+
+filename="pdb1fat.ent"
+
+s=p.get_structure(structure_id, filename)
+\end{verbatim}
+
+\var{PERMISSIVE} フラグは，PDB ファイルに関するよくあるいくつかの問題
+(\ref{problem structures} 参照) をパーザに無視させます (とはいえ，
+これによっていくつかの原子や残基が失われるかもしれないので注意して
+ください) ．このこのフラグを指定しない場合，パーザが PDB ファイルを
+構文解析している際に問題が生じると\exception{PDBConstructionException}
+を送出します．
+
+\paragraph{ヘッダ (header) とトレイラ (trailer)}
+
+\function{get_header} および \function{get_trailer} といったメソッドを
+用いると，PDB ファイル中のヘッダとトレイラを (文字列からなる単純なリスト
+で) \class{PDBParser} オブジェクトから取り出せます．
+
+\subsubsection{Model オブジェクト}
+
+\class{Model} オブジェクトの id は整数で，PDB ファイルを解析した際に
+そのモデルが位置していた場所から決まります (0 から自動的に番号付け
+されます)．\class{Model} オブジェクトには，子エンティティの\class{Chain} 
+からなるリストが入っています．
+
+
+\paragraph{例題}
+
+\class{Structure} オブジェクト中に収められている最初の
+モデルを取得します．
+
+\begin{verbatim}
+first_model=structure[0]
+\end{verbatim}
+
+\subsubsection{Chain オブジェクト}
+
+\class{Chain} オブジェクトの id は，構造データ記述ファイル内で
+該当する分子鎖を表す部分の識別子からとられ，何らかの文字列になります．
+ある\class{Model} オブジェクト下にある各々の\class{Chain} には
+互いに一意な id があります．\class{Chain} オブジェクトには
+子エンティティの\class{Residue} からなるリストが入っています．
+
+\paragraph{例題}
+
+\class{Model} オブジェクトから，識別子 \code{"A"} をもった
+\class{Chain} オブジェクトを取得します．
+
+\begin{verbatim}
+chain_A=model["A"]
+\end{verbatim}
+
+\subsubsection{Residue オブジェクト}
+
+いうまでもなく，\class{Residue} は一連の\class{Atom} を子エンティティ
+として記憶しています．これに加えて，\class{Residue} には残基の名前
+を示す文字列 (例えば \code{"ASN"}) と，残基のセグメント識別子
+(X-PLOR ユーザにはよく知られていますが，SMCRA データ構造を構築する
+際には用いられません) が入っています．
+
+\class{Residue} オブジェクトの id は三つの部分: ヘテロフィールド
+(hetfield)，配列識別子 (resseq)，挿入コード (icode) からなります．
+
+ヘテロフィールドは文字列で，\code{"W"} は水を、\code{"H_"} の後ろに
+残基名を続けたもの (例えば \code{"H_FUC"}) はその他のヘテロ残基を、
+空白は一般的なアミノ酸と核酸を表します．この方法を採用した理由は
+\ref{hetero problems} 節で解説しています．
+
+残基 id の第二のフィールドは配列識別子で，分子鎖の
+どの場所に残基が結合しているかを表します．
+
+第三のフィールドは文字列で，挿入コードが入ります．挿入コードは
+しばしば，特定の残基に対して望ましいを番号付け方法を保存するために
+使われます．Ser 80 挿入ミュータント (例えば，Thr 80 と Asn81 残基の
+間に Ser の入ったもの) の場合，配列識別子と挿入コードはそれぞれ
+Thr 80 A, Ser 80 B, Asn 81 のようになります．この方法をとると，
+残基の番号付け方法は野生株の構成と同じままになります．
+
+いくつか例を挙げてみましょう． 挿入コードが空白になっている Asn 10 
+の残基 id は\code{("", 10, "")} です．W 10 の残基 id は
+\code{("W", 10, "")} です．配列識別子 10 のグルコース分子 (ヘテロ
+残基が GLC という名前になっています) は \code{("H_GLC", 10, "")}
+です．このようにすると，全ての残基は異なる残基 id を持つので，
+同じ分子鎖の一部分として扱えます．
+
+ほとんどの場合， \member{hetflag} と \member{icode} フィールドは空白，
+すなわち\code{("W", 10, "")} のようになります．このような場合には，
+配列識別子は完全 id のショートカットとして利用できます:
+
+\begin{verbatim}
+# 完全 id の使用
+
+res10=chain[("", 10, "")]
+
+# ショートカットの使用 
+
+res10=chain[10]
+\end{verbatim}
+
+\class{Chain} オブジェクト上の各 \class{Residue} オブジェクトには
+一意な id がつけられています．残基のゆらぎは特別扱いされます．
+これについては\ref{point mutations} 節で説明します．
+
+\class{Residue} オブジェクトには，他にもいくつかメソッドがあります:
+
+\begin{verbatim}
+r.get_resname()         # "ASN" のような残基名を返す
+r.get_segid()           # "CHN1" のような SEGID を返す
+\end{verbatim}
+
+\subsubsection{Atom}
+
+\class{Atom} は原子に関連するデータを記憶し，子エンティティを持ちません．
+原子の id はその原子の名前になります (例えば，\code{"OG"} は Ser 残基の
+側鎖の酸素です)．ある残基中では，個々の原子の id は一意でなければ
+なりません．\ref{disordered atoms} 節でも述べたように，データを構文解析
+する際に原子のゆらぎに遭遇すると例外が発生します．
+
+PDB ファイル中では，原子の名前は 4 文字のキャラクタからなり，通常は
+先頭と末尾に空白がついています．PDB ファイルでは，簡単のために
+しばしばこの空白は除去されます (例えば，アミノ酸C$\alpha$ は
+PDB ファイル中では \code{".CA."} で，ドットが空白を表します)．
+ある残基内で名前の衝突 (同じ名前と id を持つ \class{Atom} オブジェクト
+が生成される) が起こらない限り，原子の名前を生成する際にスペースを
+除去します．衝突が発生する場合，パーザはスペースを含めた原子名を使おうと
+試みます．このような状況は，例えば一つの残基に \code{".CA."} と
+\code{"CA.."} という名前の原子が入っている場合に発生しますが，
+めったに起きることはありません．
+
+残基に保存されている原子のデータには，原子の名前，原子の座標
+(もしあれば標準偏差も)，B ファクタ (もしあれば異方性 B ファクタと
+標準偏差も)， altloc 指定子と空白を含む完全な原子名が入っています．
+原子番号 (element number) や原子の電荷といった，あまり利用されない
+要素は， PDB ファイル中には書かれていますが\class{Atom} のデータと
+しては保存されません
+
+\class{Atom} オブジェクトには以下のようなメソッドがあります: 
+
+\begin{verbatim}
+a.get_name()       # 原子名 (スペースなし，例えば "CA")
+
+a.get_id()         # id (原子名と同じ)
+
+a.get_coord()      # 原子座標
+
+a.get_bfactor()    # B ファクタ
+
+a.get_occupancy()  # 原子ゆらぎにおける占有率
+
+a.get_altloc()     # _REPLACE_代替構造記憶位置指定子 (alternative location specifier) 
+
+a.get_sigatm()     # 原子パラメタの標準偏差
+
+a.get_siguij()     # 異方性 B ファクタの標準偏差
+
+a.get_anisou()     # 異方性 B ファクタ
+
+a.get_fullname()   # 原子名 (スペースを含む, 例. ".CA.")
+\end{verbatim}
+
+原子の座標、異方性 B ファクタおよびその標準偏差，
+原子パラメタの標準偏差の表現には Numerical Python の配列が
+用いられています．
+
+\subsection{ゆらぎ (disorder)}
+
+
+\subsubsection{一般的なアプローチ}
+\label{disorder problems}
+
+分子構造のゆらぎ (disorder) を考えるには，二つの視点があります．
+一つは原子のゆらぎ，もう一つは残基のゆらぎです．たいてい，我々は
+ゆらぎからくる複雑性を全てカプセル化して扱おうとしてしまいます．
+しかし，もしただ単に全ての C$\alpha$ 原子にわたってループ処理を
+行いたいだけなら，どこかの残基の側鎖にゆらぎがあっても気には
+しません．その一方で，データ構造内では，ゆらぎを完璧に表現
+できなければならないという問題があります．そこで，原子や残基の
+ゆらぎを特殊なオブジェクトに入れ，あたかもゆらぎが存在しないかの
+ように振舞わせることにします．こうした処理を行う唯一の方法は，
+ゆらぎを持つ原子や残基のサブセットによる表現です．どのサブセットを
+採用するか (例えば，Ser 残基が使われている場所で，二通りにゆらぎの
+ある OG 側鎖のどちらを選ぶか) は，ユーザが指定できます．
+
+
+\subsubsection{原子のゆらぎ}
+\label{disordered atoms}
+
+原子のゆらぎの場合，ゆらぎのある部分の原子は通常の\class{Atom} 
+オブジェクトを使って表現します．ただし，その原子と物理的に同じ
+原子を表現しているような原子は，全て \class{DisorderedAtom} 
+オブジェクト内に保存します．\class{DisorderedAtom} オブジェクト内の
+各\class{Atom} オブジェクトは，\member{altloc} 指定子を使って一意に
+指定できます．
+\class{DisorderedAtom} に対してメソッド呼び出しを行うと，
+\class{DisorderedAtom} で処理されないものは現在選択されている
+\class{Atom} オブジェクトに転送します．デフォルトでは，
+占有率 (occupancy) の最も高い\class{Atom} オブジェクトが選択されて
+います．もちろん，\member{altloc} を利用すれば，ユーザはいずれかの
+\class{Atom} オブジェクトを選択できます．このようにして，さして複雑さ
+を増すことなく，原子ゆらぎを正しく表現できるようになっているのです．
+別の言い方をすれば，原子ゆらぎに興味がなければ，それにわずらわされる
+必要はないということです．
+
+ゆらぎの原子には，それぞれ \member{altloc} という識別子があります．
+\class{DisorderedAtom} オブジェクトにこの識別子を指定すると，
+特定の \member{altloc} 識別子を持った \class{Atom} であるかのように
+振舞わせられます:
+
+\begin{verbatim}
+atom.disordered_select("A")        # altloc が A の原子を選択する
+print atom.get_altloc()
+"A"
+
+atom.disordered_select("B")        # altloc が B の原子を選択する
+print atom.get_altloc()
+"B"
+\end{verbatim}
+
+\subsubsection{残基のゆらぎ}
+
+\paragraph{よくあるケース}
+
+もっともよくあるのは，残基に一つまたはそれ以上の原子のゆらぎが
+あるケースです．いうまでもなく，このケースは\class{DisorderedAtom} 
+オブジェクトによってゆらぎのある原子を表現し，その
+\class{DisorderedAtom} オブジェクトを\class{Residue} オブジェクトの
+中に普通の\class{Atom} オブジェクトのようにして入れれば解決します．
+\class{DisorderedAtom} は，自分に適用されたメソッドのうち，
+\class{DisorderedAtom} で処理されないものを該当する\class{Atom} 
+オブジェクト (選択されている \class{Atom} オブジェクト) 
+に転送することで，見かけ上通常の原子とまったく同じように 
+(実際には最も占有率の高い原子と同じように) 振る舞います．
+
+\paragraph{点変異}
+\label{point mutations}
+ゆらぎが点変異 (point mutation) に由来するような特殊なケース，
+例えば点変異体が二つ以上混じったポリペプチドが結晶中に見つかるような
+場合があります．このような例の一つが PDB 構造の 1EN2 です．
+
+こうした変異では，残基が (例えば Ser 60 と Cys 60 のように) 異なる
+残基型に属するので，上のよくある例のように，一つの \class{Residue}
+オブジェクトの中には入りません．このようなケースでは，
+ゆらぎとなる各々の残基を\class{Residue} オブジェクトで表現しておき，
+両方の \class{Residue} オブジェクトを \class{DisorderedResidue}
+オブジェクトに入れておきます． 
+
+\class{DisorderedResidue} は，自分に適用されたメソッドのうち，
+\class{DisorderedResidue} で処理されないものを現在選択されて
+いる\class{Residue} オブジェクト (デフォルトでは最後に追加
+された\class{Residue} オブジェクト) に転送することで，
+あたかも通常の残基のように振舞います．\class{DisorderedResidue} 
+オブジェクト中の各\class{Residue} オブジェクトは，各々の
+残基名で一意に識別できます．上の例でいえば， 
+\class{DisorderedResidue} オブジェクト内の Ser 60 残基の
+識別子は\code{"SER"} ，Cys 60 の識別子は\code{"CYS"} です．
+ユーザはこの識別 id を使って現在有効な \class{Residue} オブジェクト
+を選択できます．
+
+\subsection{ヘテロ残基}
+
+\subsubsection{ヘテロ残基に関連した問題}
+\label{hetero problems}
+
+ヘテロ残基に関してよくある問題は，いくつかのヘテロ残基と非へテロ残基は同一
+チェイン上で同一の配列識別子(そして挿入コード)を共有することである。そ
+のため、各へテロ残基に独自のidを生成するため水とその他のヘテロ残基は異
+なる方法で扱われる。
+
+ヘテロ残基に関してよくある問題は，同じ分子鎖内にある複数のヘテロ残基／
+非へテロ残基が，同じ配列識別子(および挿入コード) を持っていると
+いうことです．したがって，各ヘテロ残基の id を一意に生成するために，
+水やその他のヘテロ残基を別の方法で扱います．
+
+\class{Residue} オブジェクトは \code{(hetfield, resseq, icode)} という
+タプルの id を持っていることを思い出してください．アミノ酸や核酸の
+場合， \member{hetfield} は空 (\code{""}) になり，水やヘテロ残基の場合には
+文字列になります．\member{hetfield} の内容については，以下で説明します．
+
+\subsubsection{水残基}
+
+水残基の \member{hetfield} の文字列は \code{"W"} になります．そのため，
+水の一般的なidは \code{("W", 1, "")} です．
+
+\subsubsection{その他のヘテロ残基}
+
+その他のヘテロ残基の \member{hetfield} 文字列は，\code{"H_"} に残基名を
+続けたものです．例えば，残基名 \code{"GLC"} のグルコース分子の場合，
+\member{hetfield} は \code{"H_GLC"} になります．残基 id は 
+\code{("H_GLC", 1, "")} です．
+
+\subsection{使用例}
+
+PDBファイルを解析して，\class{Model}、\class{Chain}、 \class{Residue}
+および、\class{Atom} オブジェクトを取り出します．
+
+\begin{verbatim}
+from PDBParser import PDBParser 
+
+parser=PDBParser()
+
+structure=parser.get_structure("test", "1fat.pdb")
+model=structure[0]
+chain=model["A"]
+residue=chain[1]
+atom=residue["CA"]
+\end{verbatim}
+
+分子鎖からヘテロ残基 (ここでは一部が resseq 10 のグルコース (GLC) 
+であるような残基) を取り出します．
+
+\begin{verbatim}
+residue_id=("H_GLC", 10, " ")
+residue=chain[residue_id]
+\end{verbatim}
+
+分子鎖内の全てのヘテロ残基を出力します．
+
+\begin{verbatim}
+for residue in chain.get_list():
+	residue_id=residue.get_id()
+	hetfield=residue_id[0]
+	if hetfield[0]=="H":
+		print residue_id
+\end{verbatim}
+
+B ファクタが 50 以上の CA 原子の座標を全て出力します．
+
+\begin{verbatim}
+for model in structure.get_list():
+  for chain in model.get_list():
+    for residue in chain.get_list():
+      if residue.has_id("CA"):
+        ca=residue["CA"]
+        if ca.get_bfactor()>50.0:
+          print ca.get_coord()
+\end{verbatim}
+
+ゆらぎのある原子を含む全ての残基を出力します．
+
+\begin{verbatim}
+for model in structure.get_list()
+  for chain in model.get_list():
+    for residue in chain.get_list():
+      if residue.is_disordered():
+        resseq=residue.get_id()[1]
+        resname=residue.get_resname()
+        model_id=model.get_id()
+        chain_id=chain.get_id()
+        print model_id, chain_id, resname, resseq
+\end{verbatim}
+
+ゆらぎのある原子全てにわたってループして，全て \member{altloc} が 
+\code{"A"} の原子 (があれば) になるよう選択します．この操作を行うと，
+SMCRA データ構造の挙動を \member{altloc} が \code{"A"} の原子しか
+存在しない場合の挙動にします．
+
+\begin{verbatim}
+for model in structure.get_list()
+  for chain in model.get_list():
+    for residue in chain.get_list():
+      if residue.is_disordered():
+        for atom in residue.get_list():
+          if atom.is_disordered():
+            if atom.disordered_has_id("A"):
+              atom.disordered_select("A")
+\end{verbatim}
+
+分子鎖の位置 10 に点変異があって， Ser と Cys からなるとします．
+分子鎖の挙動を位置 10 の残基が Cys 残基である場合の挙動にします．
+
+\begin{verbatim}
+residue=chain[10]
+residue.disordered_select("CYS")
+\end{verbatim}
+
+\subsection{PDB ファイルによくある問題}
+\subsubsection{例}
+\label{problem structures}
+\class{PDBParser}/\class{Structure} クラスは，
+(各々 SCOP で異なる スーパーファミリーに属している) 約 800 の
+タンパク構造でテストを行いました．処理には約 20 分を要し、
+一構造あたりの平均は 1.5 秒でした。 64000 原子を含むリボソームの
+大サブユニット (1FKK) のデータ構造解析には， 1000 MHz の PC 上で
+10 秒かかりました．
+
+このテストの中で，あいまいでないデータ構造を構築できないという理由で
+例外が 3 つ送出されました．いずれのケースにおいても，エラーの原因は
+PDB ファイル側で修正すべき問題でした．こうしたケースでは，例外を
+送出した方が，データ構造に書かれている内容を誤って表現してしまう
+よりもはるかにましです．
+
+\paragraph{残基の重複 (duplicate residues)}
+
+ある構造では，一つの分子鎖中の二つのアミノ酸残基が同じ配列識別子
+(resseq 3) と icode を持っていました．調べたところ，
+この分子鎖は Thr A3, \ldots{}, Gly A202, Leu A3, Glu A204 のように
+なっていました．Leu A3 が正しくは A203 なのは明らかです．
+同じような状況が 1FFK にもありました (Gly B64, Met B65, Glu B65, 
+Thr B67, つまり，Glu B65 は Glu B66 の誤り)．
+
+
+\paragraph{原子の重複 (duplicate atoms)}
+
+分子構造 1EJG は，分子鎖 A の 22 番目の残基が Ser/Pro の点変異に
+なっています．さらに， Ser 22 のいくつかの原子はゆらぎを持っています．
+想像の通り，Ser22 に属する全ての原子には空白でない \member{altloc}
+指定子 (B または C) があり，Pro 22 の全ての原子の \member{altloc} A
+です．ただし，原子 N の \member{altloc} だけが空白になっていました．
+これが例外を送出する原因になっていました．というのも，点変異の
+起きている場所では，二種類の残基内に入っている全ての原子に空白でない
+\member{altloc} がついていなければならないからです．Ser 22 には
+原子 N がなかったので，おそらくこの原子は Ser 22 と Pro 22 の間で
+共有されているのだろうということもわかります．これもまた，
+ファイルにおける問題を提起しています: 原子 N は Ser と Pro 残基の
+両方になくてはならず，かつ適切な \member{altloc} 識別子を関連付けて
+いなければならないのです．
+
+
+\subsubsection{自動修正}
+
+エラーのいくつかはかなりよくあるもので，誤った解釈を行うリスクを
+さして冒さずに簡単に修正できます．そのような場合を以下に示します．
+
+\paragraph{空白の altloc を伴う原子ゆらぎ}
+
+通常，ゆらぎの原子の \member{altloc} 識別子は空白であってはなりません．
+しかし，この仕様に従わず，\member{altloc} が空白のものとそうでないものを
+使ってひとつの原子のゆらぎを表現しているものがあります．このような
+ゆらぎの表現があっても，自動的に正しい方法で解釈されます．
+
+\paragraph{破損している分子鎖}
+
+時に，分子鎖 A に属しているある残基の後ろに分子鎖 B に属する残基が
+続き，さらにその後ろに分子鎖 A に属する残基が出現するような残基列が
+分子構造内に入っている場合，すなわち分子鎖が「破損している」場合が
+あります．このような残基列があっても，解釈は正しく行われます．
+
+\subsubsection{致命的なエラー}
+
+時に、PDB ファイルを曖昧さなしに解釈できない場合があります。その場合、
+あて推量や間違いのリスクを冒したりはせず、例外を送出して，ユーザに
+PDB ファイルを訂正するよう促します。以下にそのようなケースを示します．
+
+\paragraph{残基の重複}
+
+ある分子鎖内の全ての残基には一意な id があります．この id は，
+\begin{itemize}
+\item 配列識別子 (resseq) 
+\item 挿入コード (icode) 
+\item \member{hetfield} 文字列 (水は \code{"W"}、その他のヘテロ残基は
+\code{"H_"} の後ろに残基名を続けたもの)
+\item 点変異の場合には各残基の残基名 (\class{DisorderedResidue} 
+オブジェクト内に入っている \class{Residue} オブジェクトの情報を
+入れるため)
+\end{itemize}
+に基づいて生成されています．
+もしこの基準で一意な id を生成できなければ，なにかまずいことが起きている
+はずなので，例外を送出します．
+
+
+\paragraph{原子の重複}
+
+ある残基内の全ての原子には一意な id があります．この id は，
+\begin{itemize}
+\item 原子名 (スペースなし、ただし問題が生ずる場合はスペースを含む)
+\item \member{altloc} 指定子 
+\end{itemize}
+に基づいて生成されています．
+
+もしこの基準で一意な id を生成できなければ，なにかまずいことが起きている
+はずなので，例外を送出します．
+
+
+\subsection{その他の機能}
+結晶構造を解析するためのツールは他にもいくつかあります．こうした
+ツールでは，2 つの座標セットを重ね合わせ (SVDSuperimposer) たり、
+構造からポリペプチドを抽出するツール (Polypeptide) たり、
+類似したものを探索し (NeighborSearch) たり， PDB ファイルを書き出し
+(PDBIO) たりできます．
+類似タンパク質の探索には \Cpp で書かれた KD 木モジュールを使っています．
+このモジュールはとても高速に動作し，互いに特定の距離内にあるような全ての
+座標点の対を探索する高速な手法も入っています．
+
+\class{Polypeptide} オブジェクトは単に \class{Residue} オブジェクトから
+なる\class{UserList} に過ぎません．\class{Structure} オブジェクトから
+\class{Polypeptide} オブジェクトのリストを構築するには以下のように
+します:
+
+\begin{verbatim}
+model_nr=1
+polypeptide_list=build_peptides(structure, model_nr)
+
+for polypeptide in polypeptide_list:
+    print polypeptide
+\end{verbatim}
+
+\class{Polypeptide} オブジェクトは常に単一の\class{Model} (この場合では
+1 番目のモデル) から生成されます．
+
+\section{その他}
+
+\subsection{DNA 配列からタンパク配列への翻訳}
+

@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node111.html">
+<LINK rel="prev" href="node109.html">
+<LINK rel="parent" href="node107.html">
+<LINK rel="next" href="node111.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="期待度数行列 (Expected Frequency Matrix:EFM) の生成">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>4.4.2.3 期待度数行列 (Expected Frequency Matrix:EFM) の生成</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.4.2.2 観測度数行列 (Observed Frequency" 
+  href="node109.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.4.2 使用法" 
+  href="node107.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.4.2.4 置換頻度行列 (Substitution Frequency" 
+  href="node111.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node109.html">4.4.2.2 観測度数行列 (Observed Frequency</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node107.html">4.4.2 使用法</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node111.html">4.4.2.4 置換頻度行列 (Substitution Frequency</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION005423000000000000000">
+4.4.2.3 期待度数行列 (Expected Frequency Matrix:EFM) の生成</A>
+</H3>
+
+<P>
+<dl><dt><table cellpadding="0" cellspacing="0"><tr valign="baseline">
+  <td><nobr><b><tt id='l2h-12' xml:id='l2h-12' class="function">_build_exp_freq_mat</tt></b>(</nobr></td>
+  <td><var>OFM, exp_freq_table</var>)</td></tr></table></dt>
+<dd>
+
+<P>
+<var>exp_freq_table</var> は，<tt class="class">FreqTable</tt> のインスタンスで
+なくてはなりません．<tt class="class">FreqTable</tt> の詳細は <A HREF="node114.html#sec:freq-table">4.4.3</A>
+節を参照してください．一言で言うと，期待度数行列には，
+アルファベット中の各文字の頻度が入っています．EFM はアルファベット中の
+各文字をキーとする辞書になっていて，頻度が値として対応しています．
+頻度の合計は 1 になります．
+</dl>
+
+<P>
+期待度数表は，観測度数行列から生成できます (通常はそうします)．
+従って，ほとんどの場合には，以下のようにして<var>exp_freq_table</var> 
+を生成します:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; exp_freq_table = SubsMat._exp_freq_table_from_obs_freq(OFM)
+&gt;&gt;&gt; EFM = SubsMat._build_exp_freq_mat(OFM,exp_freq_table)
+</pre></div>
+
+<P>
+とはいえ，自作の <var>exp_freq_table</var> も入力できます．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.4.2.2 観測度数行列 (Observed Frequency" 
+  rel="prev" title="4.4.2.2 観測度数行列 (Observed Frequency" 
+  href="node109.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.4.2 使用法" 
+  rel="parent" title="4.4.2 使用法" 
+  href="node107.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.4.2.4 置換頻度行列 (Substitution Frequency" 
+  rel="next" title="4.4.2.4 置換頻度行列 (Substitution Frequency" 
+  href="node111.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node109.html">4.4.2.2 観測度数行列 (Observed Frequency</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node107.html">4.4.2 使用法</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node111.html">4.4.2.4 置換頻度行列 (Substitution Frequency</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

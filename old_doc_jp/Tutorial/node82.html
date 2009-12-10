@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node83.html">
+<LINK rel="prev" href="node81.html">
+<LINK rel="parent" href="node80.html">
+<LINK rel="next" href="node83.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="自動修正">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.11.5.2 自動修正</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11.5.1 例" 
+  href="node81.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11.5 PDB ファイルによくある問題" 
+  href="node80.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.5.3 致命的なエラー" 
+  href="node83.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node81.html">3.11.5.1 例</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node80.html">3.11.5 PDB ファイルによくある問題</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node83.html">3.11.5.3 致命的なエラー</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+<div class='online-navigation'>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"></a>
+
+<UL CLASS="ChildLinks">
+<LI><A href="node82.html#SECTION0041152100000000000000">3.11.5.2.1 空白の altloc を伴う原子ゆらぎ</a>
+<LI><A href="node82.html#SECTION0041152200000000000000">3.11.5.2.2 破損している分子鎖</a>
+</ul>
+<!--End of Table of Child-Links-->
+</div>
+<HR>
+
+<H3><A NAME="SECTION0041152000000000000000">
+3.11.5.2 自動修正</A>
+</H3>
+
+<P>
+エラーのいくつかはかなりよくあるもので，誤った解釈を行うリスクを
+さして冒さずに簡単に修正できます．そのような場合を以下に示します．
+
+<P>
+
+<H4><A NAME="SECTION0041152100000000000000">
+3.11.5.2.1 空白の altloc を伴う原子ゆらぎ</A>
+</H4>
+
+<P>
+通常，ゆらぎの原子の <tt class="member">altloc</tt> 識別子は空白であってはなりません．
+しかし，この仕様に従わず，<tt class="member">altloc</tt> が空白のものとそうでないものを
+使ってひとつの原子のゆらぎを表現しているものがあります．このような
+ゆらぎの表現があっても，自動的に正しい方法で解釈されます．
+
+<P>
+
+<H4><A NAME="SECTION0041152200000000000000">
+3.11.5.2.2 破損している分子鎖</A>
+</H4>
+
+<P>
+時に，分子鎖 A に属しているある残基の後ろに分子鎖 B に属する残基が
+続き，さらにその後ろに分子鎖 A に属する残基が出現するような残基列が
+分子構造内に入っている場合，すなわち分子鎖が「破損している」場合が
+あります．このような残基列があっても，解釈は正しく行われます．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11.5.1 例" 
+  rel="prev" title="3.11.5.1 例" 
+  href="node81.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11.5 PDB ファイルによくある問題" 
+  rel="parent" title="3.11.5 PDB ファイルによくある問題" 
+  href="node80.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.5.3 致命的なエラー" 
+  rel="next" title="3.11.5.3 致命的なエラー" 
+  href="node83.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node81.html">3.11.5.1 例</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node80.html">3.11.5 PDB ファイルによくある問題</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node83.html">3.11.5.3 致命的なエラー</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

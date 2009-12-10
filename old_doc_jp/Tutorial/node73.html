@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node74.html">
+<LINK rel="prev" href="node72.html">
+<LINK rel="parent" href="node71.html">
+<LINK rel="next" href="node74.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="原子のゆらぎ">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.11.2.2 原子のゆらぎ</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11.2.1 一般的なアプローチ" 
+  href="node72.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11.2 ゆらぎ (disorder)" 
+  href="node71.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.2.3 残基のゆらぎ" 
+  href="node74.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node72.html">3.11.2.1 一般的なアプローチ</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node71.html">3.11.2 ゆらぎ (disorder)</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node74.html">3.11.2.3 残基のゆらぎ</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H3>
+<BR>
+3.11.2.2 原子のゆらぎ
+</H3>
+
+<P>
+原子のゆらぎの場合，ゆらぎのある部分の原子は通常の<tt class="class">Atom</tt> 
+オブジェクトを使って表現します．ただし，その原子と物理的に同じ
+原子を表現しているような原子は，全て <tt class="class">DisorderedAtom</tt> 
+オブジェクト内に保存します．<tt class="class">DisorderedAtom</tt> オブジェクト内の
+各<tt class="class">Atom</tt> オブジェクトは，<tt class="member">altloc</tt> 指定子を使って一意に
+指定できます．
+<tt class="class">DisorderedAtom</tt> に対してメソッド呼び出しを行うと，
+<tt class="class">DisorderedAtom</tt> で処理されないものは現在選択されている
+<tt class="class">Atom</tt> オブジェクトに転送します．デフォルトでは，
+占有率 (occupancy) の最も高い<tt class="class">Atom</tt> オブジェクトが選択されて
+います．もちろん，<tt class="member">altloc</tt> を利用すれば，ユーザはいずれかの
+<tt class="class">Atom</tt> オブジェクトを選択できます．このようにして，さして複雑さ
+を増すことなく，原子ゆらぎを正しく表現できるようになっているのです．
+別の言い方をすれば，原子ゆらぎに興味がなければ，それにわずらわされる
+必要はないということです．
+
+<P>
+ゆらぎの原子には，それぞれ <tt class="member">altloc</tt> という識別子があります．
+<tt class="class">DisorderedAtom</tt> オブジェクトにこの識別子を指定すると，
+特定の <tt class="member">altloc</tt> 識別子を持った <tt class="class">Atom</tt> であるかのように
+振舞わせられます:
+
+<P>
+<div class="verbatim"><pre>
+atom.disordered_select("A")        # altloc が A の原子を選択する
+print atom.get_altloc()
+"A"
+
+atom.disordered_select("B")        # altloc が B の原子を選択する
+print atom.get_altloc()
+"B"
+</pre></div>
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11.2.1 一般的なアプローチ" 
+  rel="prev" title="3.11.2.1 一般的なアプローチ" 
+  href="node72.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11.2 ゆらぎ (disorder)" 
+  rel="parent" title="3.11.2 ゆらぎ (disorder)" 
+  href="node71.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.2.3 残基のゆらぎ" 
+  rel="next" title="3.11.2.3 残基のゆらぎ" 
+  href="node74.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node72.html">3.11.2.1 一般的なアプローチ</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node71.html">3.11.2 ゆらぎ (disorder)</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node74.html">3.11.2.3 残基のゆらぎ</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

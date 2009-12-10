@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node109.html">
+<LINK rel="prev" href="node107.html">
+<LINK rel="parent" href="node107.html">
+<LINK rel="next" href="node109.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="受容置換行列の生成">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>4.4.2.1 受容置換行列の生成</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.4.2 使用法" 
+  href="node107.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.4.2 使用法" 
+  href="node107.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.4.2.2 観測度数行列 (Observed Frequency" 
+  href="node109.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node107.html">4.4.2 使用法</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node107.html">4.4.2 使用法</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node109.html">4.4.2.2 観測度数行列 (Observed Frequency</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION005421000000000000000">
+4.4.2.1 受容置換行列の生成</A>
+</H3>
+
+<P>
+最初に，データから受容置換行列 (Accepted Replacement Matrix, ARM) を
+作成する必要があります．ARM 中の値は，データ中の残基置換を数えた
+ものです．従って，たとえばアラニンからシステインへの置換が 10 回
+起きており，システインからアラニンへの置換が 12 回起きていれば，
+ARM は以下のようになります:
+
+<P>
+<div class="verbatim"><pre>
+('A','C'): 10, ('C','A'): 12
+</pre></div>
+
+<P>
+残基間の順序は区別しないので，実際にはエントリを一つ指定するだけで
+十分です:
+
+<P>
+<div class="verbatim"><pre>
+('A','C'): 22
+</pre></div>
+
+<P>
+<tt class="class">SeqMat</tt> インスタンスは，全行列 (前者の方法: 10, 12) にも
+半行列 (後者の方法: 22) にも初期化できます．
+タンパク配列アルファベットに対する全行列のサイズは 20x20 = 400 
+になります．半行列の場合は 20x20/2 + 20/2 = 210 です．
+これは，同じ文字同士の組み合わせからなるエントリ (行列の対角成分に
+なります) は変化しないからです．すなわち，
+アルファベットの数を N とすると，
+
+<P>
+
+<OL>
+<LI>全行列:N*N 
+
+<P>
+</LI>
+<LI>半行列: N(N+1)/2 
+   
+</LI>
+</OL>
+
+<P>
+になります．
+
+<P>
+<tt class="class">SeqMat</tt> のコンストラクタに全行列を渡すと，自動的に
+半行列を生成します．半行列を渡す場合には，キーとなる残基置換
+の組み合わせはアルファベット順にしておかねばなりません: つまり，
+<code>('A', 'C')</code> はかまいませんが，<code>('C', 'A')</code> としては
+なりません．
+
+<P>
+目的が対数確率行列の生成だけなら，この時点で<A HREF="node113.html#sec:LOMsample">4.4.2</A> 節
+に進んでください．以降のテキストでは，核酸やアミノ酸の頻度情報を
+より系統的に調べたい人向けに，対数確率行列の生成過程で内部使用
+されている関数について説明しています．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.4.2 使用法" 
+  rel="prev" title="4.4.2 使用法" 
+  href="node107.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.4.2 使用法" 
+  rel="parent" title="4.4.2 使用法" 
+  href="node107.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.4.2.2 観測度数行列 (Observed Frequency" 
+  rel="next" title="4.4.2.2 観測度数行列 (Observed Frequency" 
+  href="node109.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node107.html">4.4.2 使用法</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node107.html">4.4.2 使用法</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node109.html">4.4.2.2 観測度数行列 (Observed Frequency</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

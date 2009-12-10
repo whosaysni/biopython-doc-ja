@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node28.html">
+<LINK rel="prev" href="node26.html">
+<LINK rel="parent" href="node21.html">
+<LINK rel="next" href="node28.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="BLAST の出力でいっぱいのファイルを解析する">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.1.6 BLAST の出力でいっぱいのファイルを解析する</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.1.5 ローカル BLAST の出力を解析する" 
+  href="node26.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.1 BLAST" 
+  href="node21.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.1.7 巨大なファイル中から不正なレコードを探す" 
+  href="node28.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node26.html">3.1.5 ローカル BLAST の出力を解析する</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node21.html">3.1 BLAST</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node28.html">3.1.7 巨大なファイル中から不正なレコードを探す</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION004160000000000000000">
+3.1.6 BLAST の出力でいっぱいのファイルを解析する</A>
+</H2>
+
+<P>
+もちろん，沢山の配列情報を一まとめにしてデータベースに当て，
+全ての配列に対してよくできたレポートを取り出せるという点では，
+ローカル <b class="program">blast</b> はよくできています．
+ですから，Biopython には，馬鹿でかいファイルをメモリ問題に
+悩まされずに解析する機能があります．
+
+<P>
+巨大なファイルの解析は，blast イテレータ (blast iterator)
+を用いて行えます．イテレータを使えるようにするには，まず
+パーザを設定して，blast の出力レポートを解析して Blast 
+<tt class="class">Record</tt> オブジェクトにします:
+
+<P>
+<div class="verbatim"><pre>
+from Bio.Blast import NCBIStandalone
+
+b_parser = NCBIStandalone.BlastParser()
+</pre></div>
+
+<P>
+次に，これら一群の blast レコードに対するハンドルが手元にあると
+仮定して，これを <code>blast_out</code> と呼ぶことにします．
+ハンドルの取得については，上の blast 出力の解析に関する節で
+詳しく述べています．
+
+<P>
+パーザをハンドルが手に入ったところで，以下のようなコマンドを実行
+すれば，イテレータを準備できます:
+
+<P>
+<div class="verbatim"><pre>
+b_iterator = NCBIStandalone.Iterator(blast_out, b_parser)
+</pre></div>
+
+<P>
+二つ目のオプション，<code>b_parser</code> はオプションです．
+パーザを指定しなければ，このイテレータは生の BLAST レポートを
+一つ一つ返してゆきます．
+
+<P>
+イテレータが手に入ったら，(パーザが生成した) blast レコードを
+<tt class="function">next</tt> で取り出します:
+
+<P>
+<div class="verbatim"><pre>
+b_record = b_iterator.next()
+</pre></div>
+
+<P>
+イテレータは<tt class="function">next</tt> を呼び出すたびに新しいレコードを一つ
+返します．
+さて，このレコード全体にわたって反復操作 (iteration) を行い，
+お気に入りの blast 小レポートを作成できます:
+
+<P>
+<div class="verbatim"><pre>
+while 1:
+    b_record = b_iterator.next()
+
+    if b_record is None:
+        break
+
+    E_VALUE_THRESH = 0.04
+    for alignment in b_record.alignments:
+        for hsp in alignment.hsps:
+            if hsp.expect &lt; E_VALUE_THRESH:
+                print '****Alignment****'
+                print 'sequence:', alignment.title
+                print 'length:', alignment.length
+                print 'e value:', hsp.expect
+
+                if len(hsp.query) &gt; 75:
+                    dots = '...'
+                else:
+                    dots = ''
+                
+                print hsp.query[0:75] + dots
+                print hsp.match[0:75] + dots
+                print hsp.sbjct[0:75] + dots
+</pre></div>
+
+<P>
+レコードを解析しきってしまうと<code>b_iterator.next()</code> は
+<code>None</code> を返すことに注意してください．これによって，
+レコードが存在するか調べながら<tt class="keyword">while</tt> ループを実行すれば，
+簡単にファイル全体にわたって反復処理できます．
+
+<P>
+イテレータを使うと，処理対象を一度に一単位づつ読み込むので，巨大な
+blast レコードをメモリ上の問題なしに処理できます．私はこの
+機能を使ってとんでもなくばかでかいファイルを全く問題なく
+解析したことがあります．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.1.5 ローカル BLAST の出力を解析する" 
+  rel="prev" title="3.1.5 ローカル BLAST の出力を解析する" 
+  href="node26.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.1 BLAST" 
+  rel="parent" title="3.1 BLAST" 
+  href="node21.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.1.7 巨大なファイル中から不正なレコードを探す" 
+  rel="next" title="3.1.7 巨大なファイル中から不正なレコードを探す" 
+  href="node28.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node26.html">3.1.5 ローカル BLAST の出力を解析する</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node21.html">3.1 BLAST</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node28.html">3.1.7 巨大なファイル中から不正なレコードを探す</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

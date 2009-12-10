@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="prev" href="node3.html">
+<LINK rel="parent" href="node3.html">
+<LINK rel="next" href="node5.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="Biopython パッケージの内容">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>1.1.1 Biopython パッケージの内容</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="1.1 Biopython とは" 
+  href="node3.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="1.1 Biopython とは" 
+  href="node3.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="1.2 インストール" 
+  href="node5.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node3.html">1.1 Biopython とは</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node3.html">1.1 Biopython とは</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node5.html">1.2 インストール</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION002110000000000000000">
+1.1.1 Biopython パッケージの内容</A>
+</H2>
+
+<P>
+Biopython の主要なリリースには以下のような様々な機能があります:
+
+<P>
+
+<UL>
+<LI>バイオインフォマティクス関連のファイルを解析して， Python で利用
+できるデータ構造に変換する機能．以下のフォーマットをサポートしています:
+  
+<UL>
+<LI>Blast 出力 - スタンドアロンプログラム，および WWW 上の Blast
+</LI>
+<LI>Clustalw
+</LI>
+<LI>FASTA
+</LI>
+<LI>GenBank
+</LI>
+<LI>PubMed および Medline
+</LI>
+<LI>Expasy ファイル, Enzyme, Prodoc や Prosite
+</LI>
+<LI>SCOP の 'dom' ファイルや 'lin' ファイル
+</LI>
+<LI>Rebase
+</LI>
+<LI>UniGene
+</LI>
+<LI>SwissProt
+  
+</LI>
+</UL>
+
+<P>
+</LI>
+<LI>サポートされているファイル形式では，レコード単位での反復処理を
+行ったり，辞書インタフェースでアクセスしたりできます．
+
+<P>
+</LI>
+<LI>広く利用されているバイオインフォマティクス関連のサービスを扱う
+ためのコード．例えば以下のサービスを扱えます:
+
+<P>
+
+<UL>
+<LI>NCBI - Blast, Entrez および PubMed サービス
+</LI>
+<LI>Expasy - Prodoc および Prosite エントリ
+  
+</LI>
+</UL>
+
+<P>
+</LI>
+<LI>広く使われているバイオインフォマティクスプログラムへの
+インタフェース．以下のプログラムへのインタフェースがあります:
+
+<P>
+
+<UL>
+<LI>NCBI によるスタンドアロン Blast プログラム
+</LI>
+<LI>Clustalw アラインメントプログラム
+  
+</LI>
+</UL>
+
+<P>
+</LI>
+<LI>配列自体，配列の id ，配列の機能 (feature) を扱える配列データクラス．
+
+<P>
+</LI>
+<LI>塩基配列の転写や翻訳，質量計算といった配列に対してよく行われる
+操作を実行するためのツール．
+
+<P>
+</LI>
+<LI>k-NN (k Nearest Neighbors) 法やNaive Bayes 法，SVM (Support Vector
+Machines) 法を使ってデータのクラスタリングを行うためのコード．
+
+<P>
+</LI>
+<LI>代替行列 (substitution matrix) の作成や操作を含むアラインメント
+処理を扱うためのコード．
+
+<P>
+</LI>
+<LI>並列化可能なタスクを別々のプロセスに分割しやすくするためのコード．
+
+<P>
+</LI>
+<LI>基本的な配列の操作，塩基配列の翻訳，BLAST処理などを行うための
+GUI ベースのプログラム．
+
+<P>
+</LI>
+<LI>モジュールの利用法に関するドキュメントやヘルプ，オンライン上の
+Wiki ドキュメントや Web サイト，メーリングリスト．
+
+<P>
+</LI>
+<LI>BioCorba インタフェース標準を利用した，Bioperl や Biojava 
+プロジェクトといった他言語との協調 (Biopython-corba モジュールから
+利用できます)．
+
+<P>
+</LI>
+</UL>
+
+<P>
+ここまで読んだあなたは，きっと Biopython をダウンロードして
+使い始めるだけの理由をいくつも見つけたでしょうね！
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="1.1 Biopython とは" 
+  rel="prev" title="1.1 Biopython とは" 
+  href="node3.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="1.1 Biopython とは" 
+  rel="parent" title="1.1 Biopython とは" 
+  href="node3.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="1.2 インストール" 
+  rel="next" title="1.2 インストール" 
+  href="node5.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node3.html">1.1 Biopython とは</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node3.html">1.1 Biopython とは</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node5.html">1.2 インストール</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

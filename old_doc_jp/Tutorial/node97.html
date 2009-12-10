@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node98.html">
+<LINK rel="prev" href="node96.html">
+<LINK rel="parent" href="node91.html">
+<LINK rel="next" href="node98.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="BLAST">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>4.3.6 BLAST</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.3.5 コンシューマ" 
+  href="node96.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.3 パーザの設計" 
+  href="node91.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.3.7 Enzyme" 
+  href="node98.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node96.html">4.3.5 コンシューマ</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node91.html">4.3 パーザの設計</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node98.html">4.3.7 Enzyme</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION005360000000000000000">
+4.3.6 BLAST</A>
+</H2>
+
+<P>
+BLAST スキャナは以下のようなイベントを生成します:
+
+<P>
+<div class="verbatim"><pre>
+header
+    version
+    reference
+    query_info
+    database_info
+
+descriptions
+    description_header
+    round                         psi blast
+    model_sequences               psi blast
+    nonmodel_sequences            psi blast
+    converged                     psi blast
+    description
+    no_hits
+
+alignment
+    multalign                     master-slave
+    title                         pairwise
+    length                        pairwise
+  hsp
+    score                         pairwise
+    identities                    pairwise
+    strand                        pairwise, blastn
+    frame                         pairwise, blastx, tblastn, tblastx
+    query                         pairwise
+    align                         pairwise
+    sbjct                         pairwise
+
+database_report
+    database
+    posted_date
+    num_letters_in_database
+    num_sequences_in_database
+    num_letters_searched          RESERVED.  現在使われていないはず．
+    num_sequences_searched        RESERVED.  blastool.c にはあるが...
+    ka_params
+    gapped                        not blastp
+    ka_params_gap                 gapped mode (not tblastx)
+
+parameters
+    matrix
+    gap_penalties                 gapped mode (not tblastx)
+    num_hits                      
+    num_sequences                 
+    num_extends                   
+    num_good_extends              
+    num_seqs_better_e
+    hsps_no_gap                   gapped (not tblastx) and not blastn
+    hsps_prelim_gapped            gapped (not tblastx) and not blastn
+    hsps_prelim_gap_attempted     gapped (not tblastx) and not blastn
+    hsps_gapped                   gapped (not tblastx) and not blastn
+    query_length
+    database_length
+    effective_hsp_length
+    effective_query_length
+    effective_database_length
+    effective_search_space
+    effective_search_space_used
+    frameshift                    blastx or tblastn or tblastx
+    threshold
+    window_size
+    dropoff_1st_pass
+    gap_x_dropoff
+    gap_x_dropoff_final           gapped (not tblastx) and not blastn
+    gap_trigger
+    blast_cutoff
+</pre></div>
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.3.5 コンシューマ" 
+  rel="prev" title="4.3.5 コンシューマ" 
+  href="node96.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.3 パーザの設計" 
+  rel="parent" title="4.3 パーザの設計" 
+  href="node91.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.3.7 Enzyme" 
+  rel="next" title="4.3.7 Enzyme" 
+  href="node98.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node96.html">4.3.5 コンシューマ</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node91.html">4.3 パーザの設計</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node98.html">4.3.7 Enzyme</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

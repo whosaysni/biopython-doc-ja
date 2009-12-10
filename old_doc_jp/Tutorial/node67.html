@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node68.html">
+<LINK rel="prev" href="node66.html">
+<LINK rel="parent" href="node65.html">
+<LINK rel="next" href="node68.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="Model オブジェクト">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.11.1.2 Model オブジェクト</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11.1.1 Structure オブジェクト" 
+  href="node66.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11.1 分子構造の表現方式" 
+  href="node65.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.1.3 Chain オブジェクト" 
+  href="node68.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node66.html">3.11.1.1 Structure オブジェクト</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node65.html">3.11.1 分子構造の表現方式</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node68.html">3.11.1.3 Chain オブジェクト</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+<div class='online-navigation'>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"></a>
+
+<UL CLASS="ChildLinks">
+<LI><A href="node67.html#SECTION0041112100000000000000">3.11.1.2.1 例題</a>
+</ul>
+<!--End of Table of Child-Links-->
+</div>
+<HR>
+
+<H3><A NAME="SECTION0041112000000000000000">
+3.11.1.2 Model オブジェクト</A>
+</H3>
+
+<P>
+<tt class="class">Model</tt> オブジェクトの id は整数で，PDB ファイルを解析した際に
+そのモデルが位置していた場所から決まります (0 から自動的に番号付け
+されます)．<tt class="class">Model</tt> オブジェクトには，子エンティティの<tt class="class">Chain</tt> 
+からなるリストが入っています．
+
+<P>
+
+<H4><A NAME="SECTION0041112100000000000000">
+3.11.1.2.1 例題</A>
+</H4>
+
+<P>
+<tt class="class">Structure</tt> オブジェクト中に収められている最初の
+モデルを取得します．
+
+<P>
+<div class="verbatim"><pre>
+first_model=structure[0]
+</pre></div>
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11.1.1 Structure オブジェクト" 
+  rel="prev" title="3.11.1.1 Structure オブジェクト" 
+  href="node66.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11.1 分子構造の表現方式" 
+  rel="parent" title="3.11.1 分子構造の表現方式" 
+  href="node65.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.1.3 Chain オブジェクト" 
+  rel="next" title="3.11.1.3 Chain オブジェクト" 
+  href="node68.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node66.html">3.11.1.1 Structure オブジェクト</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node65.html">3.11.1 分子構造の表現方式</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node68.html">3.11.1.3 Chain オブジェクト</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

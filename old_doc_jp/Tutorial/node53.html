@@ -1,0 +1,271 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node54.html">
+<LINK rel="prev" href="node52.html">
+<LINK rel="parent" href="node51.html">
+<LINK rel="next" href="node54.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="ロケーションとポジション">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.7.2.2 ロケーションとポジション</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.7.2.1 SeqFeature の構造" 
+  href="node52.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.7.2 feature とアノテーション -" 
+  href="node51.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.7.2.3 参考文献" 
+  href="node54.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node52.html">3.7.2.1 SeqFeature の構造</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node51.html">3.7.2 feature とアノテーション -</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node54.html">3.7.2.3 参考文献</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H3>
+<BR>
+3.7.2.2 ロケーションとポジション
+</H3>
+上の <tt class="class">SeqFeatures</tt> の節では，feature のやや難解な部分である
+<tt class="member">location</tt> (ロケーション) の扱いは飛ばして話を進めました．この
+難解さは，あるロケーション内のポジション (position) の表現が曖昧な
+ことに起因しています．ここでは，まず話を進める前に用語をきちんと
+定義しておくことにしましょう．基本的には二つの用語を使って説明を
+してゆくことになります:
+
+<P>
+<DL>
+<DT><STRONG>ポジション (position)</STRONG></DT>
+<DD>- 配列中のある一箇所を表します．
+この場所は曖昧な場合もあります．例えば， <code>5</code>，<code>20</code>，
+<code>&lt;100</code>，<code>35</code> は全てポジションを表しています．
+
+<P>
+</DD>
+<DT><STRONG>ロケーション (location)</STRONG></DT>
+<DD>- 配列中の領域を決める二つの
+ポジションからなる単位です．例えば，<code>5..20</code>  (<code>5</code> から 
+<code>20</code>) はロケーションを表しています．
+</DD>
+</DL>
+
+<P>
+これら二つの用語はよく混同してしまうので，念のため定義しておきます．
+
+<P>
+さて，ロケーションを扱う上での難解な問題は，ポジション自体に
+あります．生物学の世界では，(我々 wet なラボにいる生物学者たちが
+はっきりさせようとしているくらいには) 完全に確実とはいえない
+ことが沢山あります．例えば，ダイヌクレオチドによるプライミングの
+実験を行って， mRNA 転写の開始点が二つあるサイトのうちのいずれかで
+あると判ったとします．これはとても有用な情報ではありますが，
+ポジションとして表すには厄介です．こうした情報を扱えるようにする
+ために，曖昧 (fuzzy) なポジションという概念があります．基本的に
+曖昧なポジションは 5 つのタイプに分かれるので，Biopython でも
+5 つのクラスで取り扱います:
+
+<P>
+<DL>
+<DT><STRONG><tt class="class">ExactPosition</tt></STRONG></DT>
+<DD>- 名前の通り，配列上の特定の
+ポジションを表すためのクラスです．ポジションは単に一つの数で表現
+され，その値を得るには <tt class="member">position</tt> 属性を調べます．
+
+<P>
+</DD>
+<DT><STRONG><tt class="class">BeforePosition</tt></STRONG></DT>
+<DD>- 特定の場所より前のどこかを
+示す曖昧なポジションを表すためのクラスです． GenBank/EMBL では，
+例えば <code>'&lt;13'</code> のように表記し，実際のポジションが <code>13</code> 
+より前にあることを表します．ポジションの上界値 (この例では<code>13</code>) 
+を得るには<tt class="member">position</tt> 属性を調べます．
+
+<P>
+</DD>
+<DT><STRONG><tt class="class">AfterPosition</tt></STRONG></DT>
+<DD>- <tt class="class">BeforePosition</tt> の逆で，
+特定の場所より後ろのどこかを示す曖昧なポジションを表すための
+クラスです．GenBank では例えば<code>'&gt;13'</code> のように表記し，
+<tt class="class">BeforePosition</tt> と同様，<tt class="member">position</tt> 属性から
+境界値を調べられます．
+
+<P>
+</DD>
+<DT><STRONG><tt class="class">WithinPosition</tt></STRONG></DT>
+<DD>- 指定された範囲内のどこかを示す
+曖昧なポジションをモデル化したクラスです．
+GenBank/EMBL では，例えば <code>(1.5)</code> のように表記し，
+<code>1</code> から<code>5</code> <em>にいたるまでの範囲</em> にあるポジションを
+表します．このクラスが表現している情報を調べるには，二つの属性を
+見る必要があります．<tt class="member">position</tt> 属性には，ヌクレオチド範囲の
+下界値が入ります．従って上の例で言えばこの値は <code>1</code> に
+なります．一方，<tt class="member">extenstion</tt> にはヌクレオチド範囲の上界値
+<em>までの残基数</em> が入っており，この場合には 4 になります．
+つまり，<code>object.position</code> が下界値に，
+<code>object.position + object.extenstion</code> が上界値になるわけです．
+
+<P>
+</DD>
+<DT><STRONG><tt class="class">BetweenPosition</tt></STRONG></DT>
+<DD>- 二つの座標の間にある
+ポジションを扱うためのクラスです．例えば，あるタンパクの結合部位が
+配列中の二つのヌクレオチド間にあるような場合を考えます．
+このような状況は，例えば <code>'23'</code> のように表記して，
+実際の結合部位が<code>2</code> から <code>3</code> の間にあることを示します．
+情報の取り出し方は<tt class="class">WithinPosition</tt> に良く似ていて，
+<tt class="member">position</tt> が下界値 (今の例では <code>2</code>)，<tt class="member">extension</tt>
+は上界値<em>までの残基数</em> (この場合では 1) です．
+</DD>
+</DL>
+
+<P>
+さて，取り扱える全ての曖昧なポジション型について理解したので，
+配列上のロケーションを実際に指定できるようになりました．
+ロケーションは<code>FeatureLocation</code> クラスで扱います．
+このクラスのオブジェクトは，基本的にはある feature の始点と
+終点の位置を曖昧さを許して保存するようになっているだけです．
+<tt class="class">FeatureLocation</tt> オブジェクトは，ポジションを作成して，
+それ(ら)を<tt class="class">FeatureLocation</tt> クラスに渡して作成できます:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; from Bio import SeqFeature
+&gt;&gt;&gt; start_pos = SeqFeature.AfterPosition(5)
+&gt;&gt;&gt; end_pos = SeqFeature.BetweenPosition(8, 9)
+&gt;&gt;&gt; my_location = SeqFeature.FeatureLocation(start_pos, end_pos)
+</pre></div>
+
+<P>
+<tt class="class">FeatureLocation</tt> を<tt class="keyword">print</tt> すると，ロケーション
+情報がうまく表現された文字列を出力します:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; print my_location
+(&gt;5..(8^9))
+</pre></div>
+
+<P>
+始点や終点のポジション情報にアクセスするには，ロケーションの
+<tt class="member">start</tt> 属性や<tt class="member">end</tt> 属性を使います:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; my_location.start
+&lt;Bio.SeqFeature.AfterPosition instance at 0x101d7164&gt;
+&gt;&gt;&gt; print my_location.start
+&gt;5
+&gt;&gt;&gt; print my_location.end
+(8^9)
+</pre></div>
+
+<P>
+ポジションを曖昧な値ではなく単なる数字として扱いたい場合，
+<tt class="member">nofuzzy_start</tt> や<tt class="member">nofuzzy_end</tt> といった属性を
+使って値を調べます:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; my_location.nofuzzy_start 
+5
+&gt;&gt;&gt; my_location.nofuzzy_end
+8
+</pre></div>
+
+<P>
+これらの属性が単に曖昧なロケーションの<tt class="member">position</tt>
+属性の値を返しているにすぎないことに注意してください．
+
+<P>
+同様に，曖昧なポジションを気にせずポジションオブジェクトを簡単に
+作成したければ，単に <tt class="class">FeatureLocation</tt> のコンストラクタに
+数値を渡して，<tt class="class">ExactPosition</tt> オブジェクトを取得できます:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; exact_location = SeqFeature.FeatureLocation(5, 8)
+&gt;&gt;&gt; print exact_location
+(5..8)
+&gt;&gt;&gt; exact_location.start
+&lt;Bio.SeqFeature.ExactPosition instance at 0x101dcab4&gt;
+</pre></div>
+
+<P>
+これが，Biopython における曖昧なポジションの扱い方の全てです．
+こうした設計は，曖昧なポジションの扱いが，明確なポジションの扱い
+よりさほど難しくならないように行われてきました．おそらく読者の
+皆さんもその通りだと思うことでしょう!
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.7.2.1 SeqFeature の構造" 
+  rel="prev" title="3.7.2.1 SeqFeature の構造" 
+  href="node52.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.7.2 feature とアノテーション -" 
+  rel="parent" title="3.7.2 feature とアノテーション -" 
+  href="node51.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.7.2.3 参考文献" 
+  rel="next" title="3.7.2.3 参考文献" 
+  href="node54.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node52.html">3.7.2.1 SeqFeature の構造</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node51.html">3.7.2 feature とアノテーション -</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node54.html">3.7.2.3 参考文献</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

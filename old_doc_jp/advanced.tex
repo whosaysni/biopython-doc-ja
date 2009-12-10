@@ -1,0 +1,714 @@
+\chapter{上級者向けの話題}
+
+\section{配列クラス}
+
+\section{回帰テストフレームワーク}
+\label{sec:regr-test}
+
+Biopython には回帰テストフレームワークがあります．このフレームワークは
+もともと Andrew Dalke によって書かれ，その後 Brad Chapman によって
+PyUnit ベースに移植されました．回帰テストは，コードを公開する前に
+可能な限りバグをなくす上で役立っています．
+
+\subsection{回帰テストを書く}
+
+Biopython に入れるモジュールには，全てテストが (そしてドキュメントも!)
+ついていなければなりません．そこで，いま，仮に新しいモジュール
+\module{Biospam} を書いたとしましょう -- 回帰テストを作成するために
+やらなければならない作業を以下に示します:
+
+\begin{enumerate}
+  \item \file{test_Biospam.py} という名前のスクリプトを書きます．
+  \begin{itemize}
+    \item このスクリプトは \file{Tests} という名前のディレクトリに
+入れなければなりません．
+     \item スクリプトはモジュールの重要な機能全てをテストしなければ
+なりません (もちろん，テスト項目は多ければ多いほど良いですよ!) 
+  \end{itemize}
+  \item スクリプトでテスト用のファイルが必要な場合には，
+\file{Tests/Biospam} ディレクトリに入れておかねばなりません．
+  \item テストプログラムの出力を書き出しておき，正しく出力されているか
+確かめます．これには二つの方法があります:
+  \begin{enumerate}
+    \item 長い方法:
+    \begin{itemize}
+     \item スクリプトを実行して，出力をファイルに書き出します．
+\UNIX マシンでは， \code{python test_Biospam.py > test_Biospam} の
+ように実行します．これで出力が\file{test_Biospam} というファイルに
+書き出されます．
+     \item \file{test_Biospam} を手作業で調べ，出力内容が正しい
+ことを確かめます．正しく処理が行われていて，バグがないことを確認
+したら，\file{test_Biospam} ファイルを編集して，先頭の行が
+\code{test_Biospam} になるよう書き足します．
+     \item \file{test_Biospam} ファイルを\file{Tests/output}
+ディレクトリに入れます．     
+   \end{itemize}
+   \item 簡単な方法:
+   \begin{itemize}
+   \item \code{python run_tests.py -g test_Biospam.py} を実行します．
+回帰テストフレームワークがうまく動作して，出力ファイルを正しい場所に
+出力します．
+   \item 出力ファイル (\file{Tests/output/test_Biospam} のはずです)
+を調べ，内容が全て正しいか二度確かめます．
+   \end{itemize}
+ \end{enumerate}
+       
+ \item \file{Tests} ディレクトリに移り，\code{python run_tests.py} を
+実行して回帰テストを走らせます．このコマンドは全てのテストを実行し，
+作成したのテストも実行される (そしてパスする!) はずです．
+       
+  \item これで終わりです! 自作のモジュール用に素晴らしいテストを
+作れました．おめでとう!
+\end{enumerate}
+
+
+\section{パーザの設計}
+
+\subsection{設計の概要}
+
+パーザはイベント指向の設計に沿って作られており，スキャナ (scanner)
+およびコンシューマ (consumer) オブジェクトからなります．
+
+スキャナはデータソースから入力を受け取り，その内容を一行一行
+解析して，データ内に何らかの情報が見つかるたびにイベントを送出
+します．例えば，データ中に何らかの生物名に関する情報が入っている場合，
+スキャナは生物名の入った行に遭遇するたびに \code{organism_name} 
+イベントを生成します．
+
+コンシューマは，スキャナが生成したイベントを受け取ります．
+以下の例では，コンシューマは \code{organism_name} イベントを受け取り，
+現在のアプリケーションで必要なやり方に従ってその内容を処理します．
+
+\subsection{イベント}
+
+イベントには二つの種類: info イベントと section イベントがあります．
+info イベントは，データストリーム中の情報のある場所をタグ付けします．
+section イベントはストリーム中の部分 (section) をマークします．
+info イベントはデータ中の特定の行に関連づけられますが，セクション
+イベントはそうではありません．
+
+セクションイベント名は必ず \code{start_EVENTNAME} および
+\code{end_EVENTNAME} という名前にします．\code{EVENTNAME} は
+イベントの名前です．
+
+例えば， FASTA 形式の配列情報向けのスキャナでは，以下のようなイベント
+が生成されます:
+\begin{verbatim}
+EVENT NAME      ORIGINAL INPUT
+begin_sequence  
+title           >gi|132871|sp|P19947|RL30_BACSU 50S RIBOSOMAL PROTEIN L30 (BL27
+sequence        MAKLEITLKRSVIGRPEDQRVTVRTLGLKKTNQTVVHEDNAAIRGMINKVSHLVSVKEQ
+end_sequence
+begin_sequence
+title           >gi|132679|sp|P19946|RL15_BACSU 50S RIBOSOMAL PROTEIN L15
+sequence        MKLHELKPSEGSRKTRNRVGRGIGSGNGKTAGKGHKGQNARSGGGVRPGFEGGQMPLFQRLPK
+sequence        RKEYAVVNLDKLNGFAEGTEVTPELLLETGVISKLNAGVKILGNGKLEKKLTVKANKFSASAK
+sequence        GTAEVI
+end_sequence
+[...]
+\end{verbatim}
+
+(見栄えをよくするために一部を削って短くしてあります)
+
+上の例では，FASTA スキャナは \code{title}，\code{sequence}，
+\code{begin_sequence}，\code{end_sequence} というイベントを
+生成しています．\code{begin_sequence} と\code{end_sequence} 
+が，元の FASTA 入力データのいずれの行とも関連付けられていない
+ことに注意してください．このイベントは，ファイル中の別々の配列
+情報を区切るために使われています．
+
+スキャナが送信できるイベントは，それぞれのデータ形式ごとに
+決まっています．
+
+\subsection{'noevent' EVENT}
+
+データファイル中には，空行のような全く意味のない情報が入っている
+こともあります．便宜上，スキャナはこうした無意味な行に対しては
+\code{"noevent"} というイベントを生成しなければなりません．
+
+\subsection{スキャナ}
+
+\begin{verbatim}
+class Scanner:
+    def feed(self, handle, consumer):
+        # 実装部分
+\end{verbatim}
+
+スキャナは，ファイルハンドルとコンシューマを引数にとる
+\function{feed} という名前のメソッドを実装していなければなりません．
+スキャナはファイルハンドルからデータを読み出し，コンシューマに対して
+適切なイベントを送出せねばなりません．
+
+\subsection{コンシューマ}
+
+\begin{verbatim}
+class Consumer:
+    # イベントハンドラ
+\end{verbatim}
+
+コンシューマには，イベントを処理するためのメソッドを入れておきます．
+メソッドの名前は，コンシューマが処理するイベントの名前になります．
+info イベントの場合には，イベントに関連した情報の入ったデータ行が
+渡されます． section イベントの場合には何も渡されません．
+
+自分のアプリケーションとは関係ないイベントは無視してかまいません．
+こうしたイベントのメソッドは実装しないでおきます．
+
+コンシューマは，\class{Consumer} クラスから導出しなければなりません．
+
+以下に例を示します:
+
+\begin{verbatim}
+class FASTAConsumer(Consumer):
+    def title(self, line):
+        # タイトル行を処理する
+    def sequence(self, line):
+        # 配列情報の各行を処理する
+    def begin_sequence(self):
+        # 配列情報の開始部分
+    def end_sequence(self):
+        # 配列情報の終了部分
+\end{verbatim}
+
+
+\subsection{BLAST}
+
+BLAST スキャナは以下のようなイベントを生成します:
+
+\begin{verbatim}
+header
+    version
+    reference
+    query_info
+    database_info
+
+descriptions
+    description_header
+    round                         psi blast
+    model_sequences               psi blast
+    nonmodel_sequences            psi blast
+    converged                     psi blast
+    description
+    no_hits
+
+alignment
+    multalign                     master-slave
+    title                         pairwise
+    length                        pairwise
+  hsp
+    score                         pairwise
+    identities                    pairwise
+    strand                        pairwise, blastn
+    frame                         pairwise, blastx, tblastn, tblastx
+    query                         pairwise
+    align                         pairwise
+    sbjct                         pairwise
+
+database_report
+    database
+    posted_date
+    num_letters_in_database
+    num_sequences_in_database
+    num_letters_searched          RESERVED.  現在使われていないはず．
+    num_sequences_searched        RESERVED.  blastool.c にはあるが...
+    ka_params
+    gapped                        not blastp
+    ka_params_gap                 gapped mode (not tblastx)
+
+parameters
+    matrix
+    gap_penalties                 gapped mode (not tblastx)
+    num_hits                      
+    num_sequences                 
+    num_extends                   
+    num_good_extends              
+    num_seqs_better_e
+    hsps_no_gap                   gapped (not tblastx) and not blastn
+    hsps_prelim_gapped            gapped (not tblastx) and not blastn
+    hsps_prelim_gap_attempted     gapped (not tblastx) and not blastn
+    hsps_gapped                   gapped (not tblastx) and not blastn
+    query_length
+    database_length
+    effective_hsp_length
+    effective_query_length
+    effective_database_length
+    effective_search_space
+    effective_search_space_used
+    frameshift                    blastx or tblastn or tblastx
+    threshold
+    window_size
+    dropoff_1st_pass
+    gap_x_dropoff
+    gap_x_dropoff_final           gapped (not tblastx) and not blastn
+    gap_trigger
+    blast_cutoff
+\end{verbatim}
+
+\subsection{Enzyme}
+Enzyme スキャナは以下のイベントを生成します:
+\begin{verbatim}
+record
+    identification
+    description
+    alternate_name
+    catalytic_activity
+    cofactor
+    comment
+    disease
+    prosite_reference
+    databank_reference
+    terminator
+\end{verbatim}
+
+\subsection{Fasta}
+Fasta スキャナは以下のイベントを生成します:
+\begin{verbatim}
+sequence
+    title
+    sequence
+\end{verbatim}
+
+
+\subsection{Medline}
+MEDLINE の形式は，\ulink{Online Service Reference Manual}{http://www.nlm.nih.gov/pubs/osrm_nlm.html}
+にドキュメント化されています．
+
+Medline スキャナは以下のようなイベントを生成します:
+\begin{verbatim}
+record
+    undefined
+    abstract_author
+    abstract
+    address
+    author
+    call_number
+    comments
+    class_update_date
+    country
+    entry_date
+    publication_date
+    english_abstract
+    entry_month
+    gene_symbol
+    identification
+    issue_part_supplement
+    issn
+    journal_title_code
+    language
+    special_list
+    last_revision_date
+    mesh_heading
+    mesh_tree_number
+    major_revision_date
+    no_author
+    substance_name
+    pagination
+    personal_name_as_subject
+    publication_type
+    number_of_references
+    cas_registry_number
+    record_originator
+    journal_subset
+    subheadings
+    secondary_source_id
+    source
+    title_abbreviation
+    title
+    transliterated_title
+    unique_identifier
+    volume_issue
+    year
+    pubmed_id
+\end{verbatim}    
+
+\code{undefined} は，仕様にない限定子 (qualifier) のついた行に
+遭遇するたびに送出される特殊なイベントです．
+
+\subsection{Prosite}
+Prosite スキャナは以下のようなイベントを生成します:
+\begin{verbatim}
+copyrights
+    copyright
+record
+    identification
+    accession
+    date
+    description
+    pattern
+    matrix
+    rule
+    numerical_results
+    comment
+    database_reference
+    pdb_reference
+    documentation
+    terminator
+\end{verbatim}
+
+PRODOC スキャナは以下のようなイベントを生成します:
+\begin{verbatim}
+record
+    accession
+    prosite_reference
+    text
+    reference
+\end{verbatim}
+
+
+\subsection{SWISS-PROT}
+SProt スキャナは以下のようなイベントを生成します:
+\begin{verbatim}
+record
+    identification
+    accession
+    date
+    description
+    gene_name
+    organism_species
+    organelle
+    organism_classification
+    reference_number
+    reference_position
+    reference_comment
+    reference_cross_reference
+    reference_author
+    reference_title
+    reference_location
+    comment
+    database_cross_reference
+    keyword
+    feature_table
+    sequence_header
+    sequence_data
+    terminator
+\end{verbatim}
+
+KeyWList スキャナは以下のようなイベントを生成します:
+\begin{verbatim}
+header
+keywords
+    keyword
+footer
+    copyright
+\end{verbatim}
+
+\section{置換行列}
+
+\subsection{SubsMat モジュール}
+
+このモジュールでは，BLOSUM や PAM のような置換行列を生成するための
+クラスといくつかのルーチンを提供しています．ただし，置換行列は
+ユーザの提供したデータから生成できるようになっています．
+
+加えて，すでに提唱されている置換行列をコレクションしている
+\file{MatrixInfo.py} から置換行列を選べるようにもなっています．
+
+\begin{classdesc}{SeqMat}{data=None, alphabet=None, 
+    mat_type=NOTYPE, mat_name='', build_later=0}
+
+\class{UserDict.UserDict} のサブクラスです．
+\var{data} は辞書または他の \class{SeqMat} インスタンスにできます．
+\var{alphabet} は \class{Bio.Alphabet} のインスタンスです．
+\var{alphabet} を省力すると，\var{data} からアルファベットを構築
+します．
+\var{mat_type} には生成される行列のタイプを指定します:
+      \begin{description}
+        \item[NOTYPE]     指定なし
+        \item[ACCREP]     許容置換行列 (Accepted Replacements Matrix)
+        \item[OBSFREQ]    観測頻度行列 (Observed Frequency Matrix)
+        \item[EXPFREQ]    頻度期待値行列 (Expsected Frequency Matrix)
+        \item[SUBS]       置換行列 (Substitution Matrix)
+        \item[LO]         対数確率行列 (Log Odds Matrix)
+      \end{description}
+
+\var{mat_type} は\class{SubsMat} の関数を呼び出す際に自動的に決定されます．
+\var{mat_name} は \code{"BLOSUM62"} や \code{"PAM250"} のような
+行列の名前です．
+\var{build_later} はデフォルトで\constant{False} です．
+\constant{True} にした場合，後で行列を作成するために，ユーザは
+アルファベットと空の辞書だけを指定できます．このとき，アルファベットの
+サイズと行列のサイズの間で整合性のチェックを行いません．
+\end{classdesc}
+
+\subsubsection{属性}
+
+\begin{memberdesc}{data}
+\var{data} は辞書で，
+    \code{\{(i1,j1):n1, (i1,j2):n2,...,(ik,jk):nk\}} のような形式を
+とります．\code{i} および \code{j} はアルファベット文字で，\code{n}
+は\code{i} と\code{j} の置換に対する値です．
+\end{memberdesc}
+
+\begin{memberdesc}{alphabet}
+\var{alphabet} は\class{Bio.Alphabet} で定義されているアルファベット
+です．
+\end{memberdesc}
+
+\begin{memberdesc}{ab_list}
+アルファベットの文字リストをソートしたものです．主に内部使用向けの
+属性です．
+\end{memberdesc}
+
+\begin{memberdesc}{sum_letters}
+辞書で， \code{\{i1: s1, i2: s2,...,in:sn\}} のような形式をとります．
+\code{i}, \code{s}, \code{n} はそれぞれ:
+    \begin{enumerate}
+      \item i: アルファベット中の文字．
+      \item s: ある文字に対する半行列中の全ての値を合計したもの．
+      \item n: アルファベット中の文字数．
+    \end{enumerate}
+です．
+\end{memberdesc}
+
+\subsubsection{メソッド}
+
+\begin{methoddesc}{entropy}{obs_freq_mat}
+観測頻度行列 (observed frequency matrix) 
+\var{obs_freq_mat} 内の頻度に基づいて，行列のエントロピーを
+返します．行列インスタンスは \code{LO} または \code{SUBS} で
+なければなりません．
+\end{methoddesc}
+
+\begin{methoddesc}{letter_sum}{letter}
+\var{letter} に対応する行列内の全ての値を加算して返します．
+\end{methoddesc}
+
+\begin{methoddesc}{all_letter_sum}{}
+\member{sum_letters} 属性の値を，行列のアルファベットの各文字に
+対する値の合計で埋めます．
+\end{methoddesc}
+
+\begin{methoddesc}{print_mat}{f, format="%4d", bottomformat="%4s",
+    alphabet=None}
+行列をファイルハンドル \var{f} に出力します．\var{format} は
+行列の各値を出力する際に使う書式化文字列です．
+\var{bottomformat} は最下段の各フィールドを書式化する際に使う
+文字列で，各フィールドは行列中の文字を含むようになっています．
+三文字のアルファベットからなる行列の出力例を下に示します:
+
+\begin{verbatim}
+A 23
+B 12 34
+C 7  22  27
+  A   B   C
+\end{verbatim}
+
+オプションの引数\var{alphabet} は，アルファベット全ての
+入った文字列です．\var{alphabet} を指定した場合，
+軸に使われるアルファベットの順番は，アルファベット順ではなく
+文字列中の順番になります．
+\end{methoddesc}
+
+
+
+\subsection{使用法}
+
+以降の節は，対数確率行列を作成したい人向けに構成されています．
+もちろん中間的な情報を表す行列を生成したり調べたりもできますが，
+ほとんどの人は対数確率行列を得たいだけなので，ここではそれだけを
+扱います．
+   
+\subsubsection{受容置換行列の生成}
+
+最初に，データから受容置換行列 (Accepted Replacement Matrix, ARM) を
+作成する必要があります．ARM 中の値は，データ中の残基置換を数えた
+ものです．従って，たとえばアラニンからシステインへの置換が 10 回
+起きており，システインからアラニンへの置換が 12 回起きていれば，
+ARM は以下のようになります:
+
+\begin{verbatim}
+('A','C'): 10, ('C','A'): 12 
+\end{verbatim}
+
+残基間の順序は区別しないので，実際にはエントリを一つ指定するだけで
+十分です:
+
+\begin{verbatim}
+('A','C'): 22 
+\end{verbatim}
+
+\class{SeqMat} インスタンスは，全行列 (前者の方法: 10, 12) にも
+半行列 (後者の方法: 22) にも初期化できます．
+タンパク配列アルファベットに対する全行列のサイズは 20x20 = 400 
+になります．半行列の場合は 20x20/2 + 20/2 = 210 です．
+これは，同じ文字同士の組み合わせからなるエントリ (行列の対角成分に
+なります) は変化しないからです．すなわち，
+アルファベットの数を N とすると，
+
+   \begin{enumerate}
+     \item 全行列:N*N 
+
+     \item 半行列: N(N+1)/2 
+   \end{enumerate}
+
+になります．
+
+\class{SeqMat} のコンストラクタに全行列を渡すと，自動的に
+半行列を生成します．半行列を渡す場合には，キーとなる残基置換
+の組み合わせはアルファベット順にしておかねばなりません: つまり，
+\code{('A', 'C')} はかまいませんが，\code{('C', 'A')} としては
+なりません．
+
+目的が対数確率行列の生成だけなら，この時点で\ref{sec:LOMsample} 節
+に進んでください．以降のテキストでは，核酸やアミノ酸の頻度情報を
+より系統的に調べたい人向けに，対数確率行列の生成過程で内部使用
+されている関数について説明しています．
+
+\subsubsection{観測度数行列 (Observed Frequency Matrix:OFM) の生成}
+
+\begin{funcdesc}{_build_obs_freq_mat}{ARM}
+OFM は ARM から生成します．ARM との違いは，置換回数ではなく
+置換頻度が入っているということだけです．
+\end{funcdesc}
+
+\subsubsection{期待度数行列 (Expected Frequency Matrix:EFM) の生成}
+
+\begin{funcdesc}{_build_exp_freq_mat}{OFM, exp_freq_table}
+
+\var{exp_freq_table} は，\class{FreqTable} のインスタンスで
+なくてはなりません．\class{FreqTable} の詳細は \ref{sec:freq-table}
+節を参照してください．一言で言うと，期待度数行列には，
+アルファベット中の各文字の頻度が入っています．EFM はアルファベット中の
+各文字をキーとする辞書になっていて，頻度が値として対応しています．
+頻度の合計は 1 になります．
+\end{funcdesc}
+ 
+期待度数表は，観測度数行列から生成できます (通常はそうします)．
+従って，ほとんどの場合には，以下のようにして\var{exp_freq_table} 
+を生成します:
+
+\begin{verbatim}
+>>> exp_freq_table = SubsMat._exp_freq_table_from_obs_freq(OFM)
+>>> EFM = SubsMat._build_exp_freq_mat(OFM,exp_freq_table)
+\end{verbatim}
+
+とはいえ，自作の \var{exp_freq_table} も入力できます．
+
+\subsubsection{置換頻度行列 (Substitution Frequency Matrix:SFM) の生成}
+
+\begin{funcdesc}{_build_subs_mat}{OFM, EFM}
+
+\var{OFM} および \var{EFM} を受け取り，対応する値間で除算を行った
+結果を返します．
+\end{funcdesc}
+
+\subsubsection{対数確率行列 (Log Odds Matrix:LOM) の生成}
+
+\begin{funcdesc}{_build_log_odds_mat}{SFM, logbase=10,factor=10.0,
+    round_digit=1}
+
+\var{SFM} を引数に受け取ります \var{logbase} は対数確率行列を
+生成する際に使う対数の底です．\var{factor} は，対数確率行列の
+値全体に乗算される値です．行列の各値は，\code{log(LOM[key])*factor} 
+になります．小数第 \var{round_digit} 桁で必要に応じて値を丸めます．
+\end{funcdesc}
+
+\subsubsection{例題}
+\label{sec:LOMsample}
+
+ほとんどの人はできるだけ手抜きをして対数確率行列を生成したいと
+思っているでしょうから，\class{SubsMat} では全ての作業を
+一つの関数で行えるようにしています:
+
+\begin{funcdesc}{make_log_odds_matrix}{acc_rep_mat,
+    exp_freq_table=None, logbase=10, factor=10.0, round_digit=0}
+
+\var{acc_rep_mat} は受容置換行列です．\var{exp_freq_table} は
+期待度テーブルで，指定しなければ\var{acc_rep_mat} から生成します．
+\var{logbase} は対数確率行列の対数の底で，デフォルトの値は 10 です．
+\var{round_digit} は少数以下での丸め桁数で，デフォルトの値はゼロです．
+\end{funcdesc}
+
+
+\subsection{FreqTable}
+\label{sec:freq-table}
+
+\begin{classdesc}{FreqTable}{}
+\end{classdesc}
+
+\subsubsection{属性}
+
+
+\begin{memberdesc}{alphabet}
+\class{Bio.Alphabet} のインスタンスです．
+\end{memberdesc}
+
+\begin{memberdesc}{data}
+頻度辞書です．
+\end{memberdesc}
+
+\begin{memberdesc}{count}
+(カウントが与えられている場合の) カウント辞書です．
+\end{memberdesc}
+
+\subsubsection{メソッド}
+
+\begin{methoddesc}{read_count}{f}
+ストリーム\var{f} からカウントファイルを読み出し，頻度に変換します．
+\end{methoddesc}
+
+\begin{methoddesc}{read_freq}{f}
+ストリーム\var{f} から頻度データを読み出します．この場合，もちらん
+カウントは得られませんが，通常は文字頻度の方が必要です．
+\end{methoddesc}
+
+\subsubsection{使用例}
+
+データベース内の残基数が，以下のような空白区切りの形式でファイルに
+入っているとします (この例では 3 つのアルファベットから成っています):
+
+\begin{verbatim}
+A   35
+B   65
+C   100
+\end{verbatim}
+
+データの読み込みは \code{FreqTable.read_count(file_handle)}
+で行います．
+
+同じ内容の期待度数ファイルは以下のようになります:
+
+\begin{verbatim}
+A  0.175
+B  0.325
+C  0.5 
+\end{verbatim}
+
+一方，残基の頻度や数は辞書でも渡せます．
+(3 文字アルファベットの場合の) 残基数辞書は以下のようになります:
+
+\begin{verbatim}
+{'A': 35, 'B': 65, 'C': 100}
+\end{verbatim}
+
+この残基数データから，\code{'C'} の頻度は 0.5 ，\code{'B'} は
+0.325，\code{'A'} は 0.175 で，母数は A, B, C の合計値 200 
+になります．
+
+同じデータを頻度辞書で表すと以下のようになります:
+
+\begin{verbatim}
+{'A': 0.175, 'B': 0.325, 'C': 0.5}
+\end{verbatim}
+
+合計は 1 になっていますね．
+
+辞書型を引数に渡す場合，残基数の辞書なのか頻度の辞書なのかを
+指定せねばなりません．そのため，\class{FreqTable} クラスの
+コンストラクタには二つの引数，辞書自体と，辞書の内容を表す
+シンボルを指定する必要があります．シンボルは
+\constant{FreqTable.COUNT} または\constant{FreqTable.FREQ}
+で，それぞれ残基数と頻度を示します．
+
+以下のどれを使っても，頻度テーブル (ftab) を作成できます:
+
+\begin{verbatim}
+>>> from SubsMat import *
+>>> ftab = FreqTable.FreqTable(my_frequency_dictionary,FreqTable.FREQ)
+>>> ftab = FreqTable.FreqTable(my_count_dictionary,FreqTable.COUNT)
+>>> ftab = FreqTable.read_count(open('myCountFile'))
+>>> ftab = FreqTable.read_frequency(open('myFrequencyFile'))
+\end{verbatim}
+
+
+

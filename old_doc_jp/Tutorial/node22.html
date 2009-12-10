@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node23.html">
+<LINK rel="prev" href="node21.html">
+<LINK rel="parent" href="node21.html">
+<LINK rel="next" href="node23.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="BLAST をインターネット越しに走らせる">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.1.1 BLAST をインターネット越しに走らせる</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.1 BLAST" 
+  href="node21.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.1 BLAST" 
+  href="node21.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.1.2 WWW 版 BLAST" 
+  href="node23.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node21.html">3.1 BLAST</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node21.html">3.1 BLAST</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node23.html">3.1.2 WWW 版 BLAST</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2>
+<BR>
+3.1.1 BLAST をインターネット越しに走らせる
+</H2>
+
+<P>
+BLASTing を自動化するには，まず最初の段階として<b class="program">BLAST</b> の全てに
+Python からアクセスできるようにしなければなりません．そこで，Biopython
+には <b class="program">BLAST</b> の WWW 版 (<a class="url" href="http://www.ncbi.nih.gov/BLAST/">http://www.ncbi.nih.gov/BLAST/</a>)
+を直接 Python スクリプトから動作させられるコードが入っています．
+これはとても素晴らしいことです．というのも，とりわけ <b class="program">BLAST</b> 
+では処理を待ち行列化したり，結果を別のページに表示したりするため，
+スクリプトから<b class="program">BLAST</b> を扱うのは本当に苦痛だからです．
+NCBI が行った全ての変更に対応できるように，Biopython のコードを更新
+しつづけるのは，とても大変なんですよ!
+
+<P>
+WWW 版の BLAST を扱うコードは <tt class="module">Bio.Blast.NCBIWWW</tt> モジュール内
+と <tt class="function">blast</tt> 関数に入っています．
+仮に FASTA 形式のファイルとして持っている情報を，データベース上の情報
+に対して BLAST したいとしましょう。まずは FASTA ファイルから情報を
+取り出す必要があります。もっとも簡単なのは、<tt class="class">Fasta</tt> イテレータ
+を用いてレコードを取り出す方法です。以下の例では、イテレータを用いて、
+あるファイルから一番目の FASTA レコードだけを取り出すこちにします
+（FASTA イテレータについては <A HREF="node15.html#sec:fasta-parsing">2.4.3</A> 節で詳しく説明
+しています）．
+
+<P>
+<div class="verbatim"><pre>
+from Bio import Fasta
+
+file_for_blast = open('m_cold.fasta', 'r')
+f_iterator = Fasta.Iterator(file_for_blast)
+
+f_record = f_iterator.next()
+</pre></div>
+
+<P>
+さて，FASTA のレコードを手に入れたので、blast する準備ができました。
+もっとも簡単な BLAST (互いに重複しない全てのデータベースエントリに
+対する単純な <b class="program">blastn</b> の実行) を行うコードは以下のように
+なります:
+
+<P>
+<div class="verbatim"><pre>
+from Bio.Blast import NCBIWWW
+b_results = NCBIWWW.blast('blastn', 'nr', f_record)
+</pre></div>
+
+<P>
+関数<tt class="function">blast</tt> はこの他にもたくさんの引数をとります．こうした
+引数は，基本 <b class="program">BLAST</b> (basic <b class="program">BLAST</b>) のページ
+(<a class="url" href="http://www.ncbi.nlm.nih.gov/blast/blast.cgi?Jform=0">http://www.ncbi.nlm.nih.gov/blast/blast.cgi?Jform=0</a>)
+で設定できる様々なパラメタと基本的に同じです．とはいえ，ここでは
+先頭のいくつかの重要な (そして省略できない) 引数についてだけ
+説明します．
+
+<P>
+最初の引数は配列の検索に用いる blast プログラムです。プログラムの
+オプションと説明は 
+<a class="url" href="http://www.ncbi.nlm.nih.gov/BLAST/blast_program.html">http://www.ncbi.nlm.nih.gov/BLAST/blast_program.html</a>にあります．第二の引数には検索対象のデータベースを指定します．
+データベースの選択肢もまた NCBI のウェブページ，
+<a class="url" href="http://www.ncbi.nlm.nih.gov/BLAST/blast_databases.html">http://www.ncbi.nlm.nih.gov/BLAST/blast_databases.html</a> に
+あります．
+
+<P>
+検索オプションを設定したら，あとは自分の FASTA 配列を文字列で
+渡すだけです．これが三つ目の引数で，これを設定すれば <b class="program">BLAST</b>
+の準備は完了です．Biopython は検索結果がいつ利用できるようになるか
+を気にかけ，結果が得られるまで処理を一時停止した後，得られた結果を
+返してくれます．
+
+<P>
+結果を解析する前に結果をファイルに保存しておき，後で後戻りしたり
+<b class="program">BLAST</b> をかけなおしたりしなくてすむようにしておけば，
+便利なことがよくあります．私は<b class="program">BLAST</b> の結果ファイルから
+情報を抽出するコードをデバッグしているときにとても便利に思いましたが，
+単に解析済みの内容をバックアップするためだけでも便利かもしれません．
+戻ってきた解析結果を保存したり，結果を解析したいのなら注意してください．
+というのは，ファイルに結果を書き出す際に<code>handle.read()</code> を
+使ってしまうと，<code>handle</code> にはもはや情報が入ってないからです．
+この問題をうまく回避するには，まず<tt class="function">read</tt> を使って
+全ての情報を <code>handle</code> から取り出して文字列に入れ，その後で
+文字列を処理します (注意: <tt class="module">copy</tt> モジュールを使っても
+<code>handle</code> はコピーできないのでうまくいきません)．
+BLAST の結果の入った文字列を取得して，それをファイルに書き出すには
+次のようにします:
+
+<P>
+<div class="verbatim"><pre>
+# save the results for later, in case we want to look at it
+save_file = open('my_blast.out', 'w')
+blast_results = result_handle.read()
+save_file.write(blast_results)
+save_file.close()
+</pre></div>
+
+<P>
+この操作を行うと，結果は<span class="file">my_blast.out</span> に入り，
+<code>blast_results</code> は結果の入った文字列になります．
+
+<P>
+<b class="program">BLAST</b> パーザの<tt class="function">parse</tt> 関数は，
+<A HREF="node23.html#sec:parsing-www-blast">3.1.2</A> 節でも述べるように，ファイルハンドル
+類似のオブジェクトを解析対象として引数にとります．
+<b class="program">BLAST</b> 結果の文字列からハンドル類似オブジェクトを手に入れる
+には，Python の標準ライブラリモジュール<tt class="module">cStringIO</tt> を使います．
+以下のコードを使えば，パーザに直接入力できるようなハンドルを
+入手できます:
+
+<P>
+<div class="verbatim"><pre>
+import cStringIO
+string_result_handle = cStringIO.StringIO(blast_results)
+</pre></div>
+
+<P>
+結果が得られたので、これで作業を行う準備ができました。では
+<b class="program">BLAST</b> 出力の解析の節に移りましょう．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.1 BLAST" 
+  rel="prev" title="3.1 BLAST" 
+  href="node21.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.1 BLAST" 
+  rel="parent" title="3.1 BLAST" 
+  href="node21.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.1.2 WWW 版 BLAST" 
+  rel="next" title="3.1.2 WWW 版 BLAST" 
+  href="node23.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node21.html">3.1 BLAST</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node21.html">3.1 BLAST</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node23.html">3.1.2 WWW 版 BLAST</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

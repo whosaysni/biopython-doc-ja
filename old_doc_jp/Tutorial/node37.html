@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node38.html">
+<LINK rel="prev" href="node36.html">
+<LINK rel="parent" href="node35.html">
+<LINK rel="next" href="node38.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="GenBank レコードを解釈する">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.4.2 GenBank レコードを解釈する</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.4.1 GenBank のエントリを NCBI" 
+  href="node36.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.4 GenBank" 
+  href="node35.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.4.3 自作の GenBank データベースを作成する" 
+  href="node38.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node36.html">3.4.1 GenBank のエントリを NCBI</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node35.html">3.4 GenBank</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node38.html">3.4.3 自作の GenBank データベースを作成する</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2>
+<BR>
+3.4.2 GenBank レコードを解釈する
+</H2>
+
+<P>
+GenBank ファイルは素晴らしくできていて，たくさんの情報がおさめられて
+いる一方で，実際には一時にほんの少しの情報しか取り出したくないかも
+しれません．こうした作業の鍵となるのは，データをいかに構文解析するかで
+す．
+Biopython では複数の GenBank パーザを提供していて，こうした作業を
+行う上で手助けできるようにしています．これまでのところ，
+<tt class="module">GenBank</tt> では以下のパーザを提供しています:
+
+<P>
+<DL>
+<DT><STRONG>RecordParser</STRONG></DT>
+<DD>このパーザは素のレコードを構文解析して， GenBank 
+特有のレコードオブジェクト形式に変換します．このオブジェクトでは
+情報を素のレコードに非常に近いモデルで扱うので，単に GenBank の
+個々のレコード自体に興味がある場合にはこのパーザを使うのがよいでしょう．
+
+<P>
+</DD>
+<DT><STRONG>FeatureParser</STRONG></DT>
+<DD>このパーザは素のレコードを<tt class="class">SeqRecord</tt> 
+オブジェクトに変換します．<tt class="class">SeqRecord</tt> オブジェクトでは，
+全ての属性テーブル情報が<tt class="class">SeqFeatures</tt> で表現されています
+(これらのオブジェクトについての詳細は <A HREF="node49.html#sec:advanced-seq">3.7</A> を
+参照してください)．より標準的な形式で情報を入手したい場合には
+こちらのパーザを使うのがよいでしょう．
+
+<P>
+</DD>
+</DL>
+
+<P>
+どちらの方法をとるにせよ，こうしたのパーザの最も一般的な使い方は，
+イテレータを作成して，GenBank レコードの入ったファイルをパースする
+というものになります．この作業は，他のデータ形式での処理方法と非常に
+似ていて，例えば以下のようなコードになります:
+
+<P>
+<div class="verbatim"><pre>
+from Bio import GenBank
+
+gb_file = "my_file.gb"
+gb_handle = open(gb_file, 'r')
+
+feature_parser = GenBank.FeatureParser()
+
+gb_iterator = GenBank.Iterator(gb_handle, feature_parser)
+
+while 1:
+   cur_record = gb_iterator.next()
+
+   if cur_record is None:
+       break
+
+   # now do something with the record
+   print cur_record.seq
+</pre></div>
+
+<P>
+このコードでは，単に GenBank ファイルに渡って反復処理を行い，
+レコードごとに構文解析を行って SeqRecord と SeqFeature オブジェクトに
+変換し，そのレコードの配列を表す <tt class="class">Seq</tt> オブジェクトを
+出力します．
+
+<P>
+他の形式と同様，GenBank レコードを扱うツールがたくさんあります．
+それらのツールを使えば GenBank を使ってやりたいことは何でもできる
+はずです．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.4.1 GenBank のエントリを NCBI" 
+  rel="prev" title="3.4.1 GenBank のエントリを NCBI" 
+  href="node36.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.4 GenBank" 
+  rel="parent" title="3.4 GenBank" 
+  href="node35.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.4.3 自作の GenBank データベースを作成する" 
+  rel="next" title="3.4.3 自作の GenBank データベースを作成する" 
+  href="node38.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node36.html">3.4.1 GenBank のエントリを NCBI</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node35.html">3.4 GenBank</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node38.html">3.4.3 自作の GenBank データベースを作成する</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

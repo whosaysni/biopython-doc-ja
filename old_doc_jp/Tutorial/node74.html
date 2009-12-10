@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="prev" href="node73.html">
+<LINK rel="parent" href="node71.html">
+<LINK rel="next" href="node75.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="残基のゆらぎ">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.11.2.3 残基のゆらぎ</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11.2.2 原子のゆらぎ" 
+  href="node73.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11.2 ゆらぎ (disorder)" 
+  href="node71.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.3 ヘテロ残基" 
+  href="node75.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node73.html">3.11.2.2 原子のゆらぎ</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node71.html">3.11.2 ゆらぎ (disorder)</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node75.html">3.11.3 ヘテロ残基</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+<div class='online-navigation'>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"></a>
+
+<UL CLASS="ChildLinks">
+<LI><A href="node74.html#SECTION0041123100000000000000">3.11.2.3.1 よくあるケース</a>
+<LI><A href="node74.html#SECTION0041123200000000000000">3.11.2.3.2 点変異</a>
+</ul>
+<!--End of Table of Child-Links-->
+</div>
+<HR>
+
+<H3><A NAME="SECTION0041123000000000000000">
+3.11.2.3 残基のゆらぎ</A>
+</H3>
+
+<P>
+
+<H4><A NAME="SECTION0041123100000000000000">
+3.11.2.3.1 よくあるケース</A>
+</H4>
+
+<P>
+もっともよくあるのは，残基に一つまたはそれ以上の原子のゆらぎが
+あるケースです．いうまでもなく，このケースは<tt class="class">DisorderedAtom</tt> 
+オブジェクトによってゆらぎのある原子を表現し，その
+<tt class="class">DisorderedAtom</tt> オブジェクトを<tt class="class">Residue</tt> オブジェクトの
+中に普通の<tt class="class">Atom</tt> オブジェクトのようにして入れれば解決します．
+<tt class="class">DisorderedAtom</tt> は，自分に適用されたメソッドのうち，
+<tt class="class">DisorderedAtom</tt> で処理されないものを該当する<tt class="class">Atom</tt> 
+オブジェクト (選択されている <tt class="class">Atom</tt> オブジェクト) 
+に転送することで，見かけ上通常の原子とまったく同じように 
+(実際には最も占有率の高い原子と同じように) 振る舞います．
+
+<P>
+
+<H4>
+<BR>
+3.11.2.3.2 点変異
+</H4>
+ゆらぎが点変異 (point mutation) に由来するような特殊なケース，
+例えば点変異体が二つ以上混じったポリペプチドが結晶中に見つかるような
+場合があります．このような例の一つが PDB 構造の 1EN2 です．
+
+<P>
+こうした変異では，残基が (例えば Ser 60 と Cys 60 のように) 異なる
+残基型に属するので，上のよくある例のように，一つの <tt class="class">Residue</tt>
+オブジェクトの中には入りません．このようなケースでは，
+ゆらぎとなる各々の残基を<tt class="class">Residue</tt> オブジェクトで表現しておき，
+両方の <tt class="class">Residue</tt> オブジェクトを <tt class="class">DisorderedResidue</tt>
+オブジェクトに入れておきます． 
+
+<P>
+<tt class="class">DisorderedResidue</tt> は，自分に適用されたメソッドのうち，
+<tt class="class">DisorderedResidue</tt> で処理されないものを現在選択されて
+いる<tt class="class">Residue</tt> オブジェクト (デフォルトでは最後に追加
+された<tt class="class">Residue</tt> オブジェクト) に転送することで，
+あたかも通常の残基のように振舞います．<tt class="class">DisorderedResidue</tt> 
+オブジェクト中の各<tt class="class">Residue</tt> オブジェクトは，各々の
+残基名で一意に識別できます．上の例でいえば， 
+<tt class="class">DisorderedResidue</tt> オブジェクト内の Ser 60 残基の
+識別子は<code>"SER"</code> ，Cys 60 の識別子は<code>"CYS"</code> です．
+ユーザはこの識別 id を使って現在有効な <tt class="class">Residue</tt> オブジェクト
+を選択できます．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11.2.2 原子のゆらぎ" 
+  rel="prev" title="3.11.2.2 原子のゆらぎ" 
+  href="node73.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11.2 ゆらぎ (disorder)" 
+  rel="parent" title="3.11.2 ゆらぎ (disorder)" 
+  href="node71.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.3 ヘテロ残基" 
+  rel="next" title="3.11.3 ヘテロ残基" 
+  href="node75.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node73.html">3.11.2.2 原子のゆらぎ</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node71.html">3.11.2 ゆらぎ (disorder)</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node75.html">3.11.3 ヘテロ残基</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

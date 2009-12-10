@@ -1,0 +1,282 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node71.html">
+<LINK rel="prev" href="node64.html">
+<LINK rel="parent" href="node64.html">
+<LINK rel="next" href="node66.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="分子構造の表現方式">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.11.1 分子構造の表現方式</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11 3D の世界へ: PDB" 
+  href="node64.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11 3D の世界へ: PDB" 
+  href="node64.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.1.1 Structure オブジェクト" 
+  href="node66.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node64.html">3.11 3D の世界へ: PDB</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node64.html">3.11 3D の世界へ: PDB</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node66.html">3.11.1.1 Structure オブジェクト</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION0041110000000000000000">
+3.11.1 分子構造の表現方式</A>
+</H2>
+
+<P>
+高分子構造は構造 (structure)，モデル (model)，分子鎖 (chain)，
+残基 (residue)，原子 (atom) を使った階層構造 (SMCRA階層) で表現します．
+SMCRA データ構造を UML によるクラス図で表したものを図<A HREF="#fig:scmra"><tex2html_cross_ref_visible_mark></A>
+に示します．このようなデータ構造は，ある構造をとる高分子の内容を表現
+する方法としては，必ずしも最適というわけではありません．とはいえ，
+こうしたデータ構造は，(PDB や MMCIF ファイル形式のような) 分子構造
+を記述したファイルデータに入っている情報をうまく解釈する上で必ず必要に
+なります．もしこの階層構造を使ってある構造記述ファイルの内容を表現でき
+ないとすれば，おそらくファイルにエラーが含まれているか，少なくとも
+構造が曖昧さなく記述されていないかです．もし SMCRA データ構造をうまく
+生成できなければ，その問題を引き起こす理由があります．従って，
+PDB ファイルの構文解析を行えば，こうした問題を検出できます．
+これについては，<A HREF="node81.html#problem_structures">3.11.5</A> 節でいくつか例を挙げて
+説明します．
+
+<P>
+
+<DIV ALIGN="CENTER">
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>図 3.3:</STRONG>
+高分子構造を表現する際に使われる SMCRA データ構造の UML クラス図</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+</DIV><IMG
+ WIDTH="444" HEIGHT="383" ALIGN="BOTTOM" BORDER="0"
+ SRC="img7.png"
+ ALT="\includegraphics[width=0.8\textwidth]{images/smcra.eps}"></TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+<tt class="class">Structure</tt>，<tt class="class">Model</tt>，<tt class="class">Chain</tt> および <tt class="class">Residue</tt>
+は，いずれも基底クラス <tt class="class">Entity</tt> (エンティティ) のサブクラスです．
+<tt class="class">Atom</tt> クラスだけは<tt class="class">Entity</tt> インターフェースの一部しか
+実装していません (<tt class="class">Atom</tt> クラスには子クラスが必要ないからです)．
+
+<P>
+<tt class="class">Entity</tt> サブクラスのオブジェクトは，いずれも一意な識別子
+(id) をキーに使うことで，自分の子エンティティを取り出せます (例えば，
+原子の名前を表す文字列をキーにして，ある <tt class="class">Residue</tt> オブジェクト
+から<tt class="class">Atom</tt> オブジェクトを取り出したり，分子鎖の id をキーと
+して，<tt class="class">Model</tt> オブジェクトから <tt class="class">Chain</tt> オブジェクトを
+取り出したりできます)．
+
+<P>
+原子や残基のゆらぎ (disorder) は <tt class="class">DisorderedAtom</tt> や
+<tt class="class">DisorderedResidue</tt> クラスで表現されます，これらはいずれも
+基底クラス<tt class="class">DisorderedEntityWrapper</tt> のサブクラスです．
+これらのクラスは，ゆらぎに伴う複雑さを隠蔽し，あたかも普通の
+<tt class="class">Atom</tt> や <tt class="class">Residue</tt> オブジェクトであるかのように振る舞い
+ます．
+
+<P>
+一般的には，ある親エンティティ (<tt class="class">Residue</tt>, <tt class="class">Chain</tt>,
+<tt class="class">Model</tt>, <tt class="class">Structure</tt>) の子にあたるエンティティオブジェクト
+(<tt class="class">Atom</tt>, <tt class="class">Residue</tt>, <tt class="class">Model</tt>, <tt class="class">Structure</tt>) は，
+id をキーにして取り出せます．
+
+<P>
+<div class="verbatim"><pre>
+child_entity=parent_entity[child_id]
+</pre></div>
+
+<P>
+また，ある親エンティティオブジェクトの子エンティティ全てのリストも
+取り出せます．このリストは特殊なやりかたで並んでいるので注意してくださ
+い (例えば，<tt class="class">Model</tt> オブジェクトが親の場合，子の<tt class="class">Chain</tt> 
+オブジェクトは側鎖 id (chain identifier) に応じて並びます)．
+
+<P>
+<div class="verbatim"><pre>
+child_list=parent_entity.get_list()
+</pre></div>
+
+<P>
+ある子エンティティオブジェクトの親エンティティオブジェクトも
+取り出せます．
+
+<P>
+<div class="verbatim"><pre>
+parent_entity=child_entity.get_parent()
+</pre></div>
+
+<P>
+また，SMCRA 階層のどの階層のオブジェクトに対しても，
+<em>完全 id (full id)</em> を取り出せます．
+完全 id とは，最上位のオブジェクト (<tt class="class">Structure</tt>) から下って，
+現在のオブジェクトまで辿ったときに経由した全てのオブジェクトの id から
+なるタプルです．例えば，ある <tt class="class">Residue</tt> オブジェクトの完全 id は
+以下のようになります:
+
+<P>
+<div class="verbatim"><pre>
+full_id=residue.get_full_id()
+
+print full_id
+
+("1abc", 0, "A", ("", 10, "A"))
+</pre></div>
+
+<P>
+このタプルの内容は，それぞれ
+
+<P>
+
+<UL>
+<LI><code>"1abc"</code> を id に持つ <tt class="class">Structure</tt> オブジェクト
+</LI>
+<LI><code>0</code> を id に持つ <tt class="class">Model</tt> オブジェクト
+</LI>
+<LI><code>"A"</code> を id に持つ <tt class="class">Chain</tt> オブジェクト
+</LI>
+<LI><code>("", 10, "A")</code> を id に持つ <tt class="class">Residue</tt> オブジェクト
+</LI>
+</UL>
+
+<P>
+に対応します．
+
+<P>
+最後の <tt class="class">Residue</tt> オブジェクトの id は，ヘテロフィールド
+(最初のフィールド) が空白になっています．これは，この残基が
+ヘテロ残基 (もしくは水) ではないことを示しています．また，
+配列の識別子は 10 で，挿入コード (insertion code) は <code>"A"</code> 
+になっています．
+
+<P>
+エンティティにはいくつか便利なメソッドがあります:
+
+<P>
+<div class="verbatim"><pre>
+# エンティティの id を得る
+
+entity.get_id()
+
+# ある id をもった子エンティティが存在するかを調べる
+
+entity.has_id(entity_id)
+
+# 子エンティティの数を得る
+
+nr_children=len(entity)
+</pre></div>
+
+<P>
+ある親エンティティに対して，その子エンティティを削除したり，
+子エンティティの名前を変更したり，新たな子エンティティを追加したりは
+できますが，その際にデータの正当性チェック (sanity check) は
+行われません (例えば，ある分子鎖に同じ id を持つ二つの残基を
+付加したりできてしまいます)．<tt class="class">Decorator</tt> クラスを用いると，
+整合性を含めたこうしたチェックをうまく行ってくれますが，もし
+素のインタフェースを利用したいなら，ソースコード (<span class="file">Entity.py</span>)
+を参照してみてください．
+
+<P>
+
+<p><br /></p><hr class='online-navigation' />
+<div class='online-navigation'>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"></a>
+
+<UL CLASS="ChildLinks">
+<LI><A href="node66.html">3.11.1.1 Structure オブジェクト</a>
+<UL>
+<LI><A href="node66.html#SECTION0041111100000000000000">3.11.1.1.1 Structure オブジェクトを構築する</a>
+<LI><A href="node66.html#SECTION0041111200000000000000">3.11.1.1.2 ヘッダ (header) とトレイラ (trailer)</a>
+</ul>
+<LI><A href="node67.html">3.11.1.2 Model オブジェクト</a>
+<UL>
+<LI><A href="node67.html#SECTION0041112100000000000000">3.11.1.2.1 例題</a>
+</ul>
+<LI><A href="node68.html">3.11.1.3 Chain オブジェクト</a>
+<UL>
+<LI><A href="node68.html#SECTION0041113100000000000000">3.11.1.3.1 例題</a>
+</ul>
+<LI><A href="node69.html">3.11.1.4 Residue オブジェクト</a>
+<LI><A href="node70.html">3.11.1.5 Atom</a>
+</ul>
+<!--End of Table of Child-Links-->
+</div>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11 3D の世界へ: PDB" 
+  rel="prev" title="3.11 3D の世界へ: PDB" 
+  href="node64.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11 3D の世界へ: PDB" 
+  rel="parent" title="3.11 3D の世界へ: PDB" 
+  href="node64.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.1.1 Structure オブジェクト" 
+  rel="next" title="3.11.1.1 Structure オブジェクト" 
+  href="node66.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node64.html">3.11 3D の世界へ: PDB</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node64.html">3.11 3D の世界へ: PDB</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node66.html">3.11.1.1 Structure オブジェクト</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

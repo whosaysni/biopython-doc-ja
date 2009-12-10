@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node20.html">
+<LINK rel="prev" href="node2.html">
+<LINK rel="parent" href="Tutorial.html">
+<LINK rel="next" href="node9.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content=". クイックスタート - Biopython でできること">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>2. クイックスタート - Biopython でできること</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="1.4 ライセンス" 
+  href="node7.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="Biopython チュートリアル &amp; クックブック" 
+  href="Tutorial.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="2.1 Biopython の機能概要" 
+  href="node9.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node7.html">1.4 ライセンス</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="Tutorial.html">Biopython チュートリアル &amp; クックブック</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node9.html">2.1 Biopython の機能概要</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION003000000000000000000">
+2. クイックスタート - Biopython でできること</A>
+</H1>
+
+<P>
+この節の目的は，読者が手っ取り早く Biopython を使い始められるようにして，
+Biopython でできることとそのやり方についての概要を伝えることにあります．
+本節の全ての例題は，読者が既に Python を使うときの一般的かつ実践的な知識を
+多少持っていると想定して書かれています． Python についての知識をもう少し
+磨いておくべきだと思うなら，Python の本家 Web サイト
+(<a class="url" href="http://www.python.org/doc/">http://www.python.org/doc/</a>) に行けば，無料で読める
+入門向けドキュメントが少しあります．
+
+<P>
+計算機上で扱える生物学関連の作業の多くには，インターネット上のデータベース
+に対する接続が含まれています．従って，例題のいくつかについては，正しく
+動作させるためにインターネットへの接続が有効になっている必要があるでしょう．
+
+<P>
+さて，それはともかくとして，Biopython で何を実行できるかについて議論
+しましょう．
+
+<P>
+
+<p><br /></p><hr class='online-navigation' />
+<div class='online-navigation'>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"></a>
+
+<UL CLASS="ChildLinks">
+<LI><A href="node9.html">2.1 Biopython の機能概要</a>
+<LI><A href="node10.html">2.2 配列情報を操作する</a>
+<LI><A href="node11.html">2.3 例題</a>
+<LI><A href="node12.html">2.4 生物学関連のデータファイルを構文解析する</a>
+<UL>
+<LI><A href="node13.html">2.4.1 パーザの一般的な設計</a>
+<LI><A href="node14.html">2.4.2 コンシューマを自作する</a>
+<LI><A href="node15.html">2.4.3 もっと簡単に</a>
+<LI><A href="node16.html">2.4.4 FASTA ファイルを辞書のように扱う</a>
+<LI><A href="node17.html">2.4.5 ファイル解析大好き - もっと教えて！</a>
+</ul>
+<LI><A href="node18.html">2.5 生物学関連のデータベースに接続する</a>
+<LI><A href="node19.html">2.6 次は何を</a>
+</ul>
+<!--End of Table of Child-Links-->
+</div>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="1.4 ライセンス" 
+  rel="prev" title="1.4 ライセンス" 
+  href="node7.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="Biopython チュートリアル &amp; クックブック" 
+  rel="parent" title="Biopython チュートリアル &amp; クックブック" 
+  href="Tutorial.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="2.1 Biopython の機能概要" 
+  rel="next" title="2.1 Biopython の機能概要" 
+  href="node9.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node7.html">1.4 ライセンス</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="Tutorial.html">Biopython チュートリアル &amp; クックブック</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node9.html">2.1 Biopython の機能概要</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

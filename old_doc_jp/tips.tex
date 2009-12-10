@@ -1,0 +1,75 @@
+\chapter{Python の便利な機能}
+\label{sec:appendix}
+
+Python プログラミングにまだそれほど習熟していなければ，
+Biopython を使っていて感じる疑問や遭遇する問題の多くは
+Python 自体に関係することが多いでしょう．この節では，
+Biopython ライブラリを使っている際に， (少なくとも著者らが) 
+よく使う考え方やコードを示してゆきます．もし
+ここに入れておくべき内容についてご提案がある方は，ぜひお知らせください．
+
+\section{ハンドル (handle) とは何か}
+\label{sec:appendix-handles}
+
+このドキュメントでは，全体を通してハンドルという言葉をよく使います．
+この言葉は (少なくとも私の考えでは) ややまぎらわしい言葉でも
+あります．基本的に，ハンドルはテキスト情報への ``ラッパ'' と
+考えてください．
+
+ハンドルを使うと，素のテキスト情報に比べて，(少なくとも) 以下のような
+利点があります:
+
+\begin{enumerate}
+  \item ハンドルを使うと，様々な方法で保存されている情報を標準的な
+ひとつのやり方で扱えるようになります．テキスト情報には，ファイルに
+入っているもの，メモリ上に記憶されているもの，どこか遠隔地のウェブ
+サイト上にあるもの，など様々ありますが，ハンドルを使えばこれら全ての
+情報を共通のひとつのやり方で扱えます．
+
+  \item ハンドルを使うと，テキスト形式の情報を一気に全て読むのではなく，
+逐次的に読み出せます．これは，巨大なテキストファイルを扱っていて，
+全てを読み込まなければならないのにメモリ上には乗り切らないといった
+場合にとても重要な機能です．
+\end{enumerate}
+
+ハンドルを使うと，テキスト情報の読み込み (ファイルからの読み込み)，
+および書き出し(ファイルへの書き込み) を扱えます．
+読み込み用 (``read'') ハンドルの場合，よく使う関数は \function{read}
+です．この関数はハンドルから全てのテキスト情報を読み出します．
+また，\function{readline} を使うと，一度に一行づつ情報を読み出します．
+書き出し (``write'') ハンドルでは，\function{write} をよく使います．
+
+
+ハンドルのもっとも一般的な用途はファイルからの読み出しです．
+この場合，ハンドルを作成するには python の組み込み関数 \function{open}
+を使います:
+
+\begin{verbatim}
+>>> handle = open("m_cold.fasta", "r")
+>>> handle.readline()
+">gi|8332116|gb|BE037100.1|BE037100 MP14H09 MP Mesembryanthemum crystallinum cDNA 5' similar to cold acclimation protein, mRNA sequence\n"
+\end{verbatim}
+
+ハンドルは， Biopython で様々なパーザに情報を渡すときに使われます．
+
+\subsection{文字列からハンドルを生成する}
+
+文字列中に入った情報からハンドルを生成しておくと便利な
+ことがあります．以下の例では，Python 標準モジュールの\module{cStringIO} 
+を使って文字列からハンドルを生成する方法を示しています:
+
+\begin{verbatim}
+>>> my_info = 'A string\n with multiple lines.'
+>>> print my_info
+A string
+ with multiple lines.
+>>> import cStringIO
+>>> my_info_handle = cStringIO.StringIO(my_info)
+>>> first_line = my_info_handle.readline()
+>>> print first_line
+A string
+
+>>> second_line = my_info_handle.readline()
+>>> print second_line
+ with multiple lines.
+\end{verbatim}

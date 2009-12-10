@@ -1,0 +1,950 @@
+\chapter{クイックスタート -- Biopython でできること}
+
+この節の目的は，読者が手っ取り早く Biopython を使い始められるようにして，
+Biopython でできることとそのやり方についての概要を伝えることにあります．
+本節の全ての例題は，読者が既に Python を使うときの一般的かつ実践的な知識を
+多少持っていると想定して書かれています． Python についての知識をもう少し
+磨いておくべきだと思うなら，Python の本家 Web サイト
+(\url{http://www.python.org/doc/}) に行けば，無料で読める
+入門向けドキュメントが少しあります．
+
+計算機上で扱える生物学関連の作業の多くには，インターネット上のデータベース
+に対する接続が含まれています．従って，例題のいくつかについては，正しく
+動作させるためにインターネットへの接続が有効になっている必要があるでしょう．
+
+さて，それはともかくとして，Biopython で何を実行できるかについて議論
+しましょう．
+
+\section{Biopython の機能概要}
+
+「はじめに」で触れたように，Biopython とは
+計算機上で仕事を行う生物学者にとって興味の対象となる「何か」を
+扱うための機能を提供する\emph{だけの} 一連のライブラリの集まりです．
+ということは，少なくともプログラミング (もちろん Python で！) に
+関する経験があるか，せめてプログラミングについて興味を持って
+いなければなりません． Biopython の役割は，再利用しやすい
+ライブラリを提供して，プログラマとしてのユーザの負担を減らし，
+例えば特定のファイル形式の読み込み方法
+(もちろん，パーザ=ファイル読み込み機構を自作して Biopython 
+プロジェクトに貢献していただけるなら大歓迎ですよ！) のような内部的な
+作業ではなく，
+自分が興味を抱いている問題そのものの解決に注力できるように
+助けることにあります．
+そう，Biopython はあなたを幸せにするためにあるんです．
+
+Biopython について注意しておかなければならないのは，
+しばしば「同じことをする」ためにいくつものやり方が提供されている
+ということです．私個人としてはたった一つの正しいやり方だけを
+知っておきたいと考えているので，この点は不満に思っています．
+とはいえ，これは利点でもあります．なぜなら，いくつものやり方が
+あることで，ライブラリの使い方に大きな柔軟性や操作性が生まれる
+からです．このチュートリアルでは，あることを行う上での方法として，
+広く使われていて簡単な方法を示し，とにかくやりたいことを
+実現できるようにしておきます．
+他のやり方について詳しく学びたければ，「クックブック」の章
+(巧妙な小技や豆知識が書かれています) や，「上級者向けの話題」の章
+(知りたいだけ詳細な解説が書かれています！) を読んでみてください．
+
+\section{配列情報を操作する}
+\label{sec:sequences}
+
+バイオインフォマティクスにおいて中心的な役割を果たしているのは
+配列情報です (もちろん，これについては議論の分かれるところですが！)．
+そこで，まずは Biopython が配列情報をどう扱うかを説明します．
+配列情報について考えるとき，まず頭に浮かぶのは，いくつかの文字
+からなる \code{AGTACACTGGT} のような文字列です．
+これは生物学関連のデータファイル形式で配列情報を表すために
+もっともよく使われているやり方ですし，一見普通のことのように思えます．
+しかし，単に文字からなる文字列だけでは，情報としてさして意味が
+ないのです -- 例えば， DNA なのかタンパクの配列情報なのか分かりません
+(そうそう，これはアラニン，グリシン，システイン，スレオニンだけで
+できているタンパクなんですよね！)．また，配列情報がどの生物種由来
+であるかとか，配列情報の何に注目しているのか，なども分かりません．
+そこで，Biopython では，配列情報操作のインタフェースを設計する上で，
+より複雑な情報を取り入れられるだけ表現力に富み，なおかつ単なる
+文字列による配列情報と同じくらい軽量で使いやすい表現を選ぶよう
+試みました．
+
+Biopython では配列情報クラスによるアプローチをとっていますが，
+これはクラスを使って複雑な情報を維持できるようにして，なおかつ
+単純な文字列と同様に操作できるようにするためです．
+こうした特性は，演算子のオーバロードを使って，
+Python 文字列型の操作のように配列情報オブジェクトを操作可能に
+することで実現しています．
+この配列情報クラスは，\class{Seq} という簡単な名前ですが，
+モジュールファイル\file{Bio/Seq.py} で定義されています．
+それでは，\class{Seq} クラスがどんな機能を提供しているか
+もう少し突っ込んで見てみましょう．
+
+Biopython の \class{Seq} オブジェクトには，二つの重要な属性があります:
+
+\begin{enumerate}
+\item \var{data} -- 名前の通り，配列の実際の配列情報を現す文字列．
+\item \var{alphabet} -- 文字列を構成している個々の文字が何を意味していて，
+どのように解釈されるかを記述しているオブジェクト．
+\end{enumerate}
+
+いうまでもなく，\var{alphabet} オブジェクトは，\class{Seq} 
+オブジェクトをただの文字列以上のものにしている重要な要素です．
+現在のところ Biopython でアルファベットに利用できるオブジェクトは
+\module{Bio.Alphabet} モジュールで定義されています．
+DNA, RNA, タンパクといったオブジェクトを扱うために，
+ここでは IUPAC (\url{http://www.chem.qmw.ac.uk/iupac/})
+アルファベット を使います．
+
+モジュールファイル\file{Bio/Alphabet/IUPAC.py} では，
+タンパク，DNA, RNA の配列情報に使われる文字についての基本的な
+定義を行っていますが，その他にも基本的な定義をもとに拡張や
+カスタマイズを行うための機能も提供しています．例えば，タンパクの場合，
+ベースとなる \class{IUPACProtein} クラスがありますが，それに加えて
+\code{Asx} (アスパラギンおよびアスパラギン酸)，
+\code{Sec} (セレノシステイン)，
+\code{Glx} (グルタミンおよびグルタミン酸) といった，追加の要素
+も提供している\class{ExtendedIUPACProtein} もあります．
+DNA の場合なら， 各塩基を表現する文字だけを提供する
+\class{IUPACUnambiguousDNA}，\class{IUPACUnambiguousDNA} 
+(塩基が曖昧なさまざまな状況を表す文字も提供)，
+そして修飾つきの塩基を表現できるようになっている
+\class{ExtendedIUPACDNA} があります．同様に， RNA は
+\class{IUPACAmbigousRNA} や \class{IUPACUnambigousRNA}
+で表現できます．
+
+こうしたアルファベットクラスを用意する利点は二つあります．
+まず，アルファベットによって，\var{data} オブジェクトの
+表現する情報がどのような種類か分かります．次に，型チェック
+を行うことで，\var{data} オブジェクトに入れてよい情報を
+制約できます．
+
+さて，Biopython における配列情報がどんなものか分かったので，
+このクラスを利用して何か面白みのある作業をしてみましょう．
+
+まず，配列情報オブジェクトを手持ちの文字列から作成します．
+非曖昧DNA  (unambiguous DNA) オブジェクトを生成してみましょう:
+
+\begin{verbatim}
+>>> from Bio.Alphabet import IUPAC
+>>> my_alpha = IUPAC.unambiguous_dna
+>>> from Bio.Seq import Seq
+>>> my_seq = Seq('GATCGATGGGCCTATATAGGATCGAAAATCGC', my_alpha)
+>>> print my_seq
+Seq('GATCGATGGGCCTATATAGGATCGAAAATCGC', IUPACUnambiguousDNA())
+\end{verbatim}
+
+\code{my_seq} は配列情報オブジェクトですが，いくつかの点で
+通常の Python 文字列型のように扱えます．試しに配列情報を
+スライスしてみましょう．
+
+\begin{verbatim}
+>>> my_seq[4:12]
+Seq('GATGGGCC', IUPACUnambiguousDNA())
+\end{verbatim}
+
+ここで注意してほしいことが二つあります．最初の点は，この作業が
+通常の Python 配列方におけるスライス方法に従っているということ
+です．ですから，配列の最初の要素は\emph{0 番目} の要素という
+ことになります (計算機科学では，番号を 0 から始めるのは
+普通のことですが，生物学においてはそうではありませんね)．
+さらに，スライスを行うとき，スライスで最初の要素として指定した
+もの (ここでは \emph{0 から数えて} 4 番目の要素) はスライスに
+含まれ，最後の要素に指定したもの (ここでは 12) は含まれません．
+これは Python では当たり前のことですが，世界中の人がそう思う
+とは限りません．
+二つ目の点は，実行したのは配列情報に対するスライスでしたが，
+返されたオブジェクトにはもとの \class{Seq} オブジェクトと
+同じアルファベット情報がそのまま引き継がれているということです．
+
+\class{Seq} オブジェクトを文字列のように扱える操作は他にもたくさん
+あります:
+
+\begin{verbatim}
+>>> len(my_seq)
+32
+>>> new_seq = my_seq[0:5]
+>>> print new_seq
+Seq('GATCG', IUPACUnambiguousDNA())
+>>> my_seq + new_seq
+Seq('GATCGATGGGCCTATATAGGATCGAAAATCGCGATCG', IUPACUnambiguousDNA())
+>>> my_seq[5]
+'A'
+>>> my_seq == new_seq
+0
+\end{verbatim}
+
+これらの操作では全て，\var{alphabet} 属性がそのまま維持されています．
+これは，間違えてタンパク配列に DNA 配列をくっつけてしまうといった
+間違った操作をたまたま行おうとしてしまった場合に役立ちます:
+
+\begin{verbatim}
+>>> protein_seq = Seq('EVRNAK', IUPAC.protein)
+>>> dna_seq = Seq('ACGT', IUPAC.unambiguous_dna)
+>>> protein_seq + dna_seq
+Traceback (most recent call last):
+  File "<stdin>", line 1, in ?
+  File "/usr/local/lib/python1.6/site-packages/Bio/Seq.py", line 42, in __add__
+    raise TypeError, ("incompatable alphabets", str(self.alphabet),
+TypeError: ('incompatable alphabets', 'IUPACProtein()', 'IUPACUnambiguousDNA()')
+\end{verbatim}
+
+もし，配列中に何か別のものを挿入するなどの理由で本当に文字列が必要なら，
+簡単に取り出せます:
+
+\begin{verbatim}
+>>> my_seq.tostring()
+'GATCGATGGGCCTATATAGGATCGAAAATCGC'
+\end{verbatim} 
+
+多くの生物学関連のアプリケーションでは，手持ちの配列情報が
+かならず変更されないよう望むはずですから，配列情報オブジェクトは
+デフォルトの状態では変更不能です:
+
+\begin{verbatim}
+>>> my_seq[5] = 'G'
+Traceback (most recent call last):
+  File "<stdin>", line 1, in ?
+AttributeError: 'Seq' instance has no attribute '__setitem__'
+\end{verbatim}
+
+とはいえ，配列情報を変更可能なものに変換して，思い通りに変更を
+加えることもできます:
+
+\begin{verbatim}
+>>> mutable_seq = my_seq.tomutable()
+>>> print mutable_seq
+MutableSeq('GATCGATGGGCCTATATAGGATCGAAAATCGC', IUPACUnambiguousDNA())
+>>> mutable_seq[5] = 'T'
+>>> print mutable_seq
+MutableSeq('GATCGTTGGGCCTATATAGGATCGAAAATCGC', IUPACUnambiguousDNA())
+>>> mutable_seq.remove('T')
+>>> print mutable_seq
+MutableSeq('GACGTTGGGCCTATATAGGATCGAAAATCGC', IUPACUnambiguousDNA())
+>>> mutable_seq.reverse()
+>>> print mutable_seq
+MutableSeq('CGCTAAAAGCTAGGATATATCCGGGTTGCAG', IUPACUnambiguousDNA())
+\end{verbatim}
+
+さて，配列情報オブジェクトの性質をだいぶ理解してもらえたと思います．
+次はこの配列情報でできることを見ていきましょう．
+パッケージディレクトリ\file{Bio} には，配列情報オブジェクトに対して
+転写 (transcribe) や翻訳 (translate) を行うための二つの便利な
+モジュールがあります．これらのツールは配列のアルファベットに基づいて
+処理を行います．仮に，上の \var{my_seq} オブジェクトを転写して
+みたいとしましょう．この配列情報オブジェクトには，非曖昧な
+アルファベットが使われていたことを思い出してください．
+転写を行うには，以下のようにします:
+
+\begin{verbatim}
+>>> from Bio import Transcribe
+>>> transcriber = Transcribe.unambiguous_transcriber
+>>> my_rna_seq = transcriber.transcribe(my_seq)
+>>> print my_rna_seq
+Seq('GAUCGAUGGGCCUAUAUAGGAUCGAAAAUCGC', IUPACUnambiguousRNA())
+\end{verbatim}
+
+新たに作成された RNA \class{Seq} オブジェクトのアルファベットは
+何もしなくても勝手に作成されます．というわけで，やはり\class{Seq} 
+オブジェクトの操作は文字列操作に比べてさして難しくはありません．
+
+RNA 配列の逆転写も行えます:
+
+\begin{verbatim}
+>>> transcriber.back_transcribe(my_rna_seq)
+Seq('GATCGATGGGCCTATATAGGATCGAAAATCGC', IUPACUnambiguousDNA())
+\end{verbatim}
+
+DNA オブジェクトを翻訳する前に，いくつか選択しておかねばならないことが
+あります．まず，この DNA 配列についての知識をもとに，何個か
+翻訳テーブル (translation table) の候補を選びます．
+Biopython で利用できる翻訳テーブルは，
+\url{ftp://ncbi.nlm.nih.gov/entrez/misc/data/gc.prt} にある情報から
+とったものです．従って選び方は数え切れないくらいあります．ここでは，
+二つの選択肢: 標準の翻訳テーブルと，脊椎動物のミトコンドリア DNA用の
+翻訳テーブルに限っておきましょう．これらのテーブルはそれぞれ 1 と
+2 という id 番号でラベルづけされています．使う翻訳テーブルを決めたら，
+翻訳処理の準備は完了です．まず，選んだ翻訳テーブルを使うような
+翻訳機構 (translator) を取得します．今扱っている配列情報は
+非曖昧 DNA オブジェクトでしたが，翻訳機構を得る際にもそのことを
+考慮する必要があります:
+
+\begin{verbatim}
+>>> from Bio import Translate
+>>> standard_translator = Translate.unambiguous_dna_by_id[1] 
+>>> mito_translator = Translate.unambiguous_dna_by_id[2]
+\end{verbatim}
+
+適切な翻訳機構を得たら，次は実際に配列情報を翻訳してみましょう:
+
+\begin{verbatim}
+>>> my_seq = Seq('GCCATTGTAATGGGCCGCTGAAAGGGTGCCCGA', IUPAC.unambiguous_dna)
+>>> standard_translator.translate(my_seq)
+Seq('AIVMGR*KGAR', IUPACProtein())
+>>> mito_translator.translate(my_seq)
+Seq('AIVMGRWKGAR', IUPACProtein())
+\end{verbatim}
+
+デフォルトの翻訳処理では，終止コドンを識別せず，ただひたすら翻訳処理を
+進めていることに注意してください．何らかの推定コード領域 
+(ORF: Open Reading Frame) を翻訳していることが分かっていて，
+終止コドンまでの内容だけを知りたいのなら，単に
+\function{translate_to_stop} 関数を使えばできます:
+
+\begin{verbatim}
+>>> standard_translator.translate_to_stop(my_seq)
+Seq('AIVMGR', IUPACProtein())
+\end{verbatim}
+
+\var{transcriber} と同じように，\var{translator} もタンパクを DNA 配列
+に逆翻訳できます:
+
+\begin{verbatim}
+>>> my_protein = Seq('AVMGRWKGGRAAG', IUPAC.protein)
+>>> standard_translator.back_translate(my_protein)
+Seq('GCTGTTATGGGTCGTTGGAAGGGTGGTCGTGCTGCTGGT', IUPACUnambiguousDNA())
+\end{verbatim}
+
+これで，Biopython における配列情報クラスの基本的な機能と使い方を
+カバーしました．
+配列情報クラスの背後にある設計思想については，このチュートリアルの
+「上級者向けの話題」の節で詳しく説明しています．
+このクラスはまだ開発が進められていて，設計や使用方法についての
+コメントはもちろん大歓迎です．
+さて，Biopython ライブラリとやりとりするにはどうするかが分かってきた
+ところで，ここでちょっと脱線して，「生物学関連のデータファイル形式を
+構文解析 (parse) する」という\emph{世にも楽しい} 世界を探究してみま
+しょう！
+
+\section{例題}
+\label{sec:orchids}
+
+データファイルのパーザや Biopython のその他の機能の説明に
+入る前に，やる気を高めて楽しく作業を進めるために，ここで
+ちょっと例題を挙げてみましょう．
+だいたい，このチュートリアルに生物学の話が書かれていなかったら，
+読む気になんかなりませんよね？
+
+私は植物が好きなので，当然植物関係の例を挙げなければならない
+わけです (他の生物が好きな人はごめんなさいね！)．
+地元の植物園を渡り歩いた結果，私たちはスリッパーオーキッド
+(Lady Slipper Orchids, 女神の上履きラン) 
+にひどく心惹かれたことにしましょう
+(理由が気になる人は，
+\url{http://www.millicentorchids.com/greenhouse/images/papesq01.jpg}
+をご覧ください．もしそれで納得できなければ，
+\url{http://www.millicentorchids.com/greenhouse/indexphoto.htm}
+にある写真を全部見るといいですよ)．
+ランは見ていて美しいだけではなく，進化やシステム生物学を
+学ぶ人々にとって極めて興味深い植物です．そこで，スリッパーオーキッド
+の進化に関する分子生物学的な研究を行うためのプロポーザルを書くことに
+して，これまでどのような研究がなされてきたか，そしてその上に立って
+どのような研究を進められるかを展望してみたくなったとします．
+
+少し文献をひもといてみて，スリッパーオーキッドがラン科 (Orchidaceae)
+のアツモリソウ亜科 (Cypripedioideae) であり，五つの属:
+\emph{Cypripedium}, \emph{Paphiopedilum}, \emph{Phragmipedium}, 
+\emph{Selenipedium} and \emph{Mexipedium} に分類されていることが
+わかりました．これで，より詳しい情報を探究する準備が整いました．
+それでは Biopython のツール群がどうやって作業を助けてくれるか
+見てみましょう．
+
+
+\section{生物学関連のデータファイルを構文解析する}
+
+バイオインフォマティクスにおける作業には，たいてい
+生物学に関するデータを保存できるように設計された多種多様な
+ファイル形式の操作が入ってきます．
+こうしたファイルには生物学的に興味深いデータが入っているはず
+で，ファイルを構文解析して，何らかのプログラミング言語で扱える形式にし
+ようと工夫することになります．
+しかしながら，ファイル形式が頻繁に変更されたり，ファイル形式に
+小さな方言が入っていたりするため，ほとんどのよく設計されたパーザですら
+停止してしまい，こうしたファイル解析の作業にいらいらさせられる
+ことがあります．
+
+\subsection{パーザの一般的な設計}
+
+こうした問題に対して， Biopython では構造化されたパーザフレームワークを
+開発し，すべてのパーザに適用できるようにしています．このフレームワーク
+には二つの利点があります．まず，パーザ間でコードを再利用しやすく
+なります (\file{Bio/ParserSupport.py} を参照してください)．
+第二に，すべてのパーザが同じようなフレームワークに従っているので，
+何か疑問があったときに，すぐパーザの内部を調べて問題を解決しやすく
+なります．
+
+こうしたパーザ群には全て二つの構成要素があります:
+
+\begin{enumerate}
+
+\item スキャナ (Scanner) - パーザ中で，実際にファイルを操作したり
+読み進んだりし，有用な情報を取り出す処理を実際に行う部分です．
+ファイル中で見つかった有意を情報はイベント (Event) に変換します．
+
+\item コンシューマ (Consumer) - ファイル中に見つかった有意な情報を
+処理し，プログラマが利用できる形式に分離抽出する作業を行います．
+この作業は，コンシューマがスキャナが生成したイベントを受け取った
+時に行われます．
+
+
+\end{enumerate}
+
+つまり，パーザの設計はイベント志向になっているわけです．
+この考え方では，まずスキャナがファイルを走査して，興味の対象となりそう
+な項目に対してイベントを生成します．例えば，以下のエントリが
+FASTA で書式化されているとします (紙面の都合上一部省略してあります):
+
+\begin{verbatim}
+>gi|6273290|gb|AF191664.1|AF191664 Opuntia clavata rpl16 gene; chloroplast gene for...
+TATACATTAAAGGAGGGGGATGCGGATAAATGGAAAGGCGAAAGAAAGAAAAAAATGAA
+TCTAAATGATATAGGATTCCACTATGTAAGGTCTTTGAATCATATCATAAAAGACAATGTAAT
+AAA...
+\end{verbatim}
+
+スキャナがエントリの入ったファイルを走査すると，以下のようなイベントが
+生成されます:
+
+\begin{tabular}{cc}
+Event Name & Entry input \\
+\hline
+begin\_sequence & (as soon as we notice we've got a new \verb|>|) \\
+title & \verb+>gi|6273290|gb|AF191664.1|AF191664 Opuntia clavata...+ \\
+sequence & \verb|TATACATTAAAGGAGGGGGATGCGGAT...| \\
+sequence & \verb|TCTAAATGATATAGGATTCCACTATGTAA...| \\
+sequence & \verb|AAA...| (and so on -- you've got the idea！) \\
+end\_sequence & (as soon as we reach a blank line after the sequence data) \\
+
+\end{tabular}
+
+さて，イベントが生成されました．間違いなく，まだこのイベントを
+捕捉して，意味のある処理を行う用意はできていませんね！ そこで
+コンシューマの登場です．コンシューマは以下の二つの役割を担います:
+
+\begin{enumerate}
+
+\item コンシューマ自身をスキャナと関連づけて，スキャナが生成する
+特定のイベントをコンシューマが受け取れることをスキャナに通知します．
+\item イベント (とイベントに関連づけられた情報) に応じた処理を行います．
+
+\end{enumerate}
+
+どのように動作するかは例題をごらんください．
+
+\subsection{コンシューマを自作する}
+\label{sec:writing-consumer}
+
+パーザフレームワークを理解して，われらが友人スリッパーオーキッド
+のことを調べてみましょう．
+手始めに， NCBI の Entrez 検索インタフェース
+(\url{lhttp://www.ncbi.nlm.nih.gov:80/entrez/query.fcgi?db=Nucleotide})
+を使って，NCBI の核酸データベースからアツモリソウ亜科
+(Cypripedioideae) に関する項目全てを探してみます．
+検索を行うと 94 件のヒットが見つかり，これを FASTA 形式の
+テキストファイルに保存しました．
+
+さて，入手した情報がどんなタイプかを，パーザを使ってまとめてみましょう．
+まずは全てのエントリに渡って，各エントリの名前を全て取り出し，
+このデータ中に異なる種類のスリッパーオーキッドがどれだけあるか
+を調べます．
+
+この手の実用的な作業を行うには，手を動かして，この問題を解くための
+全ての処理を行う部分 -- コンシューマを書く必要があります．
+入力から生物名 (organism) を抜き出すためのコンシューマは
+以下のようになります:
+
+\begin{verbatim}
+import string
+from Bio.ParserSupport import AbstractConsumer
+
+class SpeciesExtractor(AbstractConsumer):
+
+    def __init__(self):
+        self.species_list = []
+
+    def title(self, title_info):
+        title_atoms = string.split(title_info)
+        new_species = title_atoms[1]
+
+        if new_species not in self.species_list:
+            self.species_list.append(new_species)
+\end{verbatim}
+
+最初に行う作業は，コンシューマの基底クラスとなる 
+\class{AbstractConsumer} の import です．この基底クラスはよく
+できていて，興味の対象外の部分のデータ処理をうまく扱ってくれます．
+次に，自分用のコンシューマクラスを \class{AbstractConsumer} 
+から導出します．
+
+他の Python のクラスと同様，このクラスの
+新たなインスタンスが生成されるときに呼び出されるメソッド
+\function{__init__} を定義します．この初期化メソッドの中で，
+属性\var{species_list} を設定します．この属性は，入力ファイルを
+構文解析する中で見つかった生物種をためておき，あとでそこから
+情報を取り出せるようにするためのものです．
+
+さて，次はこのクラスのもっとも気の利いた部分である，
+\function{title} メソッドの番です．このメソッドは，スキャナが
+'title' イベントを生成するたびに呼び出されます．従って，
+スキャナが FASTA 形式の最初の行:
+
+\begin{verbatim}
+>gi|2765658|emb|Z78533.1|CIZ78533 C.irapeanum 5.8S rRNA gene and ITS1 and ITS2 DNA
+\end{verbatim}
+
+に到達すると，スキャナはこれを 'title' エントリとみなし，
+\function{title} を呼び出します．そのとき， \var{title_info} 引数は
+上の 'title' に応じた値になります．
+
+title 行をうまく見つけたところで，ここから興味の対象となる情報を
+取り出す必要があります． FASTA の title 行にある情報を見ると，
+文字列中の二つ目の文字列が生物名であることに気づきます．
+この部分文字列を取り出すために，まず Python の関数
+\function{string.split} を呼び出して文字列をスペースで分割して
+リストを作成し，\var{title_atoms} という名前をつけておきます．
+このリストの二つ目の要素が生物種の名前になるので，それをリストから
+取り出します．次に，いま取り出した生物種名が現在記憶している生物名
+リストに入っているか調べ，入っていなければ追加します．
+
+うん，とても簡単でしたね -- あとは，スキャナを呼び出して実際の
+作業をさせなくてはなりません．そのためには，以下のようなちょっとした
+関数を書きます:
+
+\begin{verbatim}
+
+from Bio import Fasta
+
+def extract_organisms(file, num_records):
+    scanner = Fasta._Scanner()
+    consumer = SpeciesExtractor()
+
+    file_to_parse = open(file, 'r')
+
+    for fasta_record in range(num_records):
+        scanner.feed(file_to_parse, consumer)
+
+    file_to_parse.close()
+
+    return handler.species_list
+
+\end{verbatim}
+
+この関数を一行づつ見てゆきましょう．まず，Biopython ライブラリ
+から \class{Fasta} パーザを import し，その後で
+関数の定義に入っています．関数は二つの引数をとり，
+\var{file} には内容を解釈したい FASTA 形式のファイルを指定し，
+\var{num_records} にはファイル中から取り出したいレコード数を指定
+します．この関数はまず FASTA ファイルを走査するスキャナを生成した後，
+上で定義した生物種名を取り出す \class{SpeciesExtractor} コンシューマを
+生成します．
+
+次に，\var{file} を開いて，内容を構文解析する準備をします．
+Biopython のパーザは全て，入力をファイルハンドル (file handle) で
+扱います．つまり， 「ファイル類似の」オブジェクトなら何でも
+入力として渡せるわけです．例えば， \module{urllib} のような
+ライブラリを使うと，遠隔のサーバ上にあるドキュメントを URL で指定
+して，手元にあるファイルのように扱えるので，ネットワーク上の
+どこかにあるドキュメントをパーザに渡せます． 
+
+ファイルを開けたので，次はパーザによる構文解析です．パーザを動かすには，
+\function{feed} を取り出したい項目分呼び出します．このとき，
+構文解析の対象となるファイル類似オブジェクトと，構文解析時に呼び出され
+るコンシューマを指定します．ここでは，コンシューマが入力ファイルを正しく
+扱えると仮定して，ファイル中の全てのレコードにわたって反復処理
+しています．最後に，コンシューマから\var{species_list} 属性を
+取り出し，得られた情報を返します．
+
+やれやれ！ ここまで作業を終えたら，
+あとのファイルの解釈はとても簡単です:
+
+\begin{verbatim}
+all_species = extract_organisms("ls_orchid.fasta", 94)
+print "number of species:", len(all_species)
+print 'species names:', all_species
+\end{verbatim}
+
+上記の作業をひとつの \emph{大きな} プログラムにまとめて走らせると
+(まとめたプログラムは \file{Doc/examples/fasta_consumer.py} に
+あります)，必要な情報が出てきます:
+
+\begin{verbatim}
+[chapmanb@taxus examples]# python fasta_consumer.py
+number of species: 92
+species names: ['C.irapeanum', 'C.californicum', 'C.fasciculatum', 
+'C.margaritaceum', 'C.lichiangense', 'C.yatabeanum', 'C.guttatum',
+...
+\end{verbatim}
+
+\subsection{もっと簡単に}
+\label{sec:fasta-parsing}
+
+前節では，特定の用途に特化したコンシューマを書く実践的な方法に
+ついて述べました．自分用のコンシューマを書けるようになっているという
+柔軟性はすばらしいものではありますが，ほとんどのアプリケーションでは
+いささか役不足です．
+Biopthon ユーザたちは，ほぼ完璧なパーザのように動作する
+単純なアプリケーション向けの便利なクラスをいくつか提供しています．
+したがって，やっつけ仕事的なアプリケーションには，
+こちらの方が参考になるでしょう．
+
+上で使ったパーザの大きな問題点は，ファイル内にいくつ要素が
+入っているか知っている必要がある，ということです．
+単にファイル全体を構文解析して，そこから何かを探し出したいだけなら，
+上のパーザはやや実用的ではありません．
+FASTA ファイルの場合，この問題解決の手助けになる 
+\function{Iterator} インタフェースがあります．
+このインタフェースを使うと，コンシューマやスキャナの作成や
+その類のことに頭を悩ませることもなく，一度にひとつづつレコードを
+処理できます．とはいえ，この手法を使うには，イテレータが
+返すオブジェクトを操作して，そこから必要な情報を取り出せなければ
+なりません．
+
+この問題を扱うために，Biopython のパーザの多くには便利なあるクラス
+-- \class{RecordParser} が実装されています．
+\class{RecordParser} はファイルを構文解析して，その内容を表現する
+Python のクラスにします．たとえば FASTA ファイルの場合，\class{Record}
+クラスは \var{title} や \var{sequence} といった属性だけを持った
+オブジェクトになります．
+
+先ほどの作業 -- FASTA ファイルからすべての種の名前を取り出す -- 
+について，\function{Iterator} および\class{Record} 
+インタフェースを使った例でもう少し具体的に説明しましょう．
+まずパーザとイテレータを作成する必要があります:
+
+\begin{verbatim}
+>>> from Bio import Fasta
+>>> parser = Fasta.RecordParser()
+>>> file = open("ls_orchid.fasta")
+>>> iterator = Fasta.Iterator(file, parser)
+\end{verbatim}
+
+まずパーザを作成します --- \class{RecordParser} は FASTA 形式を
+構文解析して，FASTA の個々のエントリを表現する \class{Record} クラスに
+変換します．次にファイルを開いてイテレータを作成すれば，構文解析の
+準備は完了です．
+
+ほとんどのイテレータインタフェースと同様，\function{next} で
+オブジェクトを取り出せます．構文解析対象となる配列がなくなれば，
+\function{next} を呼び出したときに \constant{None} を返します．
+先頭のレコードを取り出してみましょう:
+
+
+\begin{verbatim}
+>>> cur_record = iterator.next()
+\end{verbatim}
+
+レコードオブジェクトを
+レコードオブジェクトには，配列を表す \var{sequence} と
+タイトルを表す\var{title} という属性があり，以下のようにして
+簡単に取得できます:
+
+\begin{verbatim}
+>>> dir(cur_record)
+['_colwidth', 'sequence', 'title']
+>>> print cur_record.title
+gi|2765658|emb|Z78533.1|CIZ78533 C.irapeanum 5.8S rRNA gene and ITS1 and ITS2 DNA
+>>> print cur_record.sequence
+CGTAACAAGGTTTCCGTAGGTGAACCTGCGGAAGGATCATTGATGAGACCGTGGAATAAACGATCGAGTGAATCCGGA
+...
+\end{verbatim}
+
+個人的にすばらしいと思っているのは，ここから FASTA 形式に簡単に
+戻せることです:
+
+\begin{verbatim}
+>>> print cur_record
+>gi|2765658|emb|Z78533.1|CIZ78533 C.irapeanum 5.8S rRNA gene and ITS1 and ITS2 DNA
+CGTAACAAGGTTTCCGTAGGTGAACCTGCGGAAGGATCATTGATGAGACCGTGGAATAAA
+CGATCGAGTGAATCCGGAGGACCGGTGTACTCAGCTCACCGGGGGCATTGCTCCCGTGGT
+GACCCTGATTTGTTGTTGGGCCGCCTCGGGAGCGTCCATGGCGGGTTTGAACCTCTAGCC
+CGGCGCAGTTTGGGCGCCAAGCCATATGAAAGCATCACCGGCGAATGGCATTGTCTTCCC
+CAAAACCCGGAGCGGCGGCGTGCTGTCGCGTGCCCAATGAATTTTGATGACTCTCGCAAA
+CGGGAATCTTGGCTCTTTGCATCGGATGGAAGGACGCAGCGAAATGCGATAAGTGGTGTG
+AATTGCAAGATCCCGTGAACCATCGAGTCTTTTGAACGCAAGTTGCGCCCGAGGCCATCA
+GGCTAAGGGCACGCCTGCTTGGGCGTCGCGCTTCGTCTCTCTCCTGCCAATGCTTGCCCG
+GCATACAGCCAGGCCGGCGTGGTGCGGATGTGAAAGATTGGCCCCTTGTGCCTAGGTGCG
+GCGGGTCCAAGAGCTGGTGTTTTGATGGCCCGGAACCCGGCAAGAGGTGGACGGATGCTG
+GCAGCAGCTGCCGTGCGAATCCCCCATGTTGTCGTGCTTGTCGGACAGGCAGGAGAACCC
+TTCCGAACCCCAATGGAGGGCGGTTGACCGCCATTCGGATGTGACCCCAGGTCAGGCGGG
+GGCACCCGCTGAGTTTACGC
+\end{verbatim}
+
+\function{extract_organisms} 関数を書き換えれば，ここまで説明した
+機能を全て利用できます:
+
+\begin{verbatim}
+def extract_organisms(file_to_parse):
+
+    parser = Fasta.RecordParser()
+    file = open(file_to_parse, 'r')
+    iterator = Fasta.Iterator(file, parser)
+
+    all_species = []
+
+    while 1:
+        cur_record = iterator.next()
+
+        if cur_record is None:
+            break
+
+        # extract the info from the title
+        title_atoms = string.split(cur_record.title)
+        new_species = title_atoms[1]
+
+        # append the new species to the list if it isn't there
+        if new_species not in all_species:
+            all_species.append(new_species)
+
+    return all_species
+\end{verbatim}
+
+この関数を実行すると，先に説明したものと同じ結果を得られます．
+前節と本節のどちらのインタフェースを選ぶかは，どちらを使いやすいと
+思うかで決めてください．
+ほら，「何かをする方法はたくさんある」のは Perl だけじゃないんですよ！
+
+\subsection{FASTA ファイルを辞書のように扱う}
+
+最後に，この様々なランに関する FASTA データの入ったファイルから
+インデクスを使ってエントリを取り出し，データベースのようにアクセス
+する方法を示します．これは，巨大なデータファイルを持っていて，その中の
+特定の要素にだけアクセスしたい場合や，やっつけ仕事用のデータベースを
+作成する際にはとても便利です．
+
+FASTA の特定のレコードを追跡するには GenBank のアクセス番号
+(accession number) を使うのが便利そうですから，アクセス番号を使って
+インデクス化してみましょう．まずは FASTA レコード (このレコードは，
+上で述べた\class{Record} クラスのオブジェクトになっています) 
+からアクセス番号を取り出して返す小さな関数を書く必要があります:
+
+\begin{verbatim}
+import string
+
+def get_accession_num(fasta_record):
+    title_atoms = string.split(fasta_record.title)
+
+    # アクセス番号情報は，全てレコードの最初の要素に詰め込まれていて，
+    # '|' で区切られている
+    accession_atoms = string.split(title_atoms[0], '|')
+ 
+    # アクセス番号自体は 4 番目の情報
+    gb_name = accession_atoms[3]
+
+    # バージョン番号を剥ぎ取ってから返す
+    return gb_name[:-2]
+\end{verbatim}
+
+さて，次はファイルからインデクスを作成する必要があります．
+ファイルからインデクスを作成する関数 \function{index_file} の
+一般形式は以下の通りです:
+
+\begin{verbatim}
+index_file(file_to_index, index_file_to_create, function_to_get_index_key)
+\end{verbatim}
+
+ここでトリックになるのが，引数\var{function_to_get_index_key} です．
+基本的には，この引数は何らかの関数を参照しています，この関数は
+レコードごとに呼び出され，インデクスのキーとなる要素を返すように
+なっています．
+このような形式を取っているのは，\var{index_file} に汎用性を持たせる
+ためと，Biopython のユーザが何を使ってファイルをインデクス化したいか
+想像するのが難しいからです．
+ここで，先ほど定義した \function{get_accession_num} が利いてくる
+わけです．
+
+準備が整ったところで，インデクスファイルの作成を行って，どのように
+動作するか見ることにします．まずはインデクスファイルの作成です．
+
+\begin{verbatim}
+>>> from Bio import Fasta 
+>>> Fasta.index_file("ls_orchid.fasta", "my_orchid_dict.idx", get_accession_num)
+\end{verbatim}
+
+この呼び出しで，\file{ls_orchid.fasta} の内容に基づいて
+\file{my_orchid_dict.idx} ファイルが作成されます．
+\file{my_orchid_dict.idx} は関数 \function{get_accession_num} が
+返す値を使ってインデクス化されています．
+
+これでインデクスを作成できたので，インデクスを使ってファイルの内容に
+アクセスできるような辞書をメモリ上に作成できます:
+
+\begin{verbatim}
+>>> from Bio.Alphabet import IUPAC
+>>> dna_parser = Fasta.SequenceParser(IUPAC.ambiguous_dna)
+>>> orchid_dict = Fasta.Dictionary("my_orchid_dict.idx", dna_parser)
+\end{verbatim} 
+
+辞書は \file{my_orchid_dict.idx} から作成され，あるインデクスに対して
+\class{Sequence} オブジェクトを返します．
+辞書がどのようなオブジェクトを返すかは，\function{Fasta.Dictionary}
+に渡した二つ目の引数に基づいて決まります．
+この引数はパーザでなければなりません．辞書からあるインデクスに対する
+値を取り出すとき，辞書はその値をパーザに構文解析させてから返します．
+パーザを渡さなければ素のオブジェクト (ファイルに書かれているそのままの
+内容) を返します．
+
+ここで渡したのは FASTA ファイルを\class{SeqRecord} オブジェクトに変換する
+\class{SequenceParser} です．\class{SequenceParser} は，配列を表現
+するために使うアルファベットを引数にとります．というのも，パーザは
+今何の配列を構文解析しようとしているか判別できるほど賢くはないので，
+教えてやる必要があるからです．
+アルファベットを指定しなければ，デフォルトの値として
+\code{Alphabet.generic_alphabet} を使います．
+
+\var{orchid_dict} は辞書なので，辞書のキーとして使える値を表示できます:
+
+\begin{verbatim}
+>>> print orchid_dict.keys()
+['Z78475', 'Z78519', 'Z78516', 'Z78517', 'Z78514', 'Z78515', 'Z78512', 
+ 'Z78513', 'Z78510', 'Z78511', 'Z78457', 'Z78456', 'Z78455', 'Z78454', 
+...
+\end{verbatim} 
+
+キーを使って，個別の配列オブジェクトにアクセスしたり，
+通常の \class{SeqRecord} オブジェクトのように扱えます:
+
+\begin{verbatim}
+>>> seq_record = orchid_dict['Z78475']
+>>> print seq_record
+<Bio.SeqRecord.SeqRecord instance at 0x102c1f2c>
+>>> print seq_record.description
+gi|2765600|emb|Z78475.1|PSZ78475 P.supardii 5.8S rRNA gene and ITS1 and
+ ITS2 DNA
+>>> print seq_record.seq
+Seq('CGTAACAAGGTTTCCGTAGGTGAACCTGCGGAAGGATCATTGTTGAGATCACATAATAAT ...',
+ IUPACAmbiguousDNA())
+\end{verbatim}
+
+このようにして，FASTA ファイルから配列オブジェクトを吐き出すような
+データベース簡単に作成できます．
+
+\subsection{ファイル解析大好き -- もっと教えて！}
+
+Biopython にはたくさんのパーザがあります．個々のパーザは，パーザが
+解析対象としている配列情報の形式ごとに固有のニッチがあります．
+特定のパーザについての情報や，パーザを使ってすばらしく作業を片付ける
+方法を探しているのなら，このチュートリアルのクックブックの章を探すのが
+ベストです．
+探しているものが見つからなければ，
+いささか過労気味の貧乏ドキュメント作成者に救いの手を差し伸べることや，
+クックブックに新たなエントリを追加することを検討してみてください！ 
+(もちろん，自分で問題を解決して，ですよ！) 
+
+
+
+\section{生物学関連のデータベースに接続する}
+
+バイオインフォマティクスでやらなければならない作業のうち，非常によくある
+作業の一つに，生物学関連のデータベースから情報を取り出すという作業が
+あります．こうしたデータベースに手作業でアクセスするのは，とりわけ
+何度も同じ作業を繰り返さなければならないときには退屈極まりないでしょう．
+Biopython には， Python スクリプトからオンラインデータベースに
+アクセスできるようにして，ユーザの時間と労力を節約しようという試みが
+あります．現時点では，Biopython には以下のデータベースから情報を取り出す
+ためのコードがあります:
+
+
+\begin{description}
+\item [ExPASy] {\url{http://www.expasy.ch/} ，クックブックの
+\ref{sec:swiss-prot} 節を参照してください}
+\item [Entrez from NCBI] \url{http://www.ncbi.nlm.nih.gov/Entrez/}
+\item [PubMed from NCBI] \url{http://www.ncbi.nlm.nih.gov/PubMed/}，
+利用法と例題はクックブックの \ref{sec:pub-med} 節を参照してください．
+\item [SCOP] \url{http://scop.mrc-lmb.cam.ac.uk/scop/}
+\end{description}
+
+上に挙げたモジュールのコードは，基本的には各 Web ページ上の CGI 
+スクリプトとやり取りする Python コードを書きやすくし，出力結果を扱い
+やすい形式で得られるようにします．場合によっては，出力結果の処理は
+Biopython の特定のパーザと強く結び付けられていて，より出力から情報を
+取り出しやすくなっています．
+
+ここでは，遠隔からの Entrez クエリ送信を実行するちょっとした例を
+紹介しておきます．利用できる他のサービスについての情報は，
+\ref{sec:cookbook} 章のクックブックにあります．
+
+パーザによる構文解析を例示した \ref{sec:writing-consumer} 節では，
+われらが友人スリッパーオーキッド，アツモリソウ亜科に関する情報を
+NCBI の塩基配列データベースから検索するために Entrez を使ったことに
+触れました．今度は，その作業を Python スクリプトを使って自動化する
+方法を見てゆきましょう．
+Entrez で検索を行う場合，スクリプトによる処理は，配列を取得するツール
+としてよりも結果を表示させるような使い方の方が有用です．
+NCBI の Web サイトはほとんどが遠隔からのクエリを受け付けられるように
+設定されており，自作の CGI 操作スクリプトをローカルで作っておき，
+NCBI のページから情報を返させられるようになっています．こうした理由から，
+出力結果が HTML になっているので，フラットファイル形式を手早く取り
+出すのはいささか骨の折れる作業だからです．
+
+この例では，サーバへの接続，結果の取得，ブラウザへの表示を行う手法
+だけを示します．まず，検索の内容と，結果をどのように表示するか
+を定義しましょう:
+
+\begin{verbatim}
+search_command = 'Search'
+search_database = 'Nucleotide'
+return_format = 'FASTA'
+search_term = 'Cypripedioideae'
+
+my_browser = 'lynx'
+\end{verbatim}
+
+最初の 4 つの定義では，どんな検索を行おうとしているかを指定しています．
+\module{Entrez} モジュールを使うためには， NCBI の遠隔 CGI スクリプトが
+どのように動作するかを少し知っておく必要があります．詳しくは
+\url{http://www.ncbi.nlm.nih.gov/entrez/query/static/linking.html}
+に書かれているので参照してみてください．
+最後の定義は，単にどのブラウザで結果を表示するかを決めているだけです．
+
+さて，準備が整ったところで， Entrez にクエリを送信して，処理結果に
+対するハンドルを取得しましょう．これは以下のようなコードで行います:
+
+\begin{verbatim}
+from Bio.WWW import NCBI
+
+result_handle = NCBI.query(search_command, search_database, term = search_term,
+                           doptcmdl = return_format)
+\end{verbatim}
+
+関数 \function{query} は，CGI スクリプトに入力するコマンドライン
+の準備から返された HTML の整形まで，全ての作業を行います．
+
+結果が得られたので，次はそれをファイルに保存して，ブラウザで表示
+してみましょう．この作業は以下のようなコードで行えます:
+
+\begin{verbatim}
+import os
+
+result_file_name = os.path.join(os.getcwd(), 'results.html')
+result_file = open(result_file_name, 'w')
+result_file.write(result_handle.read())
+result_file.close()
+
+if my_browser == 'lynx':
+    os.system('lynx -force_html ' + result_file_name)
+elif my_browser == 'netscape':
+    os.system('netscape file:' + result_file_name)
+\end{verbatim}
+
+すばらしい！ 情報を自動的に取得して，表示できました -- このコードを
+使えば，毎日繰り返し行いたいような検索をセットアップしておいて，
+結果を自分の目と手で確かめたり，あらかじめクエリを実行して，その結果を
+ローカルの計算機にためておき，あとでそれを (検索結果をまとめた研究ノート
+のようにして) 表示できます．いずれにせよ，データベース接続を
+可能にするコードで，あなたの作業はずっとずっと楽になることでしょう！ 
+
+\section{次は何を}
+
+ここまで読み進んでこれた読者の皆さんは，おそらくもう Biopython の
+基礎を理解して，すぐにも実際の仕事に有効活用できるようになったはず
+です．今度は，ソースコードを覗いてみたり，ソースコードから自動的に
+生成されるドキュメントを探してみるとよいでしょう．
+
+やりたいことがはっきりしていて，Biopython に入っているライブラリで
+それを実現できそうなら， Cookbook に乗り込んでみてください．
+やりたい作業と同じようなことを実現している例題コードがあるかも
+しれません．
+
+やりたいことははっきりしているけれども，どうやればよいのか
+分からなければ，どうぞ Biopython メーリングリスト
+(Biopython@Biopython.org) に質問を投げてみてください．
+Biopython メーリングリストで質問してもらえると，質問に回答できる
+だけではなく，同じことをやりたいと考えている別の人に役立つように
+ドキュメントを改良できるからです．
+
+さあ，コーディングしてみましょう！

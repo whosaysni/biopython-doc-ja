@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="prev" href="node53.html">
+<LINK rel="parent" href="node51.html">
+<LINK rel="next" href="node55.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="参考文献">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.7.2.3 参考文献</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.7.2.2 ロケーションとポジション" 
+  href="node53.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.7.2 feature とアノテーション -" 
+  href="node51.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.8 BioRegistry - 配列ソースの自動検索" 
+  href="node55.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node53.html">3.7.2.2 ロケーションとポジション</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node51.html">3.7.2 feature とアノテーション -</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node55.html">3.8 BioRegistry - 配列ソースの自動検索</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION004723000000000000000">
+3.7.2.3 参考文献</A>
+</H3>
+
+<P>
+もう一つ，配列情報でよく見られるアノテーションに，同じ配列について
+言及しているようなジャーナル論文や出版物に対する参考文献 (reference)
+です．Biopython では，参考文献の表現にはかなり単純な方法を
+取っています - Biopython には， <tt class="module">Bio.SeqFeature</tt> モジュールの
+<tt class="class">Reference</tt> クラスがあり，オブジェクトに関する参考文献の
+情報を属性の形で保存しています．
+
+<P>
+<tt class="class">Reference</tt> オブジェクトには，<tt class="member">journal</tt>，<tt class="member">title</tt>，
+および<tt class="member">authors</tt> といった，参考文献の情報として必要な属性が
+入っています．加えて，<tt class="class">Reference</tt> オブジェクトでは
+参考文献の<tt class="member">medline_id</tt> や <tt class="member">pubmed_id</tt> ，<tt class="member">comment</tt>
+といった情報も保存しています．こうした値は全て，オブジェクトの
+属性としてアクセスできます．
+
+<P>
+<tt class="class">Reference</tt> オブジェクトには，参考文献が参照している配列の
+ロケーションを指定できるようにするため，ロケーションオブジェクトの
+入る<tt class="member">location</tt> という属性もあります．例えば，BAC 上の特定の
+遺伝子を扱っているようなジャーナル論文があり，その論文がその
+遺伝子のポジションだけを厳密に参照しているかどうか知りたい場合が
+あるかもしれません．もちろん，<tt class="member">location</tt> は<A HREF="node53.html#sec:locations">3.7.2</A>
+節で述べたように，曖昧な場所を表しているかもしれません．
+
+<P>
+<tt class="class">Reference</tt> もまた，簡単に扱えるように配慮されており，
+おそらく多くのユースケースで利用できるくらい柔軟なはずです．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.7.2.2 ロケーションとポジション" 
+  rel="prev" title="3.7.2.2 ロケーションとポジション" 
+  href="node53.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.7.2 feature とアノテーション -" 
+  rel="parent" title="3.7.2 feature とアノテーション -" 
+  href="node51.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.8 BioRegistry - 配列ソースの自動検索" 
+  rel="next" title="3.8 BioRegistry - 配列ソースの自動検索" 
+  href="node55.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node53.html">3.7.2.2 ロケーションとポジション</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node51.html">3.7.2 feature とアノテーション -</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node55.html">3.8 BioRegistry - 配列ソースの自動検索</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

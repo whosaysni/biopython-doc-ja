@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node80.html">
+<LINK rel="prev" href="node75.html">
+<LINK rel="parent" href="node64.html">
+<LINK rel="next" href="node80.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="使用例">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.11.4 使用例</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11.3.3 その他のヘテロ残基" 
+  href="node78.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11 3D の世界へ: PDB" 
+  href="node64.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.5 PDB ファイルによくある問題" 
+  href="node80.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node78.html">3.11.3.3 その他のヘテロ残基</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node64.html">3.11 3D の世界へ: PDB</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node80.html">3.11.5 PDB ファイルによくある問題</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION0041140000000000000000">
+3.11.4 使用例</A>
+</H2>
+
+<P>
+PDBファイルを解析して，<tt class="class">Model</tt>、<tt class="class">Chain</tt>、 <tt class="class">Residue</tt>
+および、<tt class="class">Atom</tt> オブジェクトを取り出します．
+
+<P>
+<div class="verbatim"><pre>
+from PDBParser import PDBParser 
+
+parser=PDBParser()
+
+structure=parser.get_structure("test", "1fat.pdb")
+model=structure[0]
+chain=model["A"]
+residue=chain[1]
+atom=residue["CA"]
+</pre></div>
+
+<P>
+分子鎖からヘテロ残基 (ここでは一部が resseq 10 のグルコース (GLC) 
+であるような残基) を取り出します．
+
+<P>
+<div class="verbatim"><pre>
+residue_id=("H_GLC", 10, " ")
+residue=chain[residue_id]
+</pre></div>
+
+<P>
+分子鎖内の全てのヘテロ残基を出力します．
+
+<P>
+<div class="verbatim"><pre>
+for residue in chain.get_list():
+	residue_id=residue.get_id()
+	hetfield=residue_id[0]
+	if hetfield[0]=="H":
+		print residue_id
+</pre></div>
+
+<P>
+B ファクタが 50 以上の CA 原子の座標を全て出力します．
+
+<P>
+<div class="verbatim"><pre>
+for model in structure.get_list():
+  for chain in model.get_list():
+    for residue in chain.get_list():
+      if residue.has_id("CA"):
+        ca=residue["CA"]
+        if ca.get_bfactor()&gt;50.0:
+          print ca.get_coord()
+</pre></div>
+
+<P>
+ゆらぎのある原子を含む全ての残基を出力します．
+
+<P>
+<div class="verbatim"><pre>
+for model in structure.get_list()
+  for chain in model.get_list():
+    for residue in chain.get_list():
+      if residue.is_disordered():
+        resseq=residue.get_id()[1]
+        resname=residue.get_resname()
+        model_id=model.get_id()
+        chain_id=chain.get_id()
+        print model_id, chain_id, resname, resseq
+</pre></div>
+
+<P>
+ゆらぎのある原子全てにわたってループして，全て <tt class="member">altloc</tt> が 
+<code>"A"</code> の原子 (があれば) になるよう選択します．この操作を行うと，
+SMCRA データ構造の挙動を <tt class="member">altloc</tt> が <code>"A"</code> の原子しか
+存在しない場合の挙動にします．
+
+<P>
+<div class="verbatim"><pre>
+for model in structure.get_list()
+  for chain in model.get_list():
+    for residue in chain.get_list():
+      if residue.is_disordered():
+        for atom in residue.get_list():
+          if atom.is_disordered():
+            if atom.disordered_has_id("A"):
+              atom.disordered_select("A")
+</pre></div>
+
+<P>
+分子鎖の位置 10 に点変異があって， Ser と Cys からなるとします．
+分子鎖の挙動を位置 10 の残基が Cys 残基である場合の挙動にします．
+
+<P>
+<div class="verbatim"><pre>
+residue=chain[10]
+residue.disordered_select("CYS")
+</pre></div>
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.11.3.3 その他のヘテロ残基" 
+  rel="prev" title="3.11.3.3 その他のヘテロ残基" 
+  href="node78.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.11 3D の世界へ: PDB" 
+  rel="parent" title="3.11 3D の世界へ: PDB" 
+  href="node64.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.11.5 PDB ファイルによくある問題" 
+  rel="next" title="3.11.5 PDB ファイルによくある問題" 
+  href="node80.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node78.html">3.11.3.3 その他のヘテロ残基</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node64.html">3.11 3D の世界へ: PDB</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node80.html">3.11.5 PDB ファイルによくある問題</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

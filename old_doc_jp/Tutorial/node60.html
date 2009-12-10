@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node61.html">
+<LINK rel="prev" href="node59.html">
+<LINK rel="parent" href="node59.html">
+<LINK rel="next" href="node61.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="配列の取得">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>3.8.2.1 配列の取得</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.8.2 Biopython 固有のインタフェースを使ったリソースの検索" 
+  href="node59.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.8.2 Biopython 固有のインタフェースを使ったリソースの検索" 
+  href="node59.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.8.2.2 データベースの登録とグループ化" 
+  href="node61.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node59.html">3.8.2 Biopython 固有のインタフェースを使ったリソースの検索</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node59.html">3.8.2 Biopython 固有のインタフェースを使ったリソースの検索</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node61.html">3.8.2.2 データベースの登録とグループ化</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION004821000000000000000">
+3.8.2.1 配列の取得</A>
+</H3>
+
+<P>
+デフォルトでは， Biopython は様々な標準の場所から配列を取得できる
+ように設定されています．このため， BioRegistry システムをよく
+知らなくてもすぐに使えるようになっています．データベースの
+レジストリを取り出すには，以下のようにするだけです:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; from Bio import db
+</pre></div>
+
+<P>
+情報を取得できる様々なデータベースの全容を知りたければ，
+単に <code>db</code> を <tt class="keyword">print</tt> します．プログラム的に
+取り出したければ，<code>db</code> に <tt class="function">keys</tt> を適用します:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; print db
+DBRegistry, exporting 'embl', 'embl-dbfetch-cgi', 'embl-ebi-cgi',
+'embl-fast', 'embl-xembl-cgi', 'interpro-ebi-cgi',
+'nucleotide-dbfetch-cgi', 'nucleotide-genbank-cgi', 'pdb',
+'pdb-ebi-cgi', 'pdb-rcsb-cgi', 'prodoc-expasy-cgi',
+'prosite-expasy-cgi', 'protein-genbank-cgi', 'swissprot',
+'swissprot-expasy-cgi'
+&gt;&gt;&gt; db.keys()
+['embl-dbfetch-cgi', 'embl-fast', 'embl', 'prosite-expasy-cgi',
+'swissprot-expasy-cgi', 'nucleotide-genbank-cgi', 'pdb-ebi-cgi',
+'interpro-ebi-cgi', 'embl-ebi-cgi', 'embl-xembl-cgi',
+'protein-genbank-cgi', 'pdb', 'prodoc-expasy-cgi',
+'nucleotide-dbfetch-cgi', 'swissprot', 'pdb-rcsb-cgi']
+</pre></div>
+
+<P>
+さて，ランのカルコン合成酵素の一つに対する SWISS-PROT のレコードを
+取り出したいとしましょう．まず， SWISS-PROT への接続を取得して，
+インターネットからレコードを取り出します:
+
+<P>
+<div class="verbatim"><pre>
+&gt;&gt;&gt; sp = db["swissprot"]
+&gt;&gt;&gt; sp
+&lt;Bio.DBRegistry.DBGroup instance at 0x82fdb2c&gt;
+record_handle = sp['O23729']
+&gt;&gt;&gt; print record_handle.read()[:200]
+ID   CHS3_BROFI     STANDARD;      PRT;   394 AA.
+AC   O23729;
+DT   15-JUL-1999 (Rel. 38, Created)
+DT   15-JUL-1999 (Rel. 38, Last sequence update)
+DT   15-JUL-1999 (Rel. 38, Last annotation update)
+</pre></div>
+
+<P>
+この取得方法は，いくつも理由で優れています．第一に，実際にどこから
+SWISS-PROT のレコードを取り出せばよいのか気にする必要がありません - 
+単にあるオブジェクトを要求するだけで，現在入手できるいずれかの 
+SWISS-PROT のレコードを得られます．第二に，SWISS-PROT オブジェクトを
+得たら，そこから配列を取り出す方法について悩む必要がありません - 
+単に id を使って要求するだけでよく，実装の詳細について考えなくても
+よいのです．
+
+<P>
+デフォルトの Biopython データベースレジストリオブジェクトでは，
+同様にして EMBL，prosite，PDB，interpro，GenBank および XEMBL
+から配列を取り出せます．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="3.8.2 Biopython 固有のインタフェースを使ったリソースの検索" 
+  rel="prev" title="3.8.2 Biopython 固有のインタフェースを使ったリソースの検索" 
+  href="node59.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="3.8.2 Biopython 固有のインタフェースを使ったリソースの検索" 
+  rel="parent" title="3.8.2 Biopython 固有のインタフェースを使ったリソースの検索" 
+  href="node59.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="3.8.2.2 データベースの登録とグループ化" 
+  rel="next" title="3.8.2.2 データベースの登録とグループ化" 
+  href="node61.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node59.html">3.8.2 Biopython 固有のインタフェースを使ったリソースの検索</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node59.html">3.8.2 Biopython 固有のインタフェースを使ったリソースの検索</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node61.html">3.8.2.2 データベースの登録とグループ化</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

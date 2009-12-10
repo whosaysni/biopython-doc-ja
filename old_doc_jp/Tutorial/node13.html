@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node14.html">
+<LINK rel="prev" href="node12.html">
+<LINK rel="parent" href="node12.html">
+<LINK rel="next" href="node14.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="パーザの一般的な設計">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>2.4.1 パーザの一般的な設計</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="2.4 生物学関連のデータファイルを構文解析する" 
+  href="node12.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="2.4 生物学関連のデータファイルを構文解析する" 
+  href="node12.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="2.4.2 コンシューマを自作する" 
+  href="node14.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node12.html">2.4 生物学関連のデータファイルを構文解析する</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node12.html">2.4 生物学関連のデータファイルを構文解析する</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node14.html">2.4.2 コンシューマを自作する</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION003410000000000000000">
+2.4.1 パーザの一般的な設計</A>
+</H2>
+
+<P>
+こうした問題に対して， Biopython では構造化されたパーザフレームワークを
+開発し，すべてのパーザに適用できるようにしています．このフレームワーク
+には二つの利点があります．まず，パーザ間でコードを再利用しやすく
+なります (<span class="file">Bio/ParserSupport.py</span> を参照してください)．
+第二に，すべてのパーザが同じようなフレームワークに従っているので，
+何か疑問があったときに，すぐパーザの内部を調べて問題を解決しやすく
+なります．
+
+<P>
+こうしたパーザ群には全て二つの構成要素があります:
+
+<P>
+
+<OL>
+<LI>スキャナ (Scanner) - パーザ中で，実際にファイルを操作したり
+読み進んだりし，有用な情報を取り出す処理を実際に行う部分です．
+ファイル中で見つかった有意を情報はイベント (Event) に変換します．
+
+<P>
+</LI>
+<LI>コンシューマ (Consumer) - ファイル中に見つかった有意な情報を
+処理し，プログラマが利用できる形式に分離抽出する作業を行います．
+この作業は，コンシューマがスキャナが生成したイベントを受け取った
+時に行われます．
+
+<P>
+</LI>
+</OL>
+
+<P>
+つまり，パーザの設計はイベント志向になっているわけです．
+この考え方では，まずスキャナがファイルを走査して，興味の対象となりそう
+な項目に対してイベントを生成します．例えば，以下のエントリが
+FASTA で書式化されているとします (紙面の都合上一部省略してあります):
+
+<P>
+<div class="verbatim"><pre>
+&gt;gi|6273290|gb|AF191664.1|AF191664 Opuntia clavata rpl16 gene; chloroplast gene for...
+TATACATTAAAGGAGGGGGATGCGGATAAATGGAAAGGCGAAAGAAAGAAAAAAATGAA
+TCTAAATGATATAGGATTCCACTATGTAAGGTCTTTGAATCATATCATAAAAGACAATGTAAT
+AAA...
+</pre></div>
+
+<P>
+スキャナがエントリの入ったファイルを走査すると，以下のようなイベントが
+生成されます:
+
+<P>
+<TABLE CELLPADDING=3 BORDER="1">
+<TR><TD ALIGN="CENTER">Event Name</TD>
+<TD ALIGN="CENTER">Entry input</TD>
+</TR>
+<TR><TD ALIGN="CENTER">begin_sequence</TD>
+<TD ALIGN="CENTER">(as soon as we notice we've got a new <code>&gt;</code>)</TD>
+</TR>
+<TR><TD ALIGN="CENTER">title</TD>
+<TD ALIGN="CENTER"><code>&gt;gi|6273290|gb|AF191664.1|AF191664 Opuntia clavata...</code></TD>
+</TR>
+<TR><TD ALIGN="CENTER">sequence</TD>
+<TD ALIGN="CENTER"><code>TATACATTAAAGGAGGGGGATGCGGAT...</code></TD>
+</TR>
+<TR><TD ALIGN="CENTER">sequence</TD>
+<TD ALIGN="CENTER"><code>TCTAAATGATATAGGATTCCACTATGTAA...</code></TD>
+</TR>
+<TR><TD ALIGN="CENTER">sequence</TD>
+<TD ALIGN="CENTER"><code>AAA...</code> (and so on - you've got the idea！)</TD>
+</TR>
+<TR><TD ALIGN="CENTER">end_sequence</TD>
+<TD ALIGN="CENTER">(as soon as we reach a blank line after the sequence data)</TD>
+</TR>
+</TABLE>
+
+<P>
+さて，イベントが生成されました．間違いなく，まだこのイベントを
+捕捉して，意味のある処理を行う用意はできていませんね！ そこで
+コンシューマの登場です．コンシューマは以下の二つの役割を担います:
+
+<P>
+
+<OL>
+<LI>コンシューマ自身をスキャナと関連づけて，スキャナが生成する
+特定のイベントをコンシューマが受け取れることをスキャナに通知します．
+</LI>
+<LI>イベント (とイベントに関連づけられた情報) に応じた処理を行います．
+
+<P>
+</LI>
+</OL>
+
+<P>
+どのように動作するかは例題をごらんください．
+
+<P>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="2.4 生物学関連のデータファイルを構文解析する" 
+  rel="prev" title="2.4 生物学関連のデータファイルを構文解析する" 
+  href="node12.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="2.4 生物学関連のデータファイルを構文解析する" 
+  rel="parent" title="2.4 生物学関連のデータファイルを構文解析する" 
+  href="node12.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="2.4.2 コンシューマを自作する" 
+  rel="next" title="2.4.2 コンシューマを自作する" 
+  href="node14.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node12.html">2.4 生物学関連のデータファイルを構文解析する</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node12.html">2.4 生物学関連のデータファイルを構文解析する</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node14.html">2.4.2 コンシューマを自作する</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>

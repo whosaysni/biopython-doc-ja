@@ -1,0 +1,173 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<link rel="STYLESHEET" href="Tutorial.css" type='text/css' />
+<link rel="first" href="Tutorial.html" title='Biopython チュートリアル &amp; クックブック' />
+<link rel='contents' href='contents.html' title="Contents" />
+<link rel='last' href='about.html' title='About this document...' />
+<link rel='help' href='about.html' title='About this document...' />
+<LINK rel="next" href="node107.html">
+<LINK rel="prev" href="node103.html">
+<LINK rel="parent" href="node103.html">
+<LINK rel="next" href="node105.html">
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-JP" />
+<meta name='aesop' content='information' />
+<META name="description" content="SubsMat モジュール">
+<META name="keywords" content="Tutorial">
+<META name="resource-type" content="document">
+<META name="distribution" content="global">
+<title>4.4.1 SubsMat モジュール</title>
+</head>
+<body>
+<DIV CLASS="navigation">
+<div id='top-navigation-panel'>
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.4 置換行列" 
+  href="node103.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.4 置換行列" 
+  href="node103.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.4.1.1 属性" 
+  href="node105.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node103.html">4.4 置換行列</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node103.html">4.4 置換行列</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node105.html">4.4.1.1 属性</A>
+</div>
+<hr /></div>
+</DIV>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION005410000000000000000">
+4.4.1 SubsMat モジュール</A>
+</H2>
+
+<P>
+このモジュールでは，BLOSUM や PAM のような置換行列を生成するための
+クラスといくつかのルーチンを提供しています．ただし，置換行列は
+ユーザの提供したデータから生成できるようになっています．
+
+<P>
+加えて，すでに提唱されている置換行列をコレクションしている
+<span class="file">MatrixInfo.py</span> から置換行列を選べるようにもなっています．
+
+<P>
+<dl><dt><table cellpadding="0" cellspacing="0"><tr valign="baseline">
+  <td><nobr><b><span class="typelabel">クラス</span>&nbsp;<tt id='l2h-2' xml:id='l2h-2' class="クラス">SeqMat</tt></b>(</nobr></td>
+  <td><var>data=None, alphabet=None, 
+    mat_type=NOTYPE, mat_name='', build_later=0</var>)</td></tr></table></dt>
+<dd>
+
+<P>
+<tt class="class">UserDict.UserDict</tt> のサブクラスです．
+<var>data</var> は辞書または他の <tt class="class">SeqMat</tt> インスタンスにできます．
+<var>alphabet</var> は <tt class="class">Bio.Alphabet</tt> のインスタンスです．
+<var>alphabet</var> を省力すると，<var>data</var> からアルファベットを構築
+します．
+<var>mat_type</var> には生成される行列のタイプを指定します:
+      <DL>
+<DT><STRONG>NOTYPE</STRONG></DT>
+<DD>指定なし
+        
+</DD>
+<DT><STRONG>ACCREP</STRONG></DT>
+<DD>許容置換行列 (Accepted Replacements Matrix)
+        
+</DD>
+<DT><STRONG>OBSFREQ</STRONG></DT>
+<DD>観測頻度行列 (Observed Frequency Matrix)
+        
+</DD>
+<DT><STRONG>EXPFREQ</STRONG></DT>
+<DD>頻度期待値行列 (Expsected Frequency Matrix)
+        
+</DD>
+<DT><STRONG>SUBS</STRONG></DT>
+<DD>置換行列 (Substitution Matrix)
+        
+</DD>
+<DT><STRONG>LO</STRONG></DT>
+<DD>対数確率行列 (Log Odds Matrix)
+      
+</DD>
+</DL>
+
+<P>
+<var>mat_type</var> は<tt class="class">SubsMat</tt> の関数を呼び出す際に自動的に決定されます．
+<var>mat_name</var> は <code>"BLOSUM62"</code> や <code>"PAM250"</code> のような
+行列の名前です．
+<var>build_later</var> はデフォルトで<tt class="constant">False</tt> です．
+<tt class="constant">True</tt> にした場合，後で行列を作成するために，ユーザは
+アルファベットと空の辞書だけを指定できます．このとき，アルファベットの
+サイズと行列のサイズの間で整合性のチェックを行いません．
+</dl>
+
+<P>
+
+<p><br /></p><hr class='online-navigation' />
+<div class='online-navigation'>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"></a>
+
+<UL CLASS="ChildLinks">
+<LI><A href="node105.html">4.4.1.1 属性</a>
+<LI><A href="node106.html">4.4.1.2 メソッド</a>
+</ul>
+<!--End of Table of Child-Links-->
+</div>
+
+<DIV CLASS="navigation">
+<div class='online-navigation'><hr />
+<table align="center" width="100%" cellpadding="0" cellspacing="2">
+<tr>
+<td class='online-navigation'><a rel="prev" title="4.4 置換行列" 
+  rel="prev" title="4.4 置換行列" 
+  href="node103.html"><img src='previous.png'
+  border='0' height='32'  alt='Previous Page' width='32' /></A></td>
+<td class='online-navigation'><a rel="parent" title="4.4 置換行列" 
+  rel="parent" title="4.4 置換行列" 
+  href="node103.html"><img src='up.png'
+  border='0' height='32'  alt='Up One Level' width='32' /></A></td>
+<td class='online-navigation'><a rel="next" title="4.4.1.1 属性" 
+  rel="next" title="4.4.1.1 属性" 
+  href="node105.html"><img src='next.png'
+  border='0' height='32'  alt='Next Page' width='32' /></A></td>
+<td align="center" width="100%">Biopython チュートリアル &amp; クックブック</td>
+<td class='online-navigation'><a rel="contents" title="Table of Contents" 
+  rel="contents" title="Table of Contents" 
+  href="contents.html"><img src='contents.png'
+  border='0' height='32'  alt='Contents' width='32' /></A></td>
+<td class='online-navigation'><img src='blank.png'
+  border='0' height='32'  alt='' width='32' /></td>
+
+</tr></table>
+<div class='online-navigation'>
+<b class="navlabel">Previous:</b>
+<a class="sectref" rel="prev" href="node103.html">4.4 置換行列</A>
+<b class="navlabel">Up:</b>
+<a class="sectref" rel="parent" href="node103.html">4.4 置換行列</A>
+<b class="navlabel">Next:</b>
+<a class="sectref" rel="next" href="node105.html">4.4.1.1 属性</A>
+</div>
+</div>
+<hr />
+<span class="release-info">Documentation released on Last Update-15 June 2003.</span>
+</DIV>
+<!--End of Navigation Panel-->
+
+</BODY>
+</HTML>
